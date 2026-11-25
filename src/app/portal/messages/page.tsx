@@ -55,7 +55,7 @@ function MessagesInner() {
             ? "Find a mentor and ask your first question."
             : activeBadge(me, "Mentor")
               ? "When a student asks you a question, it appears here."
-              : "Alumni-to-alumni messaging arrives in Phase 2. Become a mentor to help students now."}
+              : "To message other alumni, open Chats. Become a mentor to help students too."}
           <div className="mt-4">
             {me.role === "STU" ? <Button href="/portal/mentors">Find a mentor</Button> : !activeBadge(me, "Mentor") && <Button href="/portal/mentor">Become a mentor</Button>}
           </div>

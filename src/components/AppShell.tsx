@@ -5,6 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
+  CalendarCheck,
+  MessageCircle,
+  Send,
+  UsersRound,
   Briefcase,
   CalendarDays,
   ChevronDown,
@@ -13,6 +17,7 @@ import {
   GraduationCap,
   HeartHandshake,
   Home,
+  Lock,
   LogOut,
   Megaphone,
   Menu,
@@ -42,7 +47,7 @@ interface NavItem {
   soon?: boolean;
 }
 
-function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number }): NavItem[] {
+function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number; jobs: number; dms: number }): NavItem[] {
   const home: NavItem = { href: "/portal", label: "Home", icon: Home };
   switch (me.role) {
     case "STU":
@@ -50,23 +55,27 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         home,
         { href: "/portal/mentors", label: "Find a mentor", icon: Search },
         { href: "/portal/messages", label: "Messages", icon: MessagesSquare },
-        { href: "#", label: "Jobs & internships", icon: Briefcase, soon: true },
-        { href: "#", label: "Events", icon: CalendarDays, soon: true },
-        { href: "#", label: "My profile", icon: UserRound, soon: true },
+        { href: "/portal/jobs", label: "Internships", icon: Briefcase },
+        { href: "/portal/events", label: "Events", icon: CalendarDays },
+        { href: "/portal/profile", label: "My profile", icon: UserRound },
       ];
     case "PAR":
-      return [home, { href: "/portal/consent", label: "Consent centre", icon: ShieldCheck }, { href: "#", label: "Events", icon: CalendarDays, soon: true }];
+      return [home, { href: "/portal/consent", label: "Consent centre", icon: ShieldCheck }, { href: "/portal/events", label: "Events", icon: CalendarDays }];
     case "ALP":
-      return [home, { href: "#", label: "My profile", icon: UserRound, soon: true }];
+      return [home, { href: "/portal/profile", label: "My profile", icon: UserRound }, { href: "/portal/directory", label: "Alumni directory", icon: Lock }];
     case "ALU":
       return [
         home,
-        { href: "/portal/messages", label: activeBadge(me, "Mentor") ? "Mentor inbox" : "Messages", icon: MessagesSquare },
+        { href: "/portal/profile", label: "My profile", icon: UserRound },
+        { href: "/portal/directory", label: "Alumni directory", icon: Users },
+        { href: "/portal/groups", label: "Batch groups", icon: UsersRound },
+        { href: "/portal/chats", label: "Chats", icon: MessageCircle, count: counts.dms },
+        { href: "/portal/jobs", label: "Jobs", icon: Briefcase },
+        { href: "/portal/events", label: "Events", icon: CalendarDays },
+        { href: "/portal/invite", label: "Invite friends", icon: Send },
+        ...(me.badges?.some((b) => b.type === "Mentor") ? [{ href: "/portal/messages", label: "Mentor inbox", icon: MessagesSquare }] : []),
         { href: "/portal/vouch", label: "Vouch for batchmates", icon: HeartHandshake, count: counts.vouch },
         { href: "/portal/mentor", label: activeBadge(me, "Mentor") ? "Mentor badge" : "Become a mentor", icon: GraduationCap },
-        { href: "#", label: "Alumni directory", icon: Users, soon: true },
-        { href: "#", label: "Jobs", icon: Briefcase, soon: true },
-        { href: "#", label: "Events", icon: CalendarDays, soon: true },
       ];
     case "CAD":
     case "GAO":
@@ -77,6 +86,7 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { href: "/portal/admin/safeguarding", label: "Safeguarding", icon: ShieldAlert, count: counts.reports },
         { href: "/portal/admin/consents", label: "Student consents", icon: ClipboardCheck, count: counts.consent },
         { href: "/portal/admin/broadcast", label: "Broadcasts", icon: Megaphone },
+        { href: "/portal/admin/content", label: "Jobs & events", icon: CalendarCheck, count: counts.jobs },
         { href: "/portal/admin/audit", label: "Audit log", icon: FileClock },
         ...(me.role === "SAD" ? [{ href: "/portal/admin/settings", label: "Settings", icon: Settings }] : []),
       ];
@@ -112,6 +122,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     reports: state.reports.filter((r) => r.status === "open" && inScope(r.campusId)).length,
     consent: state.users.filter((u) => u.role === "STU" && u.studentStatus === "awaiting_consent" && inScope(u.campusIds[0])).length,
     vouch: state.verifications.filter((v) => v.status === "pending" && v.campusId === me.campusIds[0] && v.passYear === me.batch && !v.vouches.some((x) => x.by === me.id)).length,
+    jobs: state.jobs.filter((j) => j.status === "pending" && inScope(j.campusId)).length,
+    dms: state.dmThreads.filter((t) => {
+      if (!t.members.includes(me.id)) return false;
+      const last = state.dms.filter((m) => m.threadId === t.id).at(-1);
+      return !!last && last.senderId !== me.id;
+    }).length,
   };
   const nav = navFor(me, counts);
 

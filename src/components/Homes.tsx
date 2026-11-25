@@ -28,6 +28,7 @@ import { campuses, campusName, consentPurposes, population, roleLabels } from "@
 import { activeBadge, hasConsent, latestConsent, useStore } from "@/lib/store";
 import type { ConsentPurpose, User } from "@/lib/types";
 import { cn, firstName, fmt, formatDate, timeAgo } from "@/lib/utils";
+import { completeness, groupsFor } from "@/lib/community";
 import { Avatar, Button, Callout, Card, CardHeader, PageHeader, Pill, Req, Stat } from "./ui";
 
 /* ================================ Student ================================ */
@@ -190,7 +191,21 @@ export function StudentHome({ me }: { me: User }) {
             </div>
             <p className="mt-3 text-[11.5px] text-muted">Only your parent can change these, from their Parent portal.</p>
           </Card>
-          <SoonCard items={[{ icon: Briefcase, label: "Internships approved by your campus" }, { icon: CalendarDays, label: "Career talks and webinars" }]} />
+          <Card className="p-5">
+            <p className="text-[13px] font-semibold">Coming up for you</p>
+            <div className="mt-3 grid gap-2">
+              <Link href="/portal/events" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[13px] hover:bg-border/60">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <span className="flex-1">Career talks and webinars</span>
+                <span className="font-semibold">{state.events.filter((e) => e.audience.includes("STU") && (e.campusIds === "all" || e.campusIds.includes(me.campusIds[0]))).length}</span>
+              </Link>
+              <Link href="/portal/jobs" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[13px] hover:bg-border/60">
+                <Briefcase className="h-4 w-4 text-primary" />
+                <span className="flex-1">Internships approved by your campus</span>
+                <span className="font-semibold">{state.jobs.filter((j) => j.forStudents && j.status === "approved").length}</span>
+              </Link>
+            </div>
+          </Card>
         </div>
       </div>
     </>
@@ -271,6 +286,14 @@ export function AlumniHome({ me }: { me: User }) {
   const studentConvs = state.conversations.filter((c) => c.mentorId === me.id);
   const vouchReqs = state.verifications.filter((v) => v.status === "pending" && v.campusId === me.campusIds[0] && v.passYear === me.batch && !v.vouches.some((x) => x.by === me.id));
   const pendingBadge = state.badgeRequests.find((b) => b.userId === me.id && b.status === "pending");
+  const pct = completeness(me);
+  const liveJobs = state.jobs.filter((j) => j.status === "approved").length;
+  const groupIds = groupsFor(me).map((g) => g.id);
+  const posts = state.posts.filter((p) => groupIds.includes(p.groupId)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).slice(0, 3);
+  const events = state.events
+    .filter((e) => e.audience.includes("ALU") && (e.campusIds === "all" || e.campusIds.includes(me.campusIds[0])))
+    .sort((a, b) => Date.parse(a.start) - Date.parse(b.start))
+    .slice(0, 3);
 
   return (
     <>
@@ -323,17 +346,54 @@ export function AlumniHome({ me }: { me: User }) {
           cta="Review"
           highlight={vouchReqs.length > 0}
         />
-        <ActionCard href="#" icon={Users} title="Alumni directory" body="Find batchmates by campus, city or company" cta="Coming in Phase 2" disabled />
+        <ActionCard href="/portal/directory" icon={Users} title="Alumni directory" body={`Find people from ${me.batch} and every campus by city, company or industry`} cta="Search alumni" />
+        <ActionCard href="/portal/profile" icon={Sparkles} title={`Profile ${pct}% complete`} body={pct < 100 ? "Add work, education and skills so batchmates can find you" : "Your profile is complete"} cta="Edit profile" highlight={pct < 60} />
+        <ActionCard href="/portal/jobs" icon={Briefcase} title="Jobs" body={`${liveJobs} live job${liveJobs === 1 ? "" : "s"} from alumni · post your own`} cta="Browse jobs" />
+        <ActionCard href="/portal/invite" icon={Send} title="Invite friends" body="Bring your batchmates to VAA" cta="Invite" />
       </div>
-      <div className="mt-5">
-        <SoonCard
-          items={[
-            { icon: Briefcase, label: "Jobs board with approvals" },
-            { icon: CalendarDays, label: "Reunions & RSVP" },
-            { icon: Users, label: "Batch & campus groups" },
-            { icon: Sparkles, label: "Full profile & privacy settings" },
-          ]}
-        />
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Card className="min-w-0">
+          <CardHeader title="Latest in your groups" action={<Link href="/portal/groups" className="text-[13px] font-semibold text-primary">Open</Link>} />
+          <div className="divide-y divide-border">
+            {posts.length === 0 && <p className="px-5 py-4 text-[13px] text-muted">No posts yet.</p>}
+            {posts.map((p) => {
+              const a = state.users.find((u) => u.id === p.authorId);
+              return (
+                <div key={p.id} className="flex gap-3 px-5 py-3">
+                  <Avatar name={a?.name ?? "?"} size={32} />
+                  <div className="min-w-0">
+                    <p className="text-[13px]">
+                      <span className="font-semibold">{a?.name}</span> <span className="text-muted">· {timeAgo(p.at)}</span>
+                    </p>
+                    <p className="line-clamp-2 text-[13px] text-muted">{p.text}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+        <Card className="min-w-0">
+          <CardHeader title="Upcoming events" action={<Link href="/portal/events" className="text-[13px] font-semibold text-primary">All events</Link>} />
+          <div className="divide-y divide-border">
+            {events.map((e) => {
+              const d = new Date(e.start);
+              const going = e.rsvps.some((r) => r.userId === me.id && r.status === "going");
+              return (
+                <Link key={e.id} href="/portal/events" className="flex items-center gap-3 px-5 py-3 hover:bg-surface-2">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-center text-primary">
+                    <span className="text-[10px] font-bold uppercase leading-none">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                    <span className="text-[16px] font-bold leading-none">{d.getDate()}</span>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13.5px] font-semibold">{e.title}</span>
+                    <span className="block truncate text-[12px] text-muted">{e.venue}</span>
+                  </span>
+                  {going && <Pill tone="success">Going</Pill>}
+                </Link>
+              );
+            })}
+          </div>
+        </Card>
       </div>
     </>
   );
@@ -628,17 +688,3 @@ function ActionCard({ href, icon: Icon, title, body, cta, highlight, disabled }:
   return disabled ? inner : <Link href={href}>{inner}</Link>;
 }
 
-function SoonCard({ items }: { items: { icon: typeof Users; label: string }[] }) {
-  return (
-    <Card className="border-dashed p-5">
-      <p className="text-[12px] font-semibold uppercase tracking-wider text-muted">Coming in Phase 2</p>
-      <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-        {items.map((i) => (
-          <div key={i.label} className="flex items-center gap-2.5 text-[13px] text-muted">
-            <i.icon className="h-4 w-4" /> {i.label}
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}

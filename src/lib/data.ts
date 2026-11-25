@@ -1,4 +1,13 @@
 import type {
+  AlumniProfile,
+  DmMessage,
+  DmThread,
+  GroupPost,
+  Invite,
+  Job,
+  PrivateField,
+  VaaEvent,
+  Visibility,
   AuditEntry,
   Campus,
   Consent,
@@ -893,7 +902,356 @@ const seedAudit: AuditEntry[] = [
   { id: "a6", at: ago(12), actorId: "cad1", action: "Exported report", target: "Malad – data completeness", campusId: "c01", category: "data_access", detail: "Reason: monthly review with principal" },
 ];
 
-export const STATE_VERSION = 3;
+
+/* ============================ Phase 2 seed data ============================ */
+
+/** A date `days` after 25 Nov 2026 at `hourIST` (India is UTC+5:30) */
+const ahead = (days: number, hourIST = 18) =>
+  new Date(Date.parse("2026-11-25T00:00:00.000Z") + days * 86400_000 + (hourIST * 60 - 330) * 60_000).toISOString();
+
+export const defaultPrivacy: AlumniProfile["privacy"] = {
+  email: "private",
+  mobile: "private",
+  company: "alumni",
+  city: "alumni",
+  work: "alumni",
+  education: "alumni",
+};
+
+export const visibilityLabels: Record<Visibility, string> = {
+  alumni: "All verified alumni",
+  batch: "My batch only",
+  private: "Only me",
+};
+
+export const privateFieldLabels: Record<PrivateField, string> = {
+  email: "Email address",
+  mobile: "Mobile number",
+  company: "Current company",
+  city: "City",
+  work: "Work history",
+  education: "Higher education",
+};
+
+function emptyProfile(u: User): AlumniProfile {
+  const thisYear = 2026;
+  return {
+    work: u.company ? [{ id: `w-${u.id}`, company: u.company, title: u.title ?? "", from: Math.min(thisYear, (u.batch ?? 2015) + 6) }] : [],
+    education: u.college ? [{ id: `e-${u.id}`, institution: u.college, degree: u.course ?? "", from: (u.batch ?? 2015), to: (u.batch ?? 2015) + 4 }] : [],
+    achievements: [],
+    skills: [],
+    privacy: { ...defaultPrivacy },
+    openTo: { mentoring: activeMentor(u), hiring: false, speaking: false },
+  };
+}
+
+function activeMentor(u: User) {
+  return !!u.badges?.some((b) => b.type === "Mentor" && b.status === "active");
+}
+
+/* Extra verified alumni so the directory feels real */
+const dirFirst = ["Aditi", "Rahul", "Simran", "Nikhil", "Fatima", "Kunal", "Isha", "Varun", "Ananya", "Siddharth", "Pooja", "Aman", "Tanvi", "Yash", "Nandini", "Harsh", "Sara", "Dev", "Ritika", "Omkar", "Shreya", "Kartik", "Mihika", "Neil"];
+const dirLast = ["Bhatia", "Menon", "Chopra", "Deshpande", "Ansari", "Sethi", "Malhotra", "Iyer", "Banerjee", "Reddy", "Gokhale", "Verma", "Saxena", "Shetty", "Rao", "Thakur", "Fernandes", "Mistry", "Ghosh", "Pawar", "Naidu", "Jain", "Kale", "D'Costa"];
+const dirJobs: [string, string, string, string, string][] = [
+  // company, title, city, country, field
+  ["Tata Consultancy Services", "Consultant", "Pune", "India", "IT services"],
+  ["HDFC Bank", "Relationship Manager", "Mumbai", "India", "Banking"],
+  ["Amazon", "Product Manager", "Seattle", "United States", "Product management"],
+  ["Zomato", "Growth Lead", "Gurugram", "India", "Marketing"],
+  ["McKinsey & Company", "Associate", "London", "United Kingdom", "Consulting"],
+  ["Apollo Hospitals", "Physiotherapist", "Chennai", "India", "Healthcare"],
+  ["Ogilvy", "Copywriter", "Mumbai", "India", "Advertising"],
+  ["Infosys", "Software Engineer", "Bengaluru", "India", "Software engineering"],
+  ["Emirates", "Cabin Services Manager", "Dubai", "United Arab Emirates", "Aviation"],
+  ["Accenture", "Analyst", "Toronto", "Canada", "Consulting"],
+  ["Self-employed", "Architect", "Mumbai", "India", "Architecture"],
+  ["Razorpay", "Backend Engineer", "Bengaluru", "India", "Software engineering"],
+  ["Khaitan & Co", "Associate Lawyer", "Mumbai", "India", "Law"],
+  ["Nykaa", "Brand Manager", "Mumbai", "India", "Marketing"],
+  ["Deutsche Bank", "Analyst", "Frankfurt", "Germany", "Banking"],
+  ["Byju's", "Content Lead", "Bengaluru", "India", "Education"],
+  ["Unilever", "Supply Chain Manager", "Singapore", "Singapore", "Operations"],
+  ["Times of India", "Journalist", "Mumbai", "India", "Media"],
+  ["Mahindra", "Design Engineer", "Pune", "India", "Engineering"],
+  ["Fortis", "Dentist", "Mumbai", "India", "Healthcare"],
+  ["Goldman Sachs", "Associate", "Bengaluru", "India", "Banking"],
+  ["Freshworks", "UX Researcher", "Chennai", "India", "Product design"],
+  ["Monash University", "PhD Candidate", "Melbourne", "Australia", "Research"],
+  ["Dream11", "Data Analyst", "Mumbai", "India", "Data science"],
+];
+const dirColleges: [string, string][] = [
+  ["Mumbai University", "B.Com"], ["St. Xavier's College", "BA Economics"], ["NMIMS", "BBA"], ["VIT Vellore", "B.Tech"],
+  ["Symbiosis", "BBA LLB"], ["University of Warwick", "BSc Management"], ["Manipal Institute of Technology", "B.Tech"], ["Christ University", "BA Psychology"],
+];
+const dirCampusIdx = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 4, 5, 6, 10, 11, 0, 0, 1, 16, 0, 2];
+
+{
+  const rnd = mulberry32(2026);
+  dirFirst.forEach((first, i) => {
+    const [company, title, city, country, field] = dirJobs[i];
+    const [college, course] = dirColleges[i % dirColleges.length];
+    const batch = i < 6 ? [2016, 2016, 2006, 2006, 2013, 2016][i] : 2008 + Math.floor(rnd() * 17);
+    const id = `dir${i + 1}`;
+    const u: User = {
+      id,
+      name: `${first} ${dirLast[i]}`,
+      role: "ALU",
+      campusIds: [campuses[dirCampusIdx[i]].id],
+      email: `${first.toLowerCase()}.${dirLast[i].toLowerCase().replace(/[^a-z]/g, "")}@example.com`,
+      mobile: country === "India" ? `+91 9${String(800000000 + Math.floor(rnd() * 99999999)).slice(0, 4)} ${String(10000 + Math.floor(rnd() * 89999))}` : "+1 555 010 0000",
+      batch,
+      college,
+      course,
+      country,
+      city,
+      company,
+      title,
+      field,
+      badges: [],
+    };
+    u.profile = emptyProfile(u);
+    if (i % 3 === 0) u.profile.privacy.company = "batch";
+    if (i % 5 === 0) u.profile.privacy.city = "private";
+    if (i % 4 === 1) u.profile.openTo.hiring = true;
+    seedUsers.push(u);
+  });
+}
+
+/* Full profiles for the main personas */
+const richProfiles: Record<string, Partial<AlumniProfile>> = {
+  alu7: {
+    headline: "Director of Product at Flipkart · Batch of 2006, Malad",
+    work: [
+      { id: "w71", company: "Flipkart", title: "Director, Product", from: 2019 },
+      { id: "w72", company: "Myntra", title: "Senior Product Manager", from: 2015, to: 2019 },
+      { id: "w73", company: "Infosys", title: "Business Analyst", from: 2012, to: 2015 },
+    ],
+    education: [
+      { id: "e71", institution: "Narsee Monjee College", degree: "B.Com", from: 2006, to: 2009 },
+      { id: "e72", institution: "IIM Indore", degree: "MBA", from: 2010, to: 2012 },
+    ],
+    achievements: ["Led Flipkart's Big Billion Days checkout redesign (2022)", "VIBGYOR Malad House Captain, 2005–06"],
+    skills: ["Product strategy", "E-commerce", "Team leadership"],
+    linkedin: "linkedin.com/in/rohan-gupta-demo",
+    resumeName: "Rohan_Gupta_CV_2026.pdf",
+    openTo: { mentoring: false, hiring: true, speaking: true },
+  },
+  alu1: {
+    work: [
+      { id: "w11", company: "Google", title: "Software Engineer", from: 2023 },
+      { id: "w12", company: "Bloomberg", title: "Software Engineering Intern", from: 2022, to: 2022 },
+    ],
+    education: [{ id: "e11", institution: "Imperial College London", degree: "MEng Computing", from: 2016, to: 2020 }],
+    achievements: ["Dean's List, Imperial (2019)", "VIBGYOR Malad science fair winner, 2015"],
+    skills: ["Python", "Distributed systems", "UCAS applications"],
+    openTo: { mentoring: true, hiring: false, speaking: true },
+  },
+  alu5: {
+    achievements: ["All-India rank 34, CA Final (2019)"],
+    skills: ["Audit", "Taxation", "CUET guidance"],
+    openTo: { mentoring: true, hiring: true, speaking: false },
+  },
+};
+
+seedUsers.forEach((u) => {
+  if (u.role !== "ALU" || u.profile) return;
+  const base = emptyProfile(u);
+  const extra = richProfiles[u.id];
+  u.profile = extra ? { ...base, ...extra, privacy: { ...base.privacy } } : base;
+});
+// Sneha (pending) can start her profile while she waits
+{
+  const sneha = seedUsers.find((u) => u.id === "alp1")!;
+  sneha.profile = { ...emptyProfile(sneha), headline: "Marketing, Dubai", privacy: { ...defaultPrivacy } };
+}
+
+export const seedJobs: Job[] = [
+  {
+    id: "job1",
+    title: "Associate Product Manager",
+    company: "Flipkart",
+    location: "Bengaluru",
+    type: "Full-time",
+    remote: false,
+    description: "Join the checkout team. 0–2 years' experience, strong analytical skills. VIBGYOR alumni referrals get a guaranteed first-round interview.",
+    postedBy: "alu7",
+    campusId: "c01",
+    forStudents: false,
+    status: "approved",
+    at: ago(70),
+    decidedBy: "cad1",
+    interested: [{ userId: "dir1", at: ago(30) }],
+  },
+  {
+    id: "job2",
+    title: "Summer audit internship (Class 12 / first-year)",
+    company: "Deloitte",
+    location: "Mumbai",
+    type: "Internship",
+    remote: false,
+    description: "Four-week job-shadowing programme in May. Students apply through their campus career counsellor; parent consent is needed.",
+    postedBy: "alu5",
+    campusId: "c01",
+    forStudents: true,
+    status: "approved",
+    at: ago(120),
+    decidedBy: "cad1",
+    interested: [],
+  },
+  {
+    id: "job3",
+    title: "Backend Engineer (Go)",
+    company: "Razorpay",
+    location: "Bengaluru",
+    type: "Full-time",
+    remote: true,
+    description: "Payments infrastructure. 2–5 years with Go or Java. Hybrid or remote within India.",
+    postedBy: "dir12",
+    campusId: "c03",
+    forStudents: false,
+    status: "approved",
+    at: ago(200),
+    decidedBy: "gao1",
+    interested: [],
+  },
+  {
+    id: "job4",
+    title: "Design internship – UX research",
+    company: "Swiggy",
+    location: "Bengaluru · remote",
+    type: "Internship",
+    remote: true,
+    description: "Eight-week remote internship for design undergraduates. Portfolio required.",
+    postedBy: "alu4",
+    campusId: "c17",
+    forStudents: false,
+    status: "approved",
+    at: ago(260),
+    decidedBy: "gao1",
+    interested: [],
+  },
+  {
+    id: "job5",
+    title: "Growth Marketing Lead",
+    company: "Nykaa",
+    location: "Mumbai",
+    type: "Full-time",
+    remote: false,
+    description: "Own performance marketing for the fashion vertical. 5+ years. Contact me on [phone hidden] for a referral.",
+    postedBy: "dir14",
+    campusId: "c01",
+    forStudents: false,
+    status: "pending",
+    at: ago(5),
+    interested: [],
+  },
+];
+
+export const seedEvents: VaaEvent[] = [
+  {
+    id: "ev1",
+    title: "Malad Alumni Reunion 2026",
+    kind: "Reunion",
+    description: "Batches 2004–2016 come home. Campus tour, the old staffroom crew, dinner on the main lawn. Partners welcome (+1).",
+    campusIds: ["c01"],
+    audience: ["ALU"],
+    start: ahead(25, 18),
+    end: ahead(25, 22),
+    venue: "VIBGYOR High, Malad West – main lawn",
+    online: false,
+    capacity: 250,
+    createdBy: "cad1",
+    createdAt: ago(120),
+    rsvps: [
+      { userId: "alu5", status: "going", at: ago(100), guests: 1 },
+      { userId: "dir1", status: "going", at: ago(90) },
+      { userId: "dir2", status: "maybe", at: ago(80) },
+      { userId: "dir3", status: "going", at: ago(60), guests: 1 },
+    ],
+  },
+  {
+    id: "ev2",
+    title: "Studying in the UK: alumni panel",
+    kind: "Webinar",
+    description: "Priya (Imperial) and two other alumni explain UCAS, personal statements, admission tests and costs. Students and parents welcome; questions are moderated by the campus.",
+    campusIds: "all",
+    audience: ["ALU", "STU", "PAR"],
+    start: ahead(9, 18),
+    end: ahead(9, 19),
+    venue: "Online – link sent to registered attendees",
+    online: true,
+    capacity: 500,
+    createdBy: "gao1",
+    createdAt: ago(150),
+    rsvps: [
+      { userId: "alu1", status: "going", at: ago(140) },
+      { userId: "stu2", status: "going", at: ago(40) },
+      { userId: "par2", status: "going", at: ago(39) },
+    ],
+  },
+  {
+    id: "ev3",
+    title: "Bengaluru chapter meetup",
+    kind: "Meetup",
+    description: "Informal evening for alumni living in Bengaluru, all campuses. First drink on the chapter.",
+    campusIds: "all",
+    audience: ["ALU"],
+    start: ahead(16, 19),
+    end: ahead(16, 22),
+    venue: "Toit, Indiranagar, Bengaluru",
+    online: false,
+    capacity: 60,
+    createdBy: "gao1",
+    createdAt: ago(48),
+    rsvps: [
+      { userId: "alu7", status: "going", at: ago(20) },
+      { userId: "alu4", status: "going", at: ago(18) },
+    ],
+  },
+  {
+    id: "ev4",
+    title: "Career talk: commerce after Class 12",
+    kind: "Career talk",
+    description: "Arjun (SRCC, CA) talks Class 11–12 students through CUET, B.Com vs BBA and the CA route. In the auditorium during school hours; teachers present.",
+    campusIds: ["c01"],
+    audience: ["STU", "PAR"],
+    start: ahead(6, 11),
+    end: ahead(6, 12),
+    venue: "VIBGYOR High, Malad – auditorium",
+    online: false,
+    capacity: 180,
+    createdBy: "cad1",
+    createdAt: ago(30),
+    rsvps: [],
+  },
+];
+
+export const seedPosts: GroupPost[] = [
+  { id: "gp1", groupId: "batch:c01:2006", authorId: "alu7", text: "20 years since we left Malad! Who's coming to the reunion on 20 Dec? Let's get the whole 2006 batch there.", at: ago(26), likes: ["dir3"] },
+  { id: "gp2", groupId: "batch:c01:2006", authorId: "dir3", text: "Count me in. I still have the class photo from the farewell, will bring it 📸", at: ago(22), likes: ["alu7"] },
+  { id: "gp3", groupId: "campus:c01", authorId: "cad1", text: "Reminder from the Alumni office: the Malad reunion RSVP closes on 15 December. Spouses welcome.", at: ago(50), likes: ["alu5", "dir1"] },
+  { id: "gp4", groupId: "campus:c01", authorId: "alu5", text: "Deloitte Mumbai is running a student job-shadowing week in May; I've posted it on the jobs board for current students.", at: ago(110), likes: [] },
+  { id: "gp5", groupId: "batch:c01:2016", authorId: "alu1", text: "Anyone from 2016 in London this winter? Planning a small dinner before Christmas.", at: ago(75), likes: ["dir1", "dir2"] },
+];
+
+export const seedDmThreads: DmThread[] = [{ id: "dm1", members: ["alu7", "alu5"], createdAt: ago(40) }];
+export const seedDms: DmMessage[] = [
+  { id: "dmm1", threadId: "dm1", senderId: "alu5", text: "Hi Rohan, saw your APM opening. A junior from my CA batch is interested; can I refer her?", at: ago(40) },
+  { id: "dmm2", threadId: "dm1", senderId: "alu7", text: "Absolutely Arjun, ask her to mark interest on the jobs board and I'll pick it up.", at: ago(38) },
+];
+
+export const seedInvites: Invite[] = [
+  ...["alu5", "alu5", "alu5", "alu5", "alu5", "alu5", "alu1", "alu1", "alu1", "alu1", "dir1", "dir1", "dir1", "alu7", "alu7", "dir3", "dir3", "alu2"].map((by, i) => ({
+    id: `inv${i + 1}`,
+    by,
+    to: `batchmate${i + 1}@example.com`,
+    channel: (i % 2 ? "whatsapp" : "email") as Invite["channel"],
+    at: ago(24 * (i + 2)),
+    joined: i % 3 !== 2,
+  })),
+];
+
+export const STATE_VERSION = 4;
 
 export function createSeedState(): State {
   return {
@@ -934,6 +1292,12 @@ export function createSeedState(): State {
     audit: structuredClone(seedAudit),
     campusMinClass: Object.fromEntries(campuses.map((c) => [c.id, 8])),
     pendingOtps: {},
+    jobs: structuredClone(seedJobs),
+    events: structuredClone(seedEvents),
+    posts: structuredClone(seedPosts),
+    dmThreads: structuredClone(seedDmThreads),
+    dms: structuredClone(seedDms),
+    invites: structuredClone(seedInvites),
   };
 }
 

@@ -63,6 +63,112 @@ export interface User {
   dob?: string;
   // Parents
   childIds?: string[];
+  // Phase 2: rich alumni profile (B1–B8)
+  profile?: AlumniProfile;
+}
+
+/* ---------------------------- Phase 2 types ---------------------------- */
+
+/** Who can see a profile field (A10 per-field privacy) */
+export type Visibility = "alumni" | "batch" | "private";
+export type PrivateField = "email" | "mobile" | "company" | "city" | "work" | "education";
+
+export interface WorkItem {
+  id: string;
+  company: string;
+  title: string;
+  from: number;
+  to?: number; // undefined = present
+}
+
+export interface EducationItem {
+  id: string;
+  institution: string;
+  degree: string;
+  from: number;
+  to: number;
+}
+
+export interface AlumniProfile {
+  headline?: string;
+  work: WorkItem[];
+  education: EducationItem[];
+  achievements: string[];
+  skills: string[];
+  linkedin?: string;
+  resumeName?: string;
+  privacy: Record<PrivateField, Visibility>;
+  openTo: { mentoring: boolean; hiring: boolean; speaking: boolean };
+}
+
+export type JobType = "Full-time" | "Internship" | "Part-time" | "Contract";
+
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: JobType;
+  remote: boolean;
+  description: string;
+  postedBy: string;
+  campusId: string; // approving campus
+  forStudents: boolean; // visible to students (internships / shadowing)
+  status: "pending" | "approved" | "rejected" | "closed";
+  at: string;
+  decidedBy?: string;
+  interested: { userId: string; at: string; note?: string }[];
+}
+
+export type RsvpStatus = "going" | "maybe" | "no";
+
+export interface VaaEvent {
+  id: string;
+  title: string;
+  kind: "Reunion" | "Webinar" | "Career talk" | "Meetup";
+  description: string;
+  campusIds: string[] | "all";
+  audience: ("ALU" | "STU" | "PAR")[];
+  start: string;
+  end: string;
+  venue: string;
+  online: boolean;
+  capacity: number;
+  createdBy: string;
+  createdAt: string;
+  rsvps: { userId: string; status: RsvpStatus; at: string; guests?: number }[];
+}
+
+export interface GroupPost {
+  id: string;
+  groupId: string; // "campus:c01" or "batch:c01:2016"
+  authorId: string;
+  text: string;
+  at: string;
+  likes: string[];
+}
+
+export interface DmThread {
+  id: string;
+  members: [string, string];
+  createdAt: string;
+}
+
+export interface DmMessage {
+  id: string;
+  threadId: string;
+  senderId: string;
+  text: string;
+  at: string;
+}
+
+export interface Invite {
+  id: string;
+  by: string;
+  to: string;
+  channel: "email" | "whatsapp";
+  at: string;
+  joined: boolean;
 }
 
 export type ConsentPurpose = "platform" | "mentor" | "mcz";
@@ -189,7 +295,7 @@ export interface AuditEntry {
   target: string;
   campusId?: string;
   detail?: string;
-  category: "consent" | "safeguarding" | "verification" | "broadcast" | "data_access" | "auth" | "admin";
+  category: "consent" | "safeguarding" | "verification" | "broadcast" | "data_access" | "auth" | "admin" | "community";
 }
 
 export interface State {
@@ -207,4 +313,11 @@ export interface State {
   audit: AuditEntry[];
   campusMinClass: Record<string, number>;
   pendingOtps: Record<string, string>; // key -> code
+  // Phase 2
+  jobs: Job[];
+  events: VaaEvent[];
+  posts: GroupPost[];
+  dmThreads: DmThread[];
+  dms: DmMessage[];
+  invites: Invite[];
 }

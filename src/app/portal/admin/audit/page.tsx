@@ -17,6 +17,7 @@ const catTone: Record<AuditEntry["category"], "primary" | "success" | "warning" 
   data_access: "warning",
   auth: "neutral",
   admin: "neutral",
+  community: "primary",
 };
 
 function Inner() {
@@ -60,6 +61,7 @@ function Inner() {
             <option value="verification">Verification</option>
             <option value="broadcast">Broadcast</option>
             <option value="data_access">Data access</option>
+            <option value="community">Community</option>
             <option value="auth">Sign-in</option>
             <option value="admin">Settings</option>
           </Select>

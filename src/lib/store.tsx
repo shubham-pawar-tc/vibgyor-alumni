@@ -4,6 +4,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { createSeedState, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
 import { maskContacts } from "./mask";
 import type {
+  AlumniProfile,
+  Job,
+  RsvpStatus,
+  VaaEvent,
   AuditEntry,
   BadgeType,
   Broadcast,
@@ -118,6 +122,19 @@ interface Ctx {
   // broadcast
   createBroadcast: (b: Omit<Broadcast, "id" | "createdAt" | "status" | "stats">) => void;
   setMinClass: (campusId: string, cls: number, actorId: string) => void;
+  // Phase 2 – community
+  updateProfile: (userId: string, profile: Partial<AlumniProfile>, fields?: Partial<User>) => void;
+  postJob: (j: Omit<Job, "id" | "at" | "status" | "interested" | "decidedBy">) => void;
+  decideJob: (id: string, approve: boolean, actorId: string) => void;
+  closeJob: (id: string, actorId: string) => void;
+  markInterest: (jobId: string, userId: string, note?: string) => void;
+  createEvent: (e: Omit<VaaEvent, "id" | "createdAt" | "rsvps">) => void;
+  rsvp: (eventId: string, userId: string, status: RsvpStatus, guests?: number) => void;
+  addPost: (groupId: string, authorId: string, text: string) => void;
+  toggleLike: (postId: string, userId: string) => void;
+  openDm: (a: string, b: string) => string;
+  sendDm: (threadId: string, senderId: string, text: string) => void;
+  sendInvite: (by: string, to: string, channel: "email" | "whatsapp") => void;
 }
 
 const StoreContext = createContext<Ctx | null>(null);
@@ -740,6 +757,109 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setMinClass: (campusId, cls, actorId) => {
         setState((s) => ({ ...s, campusMinClass: { ...s.campusMinClass, [campusId]: cls } }));
         log({ actorId, action: "Age gate changed", target: campusId, campusId, category: "admin", detail: `Minimum class set to ${cls} (CS-1)` });
+      },
+
+      /* ---------------- Phase 2: community ---------------- */
+      updateProfile: (userId, profile, fields) => {
+        setState((s) => ({
+          ...s,
+          users: s.users.map((u) => (u.id === userId ? { ...u, ...fields, profile: u.profile || Object.keys(profile).length ? { ...u.profile!, ...profile } : u.profile } : u)),
+        }));
+      },
+      postJob: (j) => {
+        const u = getUser(j.postedBy);
+        const masked = maskContacts(j.description).text; // CS-6: replies go through VAA, not personal numbers
+        setState((s) => ({ ...s, jobs: [{ ...j, description: masked, id: uid("job"), at: now(), status: "pending", interested: [] }, ...s.jobs] }));
+        log({ actorId: j.postedBy, action: "Job posted for approval", target: `${j.title} · ${j.company}`, campusId: j.campusId, category: "community", detail: j.forStudents ? "Requested for students too" : undefined });
+        pushOutbox({ channel: "email", to: `${u?.name} · ${u?.email}`, toUserId: u?.id, body: `Subject: We've received your job post\n\n"${j.title}" will appear on the VAA jobs board once your campus alumni office approves it (usually within 2 working days).` });
+      },
+      decideJob: (id, approve, actorId) => {
+        const j = stateRef.current.jobs.find((x) => x.id === id);
+        if (!j) return;
+        const poster = getUser(j.postedBy);
+        setState((s) => ({ ...s, jobs: s.jobs.map((x) => (x.id === id ? { ...x, status: approve ? "approved" : "rejected", decidedBy: actorId } : x)) }));
+        log({ actorId, action: approve ? "Job approved" : "Job rejected", target: `${j.title} · ${j.company}`, campusId: j.campusId, category: "community" });
+        if (poster)
+          pushOutbox({
+            channel: "email",
+            to: `${poster.name} · ${poster.email}`,
+            toUserId: poster.id,
+            body: approve ? `Subject: Your job is live\n\n"${j.title}" is now on the VAA jobs board.` : `Subject: Your job post needs changes\n\n"${j.title}" wasn't approved. Common reasons: personal contact details in the description, or missing company details. Please edit and resubmit.`,
+          });
+      },
+      closeJob: (id, actorId) => {
+        setState((s) => ({ ...s, jobs: s.jobs.map((x) => (x.id === id ? { ...x, status: "closed" } : x)) }));
+        const j = stateRef.current.jobs.find((x) => x.id === id);
+        log({ actorId, action: "Job closed", target: j?.title ?? id, campusId: j?.campusId, category: "community" });
+      },
+      markInterest: (jobId, userId, note) => {
+        const j = stateRef.current.jobs.find((x) => x.id === jobId);
+        const u = getUser(userId);
+        if (!j || !u) return;
+        setState((s) => ({ ...s, jobs: s.jobs.map((x) => (x.id === jobId ? { ...x, interested: [...x.interested.filter((i) => i.userId !== userId), { userId, at: now(), note }] } : x)) }));
+        if (u.role === "STU") {
+          // students never contact the employer directly: it goes to the campus career counsellor (CS-4)
+          const tch = stateRef.current.users.find((x) => x.role === "TCH" && x.campusIds.includes(u.campusIds[0]));
+          if (tch)
+            pushOutbox({ channel: "email", to: `${tch.name} · ${tch.email}`, toUserId: tch.id, body: `Subject: Student interest – ${j.title}\n\n${u.name} (Class ${u.className}) is interested in "${j.title}" at ${j.company}. Please check with the parent before passing the application on.` });
+          log({ actorId: userId, action: "Student interest sent to career counsellor", target: `${j.title} · ${j.company}`, campusId: u.campusIds[0], category: "community" });
+        } else {
+          const poster = getUser(j.postedBy);
+          if (poster)
+            pushOutbox({ channel: "email", to: `${poster.name} · ${poster.email}`, toUserId: poster.id, body: `Subject: ${u.name} is interested in ${j.title}\n\n${u.name} (Batch ${u.batch}, ${u.title ?? ""}${u.company ? " at " + u.company : ""}) marked interest.${note ? `\n\n"${note}"` : ""}\n\nReply from your VAA chats.` });
+        }
+      },
+      createEvent: (e) => {
+        setState((s) => ({ ...s, events: [{ ...e, id: uid("ev"), createdAt: now(), rsvps: [] }, ...s.events] }));
+        log({ actorId: e.createdBy, action: "Event created", target: e.title, campusId: e.campusIds === "all" ? undefined : e.campusIds[0], category: "community", detail: `${e.kind} · for ${e.audience.join(", ")}` });
+      },
+      rsvp: (eventId, userId, status, guests) => {
+        const ev = stateRef.current.events.find((x) => x.id === eventId);
+        const u = getUser(userId);
+        setState((s) => ({
+          ...s,
+          events: s.events.map((x) => (x.id === eventId ? { ...x, rsvps: [...x.rsvps.filter((r) => r.userId !== userId), { userId, status, at: now(), guests }] } : x)),
+        }));
+        if (ev && u && status === "going")
+          pushOutbox({
+            channel: u.mobile.startsWith("+91") ? "whatsapp" : "email",
+            to: `${u.name}`,
+            toUserId: u.id,
+            body: `You're registered for ${ev.title}, ${new Date(ev.start).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}. ${ev.online ? "We'll send the joining link an hour before." : `Venue: ${ev.venue}.`}`,
+          });
+      },
+      addPost: (groupId, authorId, text) => {
+        setState((s) => ({ ...s, posts: [{ id: uid("gp"), groupId, authorId, text, at: now(), likes: [] }, ...s.posts] }));
+      },
+      toggleLike: (postId, userId) => {
+        setState((s) => ({
+          ...s,
+          posts: s.posts.map((p) => (p.id === postId ? { ...p, likes: p.likes.includes(userId) ? p.likes.filter((l) => l !== userId) : [...p.likes, userId] } : p)),
+        }));
+      },
+      openDm: (a, b) => {
+        const existing = stateRef.current.dmThreads.find((t) => t.members.includes(a) && t.members.includes(b));
+        if (existing) return existing.id;
+        const id = uid("dm");
+        setState((s) => ({ ...s, dmThreads: [{ id, members: [a, b], createdAt: now() }, ...s.dmThreads] }));
+        return id;
+      },
+      sendDm: (threadId, senderId, text) => {
+        const t = stateRef.current.dmThreads.find((x) => x.id === threadId);
+        setState((s) => ({ ...s, dms: [...s.dms, { id: uid("dmm"), threadId, senderId, text: text.trim(), at: now() }] }));
+        const other = t ? getUser(t.members.find((m) => m !== senderId)!) : undefined;
+        if (other) pushOutbox({ channel: "push", to: other.name, toUserId: other.id, body: `${getUser(senderId)?.name}: ${text.trim().slice(0, 80)}` });
+      },
+      sendInvite: (by, to, channel) => {
+        const u = getUser(by);
+        setState((s) => ({ ...s, invites: [{ id: uid("inv"), by, to, channel, at: now(), joined: false }, ...s.invites] }));
+        pushOutbox({
+          channel,
+          to,
+          body: `${u?.name} (VIBGYOR ${u?.batch ? `Batch ${u.batch}` : "alumni"}) invited you to the VIBGYOR Alumni Association. Join or claim your profile: vaa.vibgyor.in/join?ref=${by}`,
+          link: { label: "Join VAA", href: "/join" },
+        });
+        log({ actorId: by, action: "Invited a friend", target: channel === "email" ? to.replace(/(.).+@/, "$1***@") : "WhatsApp contact", campusId: u?.campusIds[0], category: "community" });
       },
     };
   }, [state, hydrated, user, log, pushOutbox]);
