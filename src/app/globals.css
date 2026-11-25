@@ -1,26 +1,154 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   VIBGYOR Alumni Platform – design tokens
+   Light theme by default; dark via prefers-color-scheme or data-theme.
+------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --bg: #f6f6fb;
+  --surface: #ffffff;
+  --surface-2: #f0f0f7;
+  --border: #e3e3ee;
+  --text: #15152a;
+  --muted: #5c5c78;
+  --primary: #4b2bbf;
+  --primary-hover: #3d22a0;
+  --primary-fg: #ffffff;
+  --primary-soft: #ece8fb;
+  --success: #17794d;
+  --success-soft: #e3f5ec;
+  --warning: #9a5600;
+  --warning-soft: #fdf1df;
+  --danger: #c0262d;
+  --danger-soft: #fde8e8;
+  --info: #1d5fbf;
+  --info-soft: #e5effc;
+  --shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 16px rgb(20 20 40 / 0.06);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --v: #8b2fc9;
+  --i: #4b2bbf;
+  --b: #1e6fd9;
+  --g: #1aa35a;
+  --y: #f2c21b;
+  --o: #f27a1a;
+  --r: #e0322b;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --bg: #0d0d17;
+    --surface: #161625;
+    --surface-2: #1e1e31;
+    --border: #2b2b43;
+    --text: #ececf6;
+    --muted: #a3a3bf;
+    --primary: #a08cf7;
+    --primary-hover: #b6a6fa;
+    --primary-fg: #0d0d17;
+    --primary-soft: #272046;
+    --success: #4fd394;
+    --success-soft: #12301f;
+    --warning: #f2b45a;
+    --warning-soft: #33240f;
+    --danger: #f27b7f;
+    --danger-soft: #3a1618;
+    --info: #79aef5;
+    --info-soft: #14253d;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
   }
 }
 
+:root[data-theme="dark"] {
+  --bg: #0d0d17;
+  --surface: #161625;
+  --surface-2: #1e1e31;
+  --border: #2b2b43;
+  --text: #ececf6;
+  --muted: #a3a3bf;
+  --primary: #a08cf7;
+  --primary-hover: #b6a6fa;
+  --primary-fg: #0d0d17;
+  --primary-soft: #272046;
+  --success: #4fd394;
+  --success-soft: #12301f;
+  --warning: #f2b45a;
+  --warning-soft: #33240f;
+  --danger: #f27b7f;
+  --danger-soft: #3a1618;
+  --info: #79aef5;
+  --info-soft: #14253d;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: var(--shadow);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+.spectrum {
+  background: linear-gradient(
+    90deg,
+    var(--v),
+    var(--i),
+    var(--b),
+    var(--g),
+    var(--y),
+    var(--o),
+    var(--r)
+  );
+}
+
+.spectrum-text {
+  background: linear-gradient(90deg, var(--v), var(--b), var(--g), var(--o), var(--r));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-in {
+  animation: slide-in 0.2s ease-out;
 }
