@@ -65,6 +65,9 @@ export interface User {
   childIds?: string[];
   // Phase 2: rich alumni profile (B1–B8)
   profile?: AlumniProfile;
+  // Phase 3
+  deactivated?: boolean;
+  mergedFrom?: string[];
 }
 
 /* ---------------------------- Phase 2 types ---------------------------- */
@@ -208,8 +211,10 @@ export interface Message {
 
 export interface Report {
   id: string;
-  kind: "message" | "profile";
+  kind: "message" | "profile" | "post" | "job";
   messageId?: string;
+  postId?: string;
+  jobId?: string;
   convId?: string;
   subjectUserId: string; // whose content is reported
   reporterId: string | "system";
@@ -320,4 +325,66 @@ export interface State {
   dmThreads: DmThread[];
   dms: DmMessage[];
   invites: Invite[];
+  // Phase 3
+  engagements: EngagementEntry[];
+  dataRequests: DataRequest[];
+  masters: Record<MasterKind, MasterItem[]>;
+  permissions: Record<Capability, Role[]>;
 }
+
+/* ---------------------------- Phase 3 types ---------------------------- */
+
+export type EngagementMode = "Call" | "Email" | "Meeting" | "Event" | "WhatsApp";
+export type EngagementCategory = "Mentoring" | "Event" | "Placement" | "Fundraising" | "Data update" | "General";
+
+/** K1 engagement activity log */
+export interface EngagementEntry {
+  id: string;
+  alumniId: string;
+  staffId: string;
+  campusId: string;
+  mode: EngagementMode;
+  category: EngagementCategory;
+  note: string;
+  at: string;
+  source: "manual" | "bulk";
+}
+
+/** A11 / CS-11 / CS-15 data-subject requests */
+export interface DataRequest {
+  id: string;
+  type: "access" | "correction" | "deletion" | "complaint";
+  subjectId: string; // whose data
+  requesterId: string; // who asked (the person, or the parent for a minor)
+  campusId: string;
+  details: string;
+  at: string;
+  due: string;
+  status: "open" | "in_progress" | "done" | "rejected";
+  resolution?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+}
+
+export type MasterKind = "college" | "programme" | "industry";
+
+/** L5 data standards */
+export interface MasterItem {
+  id: string;
+  name: string;
+  aliases: string[];
+}
+
+/** A6 permissions matrix */
+export type Capability =
+  | "records.view"
+  | "records.edit"
+  | "records.export"
+  | "verify"
+  | "chats.read"
+  | "broadcast.send"
+  | "content.moderate"
+  | "duplicates.merge"
+  | "masters.edit"
+  | "requests.handle"
+  | "engagement.log";

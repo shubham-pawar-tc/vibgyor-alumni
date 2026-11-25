@@ -47,7 +47,7 @@ function Chats() {
 
   if (!me) return null;
 
-  const people = state.users.filter((u) => u.role === "ALU" && u.id !== me.id && (!q || u.name.toLowerCase().includes(q.toLowerCase()))).slice(0, 8);
+  const people = state.users.filter((u) => u.role === "ALU" && !u.deactivated && u.id !== me.id && (!q || u.name.toLowerCase().includes(q.toLowerCase()))).slice(0, 8);
 
   return (
     <>

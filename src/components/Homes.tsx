@@ -461,7 +461,7 @@ export function StaffDashboard({ me }: { me: User }) {
 
   const pendingV = state.verifications.filter((v) => v.status === "pending" && inScope(v.campusId)).length;
   const pendingB = state.badgeRequests.filter((b) => b.status === "pending" && inScope(b.campusId)).length;
-  const openR = state.reports.filter((r) => r.status === "open" && inScope(r.campusId));
+  const openR = state.reports.filter((r) => r.kind === "message" && r.status === "open" && inScope(r.campusId));
   const students = state.users.filter((u) => u.role === "STU" && inScope(u.campusIds[0]) && u.studentStatus !== "not_eligible");
   const awaiting = students.filter((s) => s.studentStatus === "awaiting_consent").length;
   const verified = pop.filter((p) => p.verified).length;

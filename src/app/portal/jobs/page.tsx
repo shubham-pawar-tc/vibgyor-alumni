@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Briefcase, Building2, CheckCircle2, Clock, GraduationCap, MapPin, Plus, Search, ShieldCheck, Users } from "lucide-react";
 import { Gate } from "@/components/Gate";
+import { ReportButton } from "@/components/ReportButton";
 import { MaskedText, MaskPreview } from "@/components/MaskPreview";
 import { Avatar, Button, Callout, Card, Checkbox, Empty, Field, Input, Modal, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
 import { campusName } from "@/lib/data";
@@ -117,6 +118,7 @@ function Jobs() {
                     <p className="text-[13px] text-muted">{j.company}</p>
                   </div>
                   {mine ? statusPill[j.status] : <Pill>{j.type}</Pill>}
+                  {!mine && !student && <ReportButton kind="job" targetId={j.id} compact />}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-muted">
                   <span className="flex items-center gap-1">

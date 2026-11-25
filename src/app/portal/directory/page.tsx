@@ -27,7 +27,7 @@ function Directory() {
   const [field, setField] = useState("all");
   const [only, setOnly] = useState<"" | "hiring" | "mentor" | "mybatch">("");
 
-  const alumni = state.users.filter((u) => u.role === "ALU" && u.id !== me?.id);
+  const alumni = state.users.filter((u) => u.role === "ALU" && !u.deactivated && u.id !== me?.id);
   const opts = useMemo(
     () => ({
       batches: [...new Set(alumni.map((u) => u.batch!))].sort((a, b) => b - a),

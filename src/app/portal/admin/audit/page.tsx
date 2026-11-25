@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Download, Search } from "lucide-react";
 import { Button, Card, Field, Input, Modal, PageHeader, Pill, Req, Select, Textarea } from "@/components/ui";
-import { AdminOnly, useScope } from "@/components/admin";
+import { AdminOnly, NoPermission, useScope } from "@/components/admin";
 import { campusName } from "@/lib/data";
-import { useStore } from "@/lib/store";
+import { can, useStore } from "@/lib/store";
 import type { AuditEntry } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
 
@@ -43,9 +43,13 @@ function Inner() {
         title="Audit log"
         description="Every admin, consent, safeguarding and data-access action: who, what, when and why. Entries can't be edited."
         actions={
-          <Button variant="secondary" onClick={() => { setExportOpen(true); setExported(false); setReason(""); }}>
-            <Download className="h-4 w-4" /> Export
-          </Button>
+          can(state, me, "records.export") ? (
+            <Button variant="secondary" onClick={() => { setExportOpen(true); setExported(false); setReason(""); }}>
+              <Download className="h-4 w-4" /> Export
+            </Button>
+          ) : (
+            <NoPermission what="export data" />
+          )
         }
       />
       <Card className="mb-4 p-4">

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileText, History, Trash2, UserRoundPen } from "lucide-react";
+import { FileText, History } from "lucide-react";
 import { Avatar, Button, Callout, Card, CardHeader, Modal, PageHeader, Pill, Req, Switch } from "@/components/ui";
 import { StatusPill } from "@/components/Homes";
 import { campusName, consentPurposes } from "@/lib/data";
 import { hasConsent, latestConsent, useStore } from "@/lib/store";
+import { MyData } from "@/components/MyData";
 import type { ConsentPurpose } from "@/lib/types";
 import { firstName, formatDateTime } from "@/lib/utils";
 
@@ -16,9 +17,8 @@ const effects: Record<ConsentPurpose, string> = {
 };
 
 export default function ConsentCentre() {
-  const { me, state, setConsent, log } = useStore();
+  const { me, state, setConsent } = useStore();
   const [confirm, setConfirm] = useState<{ studentId: string; purpose: ConsentPurpose; grant: boolean } | null>(null);
-  const [requested, setRequested] = useState<string | null>(null);
   if (!me) return null;
 
   if (me.role !== "PAR")
@@ -102,33 +102,8 @@ export default function ConsentCentre() {
               </div>
             </Card>
 
-            <div className="grid gap-5 lg:grid-cols-2">
-              <Card>
-                <CardHeader title="Your child's data" subtitle="View, download, correct or delete" action={<Req ids="CS-11" />} />
-                <div className="grid gap-2 p-5 sm:grid-cols-3">
-                  {[
-                    { icon: Download, label: "Download", key: "access" },
-                    { icon: UserRoundPen, label: "Correct", key: "correction" },
-                    { icon: Trash2, label: "Delete", key: "deletion" },
-                  ].map((a) => (
-                    <Button
-                      key={a.key}
-                      variant="secondary"
-                      onClick={() => {
-                        log({ actorId: me.id, action: `Data ${a.key} request`, target: k.name, campusId: k.campusIds[0], category: "consent", detail: "Due in 30 days" });
-                        setRequested(a.label);
-                      }}
-                    >
-                      <a.icon className="h-4 w-4" /> {a.label}
-                    </Button>
-                  ))}
-                </div>
-                {requested && (
-                  <p className="px-5 pb-5 text-[13px] text-success">
-                    {requested} request logged. We&apos;ll respond by email within 30 days and you can track it here.
-                  </p>
-                )}
-              </Card>
+            <MyData subject={k} />
+            <div className="grid gap-5">
               <Card>
                 <CardHeader title="History" icon={<History className="h-[18px] w-[18px]" />} />
                 {history.length === 0 ? (

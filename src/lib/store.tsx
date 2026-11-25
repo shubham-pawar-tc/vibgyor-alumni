@@ -1,9 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { createSeedState, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
+import { createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
 import { maskContacts } from "./mask";
 import type {
+  Capability,
+  DataRequest,
+  EngagementEntry,
+  MasterKind,
+  Role,
   AlumniProfile,
   Job,
   RsvpStatus,
@@ -34,6 +39,11 @@ export function latestConsent(s: State, studentId: string, purpose: ConsentPurpo
   return s.consents
     .filter((c) => c.studentId === studentId && c.purpose === purpose)
     .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+}
+
+/** A6: does this user's role hold a capability in the (editable) permissions matrix? */
+export function can(s: State, u: User | undefined, cap: Capability) {
+  return !!u && (s.permissions?.[cap] ?? []).includes(u.role);
 }
 
 export function activeBadge(u: User | undefined, type: BadgeType) {
@@ -135,6 +145,20 @@ interface Ctx {
   openDm: (a: string, b: string) => string;
   sendDm: (threadId: string, senderId: string, text: string) => void;
   sendInvite: (by: string, to: string, channel: "email" | "whatsapp") => void;
+  // Phase 3 – administration
+  editUser: (userId: string, fields: Partial<User>, actorId: string) => void;
+  setDeactivated: (userId: string, off: boolean, actorId: string) => void;
+  logExport: (actorId: string, target: string, reason: string, campusId?: string) => void;
+  addEngagements: (entries: Omit<EngagementEntry, "id">[], actorId: string) => void;
+  mergeUsers: (keepId: string, dropId: string, chosen: Partial<User>, actorId: string) => void;
+  addMasterItem: (kind: MasterKind, name: string, actorId: string) => void;
+  mapValue: (kind: MasterKind, raw: string, itemId: string, actorId: string) => void;
+  removeAlias: (kind: MasterKind, itemId: string, alias: string) => void;
+  reportContent: (kind: "post" | "job" | "profile", targetId: string, reporterId: string, reason: string) => void;
+  resolveModeration: (reportId: string, action: "dismiss" | "remove" | "warn", actorId: string) => void;
+  submitDataRequest: (type: DataRequest["type"], subjectId: string, requesterId: string, details: string) => void;
+  updateDataRequest: (id: string, status: DataRequest["status"], actorId: string, resolution?: string) => void;
+  setPermission: (cap: Capability, role: Role, on: boolean, actorId: string) => void;
 }
 
 const StoreContext = createContext<Ctx | null>(null);
@@ -757,6 +781,151 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setMinClass: (campusId, cls, actorId) => {
         setState((s) => ({ ...s, campusMinClass: { ...s.campusMinClass, [campusId]: cls } }));
         log({ actorId, action: "Age gate changed", target: campusId, campusId, category: "admin", detail: `Minimum class set to ${cls} (CS-1)` });
+      },
+
+
+      /* ---------------- Phase 3: administration ---------------- */
+      editUser: (userId, fields, actorId) => {
+        const u = getUser(userId);
+        setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, ...fields } : x)) }));
+        log({ actorId, action: "Alumni record edited", target: u?.name ?? userId, campusId: u?.campusIds[0], category: "admin", detail: Object.keys(fields).join(", ") });
+      },
+      setDeactivated: (userId, off, actorId) => {
+        const u = getUser(userId);
+        setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, deactivated: off } : x)) }));
+        log({ actorId, action: off ? "Account deactivated" : "Account reactivated", target: u?.name ?? userId, campusId: u?.campusIds[0], category: "admin" });
+      },
+      logExport: (actorId, target, reason, campusId) =>
+        log({ actorId, action: "Exported data", target, campusId, category: "data_access", detail: `Reason: ${reason} (L3)` }),
+      addEngagements: (entries, actorId) => {
+        setState((s) => ({ ...s, engagements: [...entries.map((e) => ({ ...e, id: uid("en") })), ...s.engagements] }));
+        log({
+          actorId,
+          action: entries.length > 1 ? "Engagement log bulk upload" : "Interaction logged",
+          target: entries.length > 1 ? `${entries.length} interactions` : (getUser(entries[0]?.alumniId)?.name ?? ""),
+          campusId: entries[0]?.campusId,
+          category: "community",
+        });
+      },
+      mergeUsers: (keepId, dropId, chosen, actorId) => {
+        const keep = getUser(keepId);
+        const drop = getUser(dropId);
+        if (!keep || !drop) return;
+        const swap = (id: string) => (id === dropId ? keepId : id);
+        setState((s) => ({
+          ...s,
+          users: s.users
+            .filter((u) => u.id !== dropId)
+            .map((u) => (u.id === keepId ? { ...u, ...chosen, mergedFrom: [...(u.mergedFrom ?? []), dropId] } : u)),
+          posts: s.posts.map((p) => ({ ...p, authorId: swap(p.authorId), likes: [...new Set(p.likes.map(swap))] })),
+          jobs: s.jobs.map((j) => ({ ...j, postedBy: swap(j.postedBy), interested: j.interested.map((i) => ({ ...i, userId: swap(i.userId) })) })),
+          events: s.events.map((e) => ({ ...e, rsvps: e.rsvps.filter((r) => !(r.userId === dropId && e.rsvps.some((x) => x.userId === keepId))).map((r) => ({ ...r, userId: swap(r.userId) })) })),
+          dmThreads: s.dmThreads.map((t) => ({ ...t, members: t.members.map(swap) as [string, string] })),
+          dms: s.dms.map((m) => ({ ...m, senderId: swap(m.senderId) })),
+          invites: s.invites.map((i) => ({ ...i, by: swap(i.by) })),
+          engagements: s.engagements.map((e) => ({ ...e, alumniId: swap(e.alumniId) })),
+        }));
+        log({ actorId, action: "Duplicate records merged", target: `${drop.name} → ${keep.name}`, campusId: keep.campusIds[0], category: "admin", detail: `Kept ${keep.email}; history moved across (L4)` });
+      },
+      addMasterItem: (kind, name, actorId) => {
+        setState((s) => ({ ...s, masters: { ...s.masters, [kind]: [...s.masters[kind], { id: uid(kind[0]), name, aliases: [] }].sort((a, b) => a.name.localeCompare(b.name)) } }));
+        log({ actorId, action: "Master list item added", target: `${kind}: ${name}`, category: "admin" });
+      },
+      mapValue: (kind, raw, itemId, actorId) => {
+        const item = stateRef.current.masters[kind].find((m) => m.id === itemId);
+        if (!item) return;
+        const key = masterUserKey[kind];
+        const affected = stateRef.current.users.filter((u) => u[key] === raw).length;
+        setState((s) => ({
+          ...s,
+          masters: { ...s.masters, [kind]: s.masters[kind].map((m) => (m.id === itemId ? { ...m, aliases: [...new Set([...m.aliases, raw])] } : m)) },
+          users: s.users.map((u) => (u[key] === raw ? { ...u, [key]: item.name } : u)),
+        }));
+        log({ actorId, action: "Value standardised", target: `"${raw}" → "${item.name}"`, category: "admin", detail: `${affected} record${affected === 1 ? "" : "s"} updated (L5)` });
+      },
+      removeAlias: (kind, itemId, alias) => {
+        setState((s) => ({ ...s, masters: { ...s.masters, [kind]: s.masters[kind].map((m) => (m.id === itemId ? { ...m, aliases: m.aliases.filter((a) => a !== alias) } : m)) } }));
+      },
+      reportContent: (kind, targetId, reporterId, reason) => {
+        const st = stateRef.current;
+        const subjectUserId = kind === "post" ? st.posts.find((p) => p.id === targetId)?.authorId : kind === "job" ? st.jobs.find((j) => j.id === targetId)?.postedBy : targetId;
+        const subject = subjectUserId ? getUser(subjectUserId) : undefined;
+        if (!subject) return;
+        const campusId = kind === "job" ? (st.jobs.find((j) => j.id === targetId)?.campusId ?? subject.campusIds[0]) : subject.campusIds[0];
+        setState((s) => ({
+          ...s,
+          reports: [
+            { id: uid("rep"), kind, postId: kind === "post" ? targetId : undefined, jobId: kind === "job" ? targetId : undefined, subjectUserId: subject.id, reporterId, reason, campusId, at: now(), status: "open" },
+            ...s.reports,
+          ],
+        }));
+        log({ actorId: reporterId, action: `${kind[0].toUpperCase()}${kind.slice(1)} reported`, target: subject.name, campusId, category: "safeguarding", detail: reason });
+      },
+      resolveModeration: (reportId, action, actorId) => {
+        const rep = stateRef.current.reports.find((r) => r.id === reportId);
+        if (!rep) return;
+        const resolution =
+          action === "dismiss" ? "Dismissed – no action needed" : action === "warn" ? "Warning sent to user" : rep.kind === "post" ? "Post removed" : rep.kind === "job" ? "Job taken down" : "Account deactivated pending review";
+        setState((s) => ({
+          ...s,
+          reports: s.reports.map((r) => (r.id === reportId ? { ...r, status: action === "dismiss" ? "dismissed" : "actioned", resolution, resolvedBy: actorId, resolvedAt: now() } : r)),
+          posts: action === "remove" && rep.postId ? s.posts.filter((p) => p.id !== rep.postId) : s.posts,
+          jobs: action === "remove" && rep.jobId ? s.jobs.map((j) => (j.id === rep.jobId ? { ...j, status: "closed" } : j)) : s.jobs,
+          users: action === "remove" && rep.kind === "profile" ? s.users.map((u) => (u.id === rep.subjectUserId ? { ...u, deactivated: true } : u)) : s.users,
+        }));
+        const subject = getUser(rep.subjectUserId);
+        if (subject && action !== "dismiss")
+          pushOutbox({
+            channel: "email",
+            to: `${subject.name} · ${subject.email}`,
+            toUserId: subject.id,
+            body: `Subject: About your ${rep.kind} on VAA\n\n${action === "warn" ? "Your campus alumni office reviewed a report and is reminding you of the community guidelines." : `${resolution}. You can reply to this email to appeal.`}`,
+          });
+        log({ actorId, action: "Report resolved", target: subject?.name ?? "", campusId: rep.campusId, category: "safeguarding", detail: resolution });
+      },
+      submitDataRequest: (type, subjectId, requesterId, details) => {
+        const subject = getUser(subjectId);
+        const at = now();
+        setState((s) => ({
+          ...s,
+          dataRequests: [
+            { id: uid("dr"), type, subjectId, requesterId, campusId: subject?.campusIds[0] ?? "c01", details, at, due: new Date(Date.now() + REQUEST_DAYS * 86400_000).toISOString(), status: "open" },
+            ...s.dataRequests,
+          ],
+        }));
+        const req = getUser(requesterId);
+        if (req)
+          pushOutbox({
+            channel: "email",
+            to: `${req.name} · ${req.email}`,
+            toUserId: req.id,
+            body: `Subject: We've received your ${type === "complaint" ? "privacy complaint" : `data ${type} request`}\n\nReference ${uid("REQ").toUpperCase().slice(4)}. We'll respond within ${REQUEST_DAYS} days. Grievance officer: [TBC – VIBGYOR to name].`,
+          });
+        log({ actorId: requesterId, action: "Data request submitted", target: `${type} · ${subject?.name}`, campusId: subject?.campusIds[0], category: "consent" });
+      },
+      updateDataRequest: (id, status, actorId, resolution) => {
+        const r = stateRef.current.dataRequests.find((x) => x.id === id);
+        if (!r) return;
+        const anonymise = status === "done" && r.type === "deletion";
+        setState((s) => ({
+          ...s,
+          dataRequests: s.dataRequests.map((x) => (x.id === id ? { ...x, status, resolution: resolution ?? x.resolution, resolvedBy: status === "done" || status === "rejected" ? actorId : x.resolvedBy, resolvedAt: status === "done" || status === "rejected" ? now() : x.resolvedAt } : x)),
+          users: anonymise
+            ? s.users.map((u) =>
+                u.id === r.subjectId
+                  ? { ...u, name: "Deleted member", email: `deleted-${u.id}@invalid`, mobile: "—", company: undefined, title: undefined, city: undefined, college: undefined, bio: undefined, profile: u.profile ? { ...u.profile, headline: undefined, work: [], education: [], achievements: [], skills: [], linkedin: undefined, resumeName: undefined } : undefined, deactivated: true }
+                  : u
+              )
+            : s.users,
+        }));
+        const req = getUser(r.requesterId);
+        if (req && (status === "done" || status === "rejected"))
+          pushOutbox({ channel: "email", to: `${req.name} · ${req.email}`, toUserId: req.id, body: `Subject: Update on your ${r.type} request\n\n${status === "done" ? "Completed" : "We couldn't complete it"}. ${resolution ?? ""}` });
+        log({ actorId, action: `Data request ${status.replace("_", " ")}`, target: `${r.type} · ${getUser(r.subjectId)?.name ?? "member"}`, campusId: r.campusId, category: "consent", detail: anonymise ? "Personal data anonymised (A11)" : resolution });
+      },
+      setPermission: (cap, role, on, actorId) => {
+        setState((s) => ({ ...s, permissions: { ...s.permissions, [cap]: on ? [...new Set([...s.permissions[cap], role])] : s.permissions[cap].filter((r) => r !== role) } }));
+        log({ actorId, action: "Permission changed", target: `${role} · ${cap}`, category: "admin", detail: on ? "granted" : "removed" });
       },
 
       /* ---------------- Phase 2: community ---------------- */

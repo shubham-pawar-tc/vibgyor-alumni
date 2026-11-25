@@ -5,6 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
+  Copy,
+  Database,
+  FileLock2,
+  Flag,
+  KeyRound,
+  ListChecks,
+  NotebookPen,
   CalendarCheck,
   MessageCircle,
   Send,
@@ -36,6 +43,7 @@ import { campusName, personas, roleLabels } from "@/lib/data";
 import { activeBadge, useStore } from "@/lib/store";
 import type { User } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { findDuplicates, unmappedValues } from "@/lib/admin";
 import { Avatar, Logo, Pill } from "./ui";
 import { ThemeToggle } from "./Public";
 
@@ -45,9 +53,10 @@ interface NavItem {
   icon: typeof Home;
   count?: number;
   soon?: boolean;
+  section?: string;
 }
 
-function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number; jobs: number; dms: number }): NavItem[] {
+function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number; jobs: number; dms: number; moderation: number; requests: number; dupes: number; unmapped: number }): NavItem[] {
   const home: NavItem = { href: "/portal", label: "Home", icon: Home };
   switch (me.role) {
     case "STU":
@@ -79,17 +88,34 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
       ];
     case "CAD":
     case "GAO":
-    case "SAD":
+    case "SAD": {
+      const group = me.role !== "CAD";
       return [
         { href: "/portal", label: "Dashboard", icon: Home },
-        { href: "/portal/admin/verification", label: "Verification", icon: BadgeCheck, count: counts.verif },
+        { section: "Queues", href: "/portal/admin/verification", label: "Verification", icon: BadgeCheck, count: counts.verif },
         { href: "/portal/admin/safeguarding", label: "Safeguarding", icon: ShieldAlert, count: counts.reports },
-        { href: "/portal/admin/consents", label: "Student consents", icon: ClipboardCheck, count: counts.consent },
-        { href: "/portal/admin/broadcast", label: "Broadcasts", icon: Megaphone },
+        { href: "/portal/admin/moderation", label: "Moderation", icon: Flag, count: counts.moderation },
+        { href: "/portal/admin/requests", label: "Data requests", icon: FileLock2, count: counts.requests },
         { href: "/portal/admin/content", label: "Jobs & events", icon: CalendarCheck, count: counts.jobs },
-        { href: "/portal/admin/audit", label: "Audit log", icon: FileClock },
-        ...(me.role === "SAD" ? [{ href: "/portal/admin/settings", label: "Settings", icon: Settings }] : []),
+        { section: "People & data", href: "/portal/admin/records", label: "Alumni records", icon: Database },
+        { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen },
+        { href: "/portal/admin/consents", label: "Student consents", icon: ClipboardCheck, count: counts.consent },
+        ...(group
+          ? [
+              { href: "/portal/admin/duplicates", label: "Duplicates", icon: Copy, count: counts.dupes },
+              { href: "/portal/admin/masters", label: "Master lists", icon: ListChecks, count: counts.unmapped },
+            ]
+          : []),
+        { section: "Communication", href: "/portal/admin/broadcast", label: "Broadcasts", icon: Megaphone },
+        { section: "Governance", href: "/portal/admin/audit", label: "Audit log", icon: FileClock },
+        ...(me.role === "SAD"
+          ? [
+              { href: "/portal/admin/permissions", label: "Permissions", icon: KeyRound },
+              { href: "/portal/admin/settings", label: "Settings", icon: Settings },
+            ]
+          : []),
       ];
+    }
     default:
       return [home];
   }
@@ -119,7 +145,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const inScope = (cid: string) => !scope || scope.includes(cid);
   const counts = {
     verif: state.verifications.filter((v) => v.status === "pending" && inScope(v.campusId)).length + state.badgeRequests.filter((b) => b.status === "pending" && inScope(b.campusId)).length,
-    reports: state.reports.filter((r) => r.status === "open" && inScope(r.campusId)).length,
+    reports: state.reports.filter((r) => r.kind === "message" && r.status === "open" && inScope(r.campusId)).length,
+    moderation: state.reports.filter((r) => r.kind !== "message" && r.status === "open" && inScope(r.campusId)).length,
+    requests: state.dataRequests.filter((r) => (r.status === "open" || r.status === "in_progress") && inScope(r.campusId)).length,
+    dupes: findDuplicates(state.users).length,
+    unmapped: unmappedValues(state).length,
     consent: state.users.filter((u) => u.role === "STU" && u.studentStatus === "awaiting_consent" && inScope(u.campusIds[0])).length,
     vouch: state.verifications.filter((v) => v.status === "pending" && v.campusId === me.campusIds[0] && v.passYear === me.batch && !v.vouches.some((x) => x.by === me.id)).length,
     jobs: state.jobs.filter((j) => j.status === "pending" && inScope(j.campusId)).length,
@@ -148,6 +178,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
         {nav.map((n) => {
+          const heading = n.section ? (
+            <p key={`s-${n.section}`} className="px-3 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-wider text-muted/80">
+              {n.section}
+            </p>
+          ) : null;
           const active = n.href === "/portal" ? pathname === "/portal" : pathname.startsWith(n.href) && n.href !== "#";
           if (n.soon)
             return (
@@ -157,7 +192,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">Soon</span>
               </div>
             );
-          return (
+          return [
+            heading,
             <Link
               key={n.label}
               href={n.href}
@@ -169,8 +205,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <n.icon className="h-[18px] w-[18px]" />
               <span className="flex-1">{n.label}</span>
               {!!n.count && <span className={cn("grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold tabular-nums", active ? "bg-primary text-primary-fg" : "bg-danger text-white")}>{n.count}</span>}
-            </Link>
-          );
+            </Link>,
+          ];
         })}
       </nav>
       <div className="space-y-0.5 border-t border-border px-3 py-3">

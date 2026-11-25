@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, Eye, Lock, Plus, ShieldCheck, Trash2, Upload, X } from "lucide-react";
+import { MyData } from "@/components/MyData";
 import { ProfileCard } from "@/components/ProfileCard";
 import { Button, Callout, Card, CardHeader, Field, Input, PageHeader, Pill, Req, Select, Switch, Tabs } from "@/components/ui";
 import { campusName, privateFieldLabels, visibilityLabels } from "@/lib/data";
@@ -22,7 +23,7 @@ export default function ProfilePage() {
 
 function AlumniProfileEditor({ me }: { me: User }) {
   const { updateProfile } = useStore();
-  const [tab, setTab] = useState<"edit" | "privacy" | "preview">("edit");
+  const [tab, setTab] = useState<"edit" | "privacy" | "preview" | "data">("edit");
   const [saved, setSaved] = useState(false);
   const p = me.profile!;
   const pct = completeness(me);
@@ -66,6 +67,7 @@ function AlumniProfileEditor({ me }: { me: User }) {
             { id: "edit", label: "Edit profile" },
             { id: "privacy", label: "Privacy" },
             { id: "preview", label: "Preview as others" },
+            { id: "data", label: "My data" },
           ]}
           value={tab}
           onChange={setTab}
@@ -75,6 +77,7 @@ function AlumniProfileEditor({ me }: { me: User }) {
       {tab === "edit" && <EditTab me={me} p={p} save={save} />}
       {tab === "privacy" && <PrivacyTab p={p} save={save} />}
       {tab === "preview" && <PreviewTab me={me} />}
+      {tab === "data" && <MyData subject={me} />}
     </>
   );
 }

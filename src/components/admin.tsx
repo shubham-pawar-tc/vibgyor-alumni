@@ -25,3 +25,12 @@ export function AdminOnly({ me, children }: { me: User | undefined; children: Re
     );
   return <>{children}</>;
 }
+
+/** Hides an action when the permissions matrix (A6) doesn't grant it, and says why. */
+export function NoPermission({ what }: { what: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 py-1.5 text-[12px] font-medium text-muted" title="Change this in Permissions (Super Admin)">
+      <ShieldX className="h-3.5 w-3.5" /> Your role can&apos;t {what}
+    </span>
+  );
+}

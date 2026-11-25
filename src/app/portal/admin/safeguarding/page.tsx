@@ -19,7 +19,7 @@ function Inner() {
   const [viewConv, setViewConv] = useState<string | null>(null);
   const [confirmSuspend, setConfirmSuspend] = useState<{ userId: string; reportId?: string } | null>(null);
 
-  const reports = state.reports.filter((r) => inScope(r.campusId));
+  const reports = state.reports.filter((r) => r.kind === "message" && inScope(r.campusId));
   const open = reports.filter((r) => r.status === "open");
   const closed = reports.filter((r) => r.status !== "open");
   const convs = state.conversations.filter((c) => inScope(c.campusId));

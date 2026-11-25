@@ -5,7 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { Gate } from "@/components/Gate";
 import { ProfileCard } from "@/components/ProfileCard";
-import { Button, Callout, Card, Empty } from "@/components/ui";
+import Link from "next/link";
+import { ReportButton } from "@/components/ReportButton";
+import { Button, Callout, Card, Empty, Pill } from "@/components/ui";
+import { formatDate } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 
 export default function PersonPage() {
@@ -20,9 +23,9 @@ function Person() {
   const { id } = useParams<{ id: string }>();
   const { me, state, openDm, log } = useStore();
   const router = useRouter();
-  const owner = state.users.find((u) => u.id === id && (u.role === "ALU" || u.role === "ALP"));
-  const logged = useRef(false);
   const staff = !!me && ["CAD", "GAO", "SAD"].includes(me.role);
+  const owner = state.users.find((u) => u.id === id && (u.role === "ALU" || u.role === "ALP") && (staff || !u.deactivated));
+  const logged = useRef(false);
 
   useEffect(() => {
     // staff opening a full record is written to the audit log (A12)
@@ -55,17 +58,52 @@ function Person() {
         viewer={me}
         actions={
           me.role === "ALU" && owner.id !== me.id ? (
-            <Button
-              onClick={() => {
-                const t = openDm(me.id, owner.id);
-                router.push(`/portal/chats?t=${t}`);
-              }}
-            >
-              <MessageCircle className="h-4 w-4" /> Message
-            </Button>
+            <>
+              <Button
+                onClick={() => {
+                  const t = openDm(me.id, owner.id);
+                  router.push(`/portal/chats?t=${t}`);
+                }}
+              >
+                <MessageCircle className="h-4 w-4" /> Message
+              </Button>
+              <ReportButton kind="profile" targetId={owner.id} />
+            </>
           ) : undefined
         }
       />
+      {staff && <StaffPanel ownerId={owner.id} />}
     </>
+  );
+}
+
+function StaffPanel({ ownerId }: { ownerId: string }) {
+  const { state } = useStore();
+  const owner = state.users.find((u) => u.id === ownerId)!;
+  const items = state.engagements.filter((e) => e.alumniId === ownerId).sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  return (
+    <Card className="mt-5">
+      <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+        <p className="text-[14px] font-semibold">Engagement history (staff only)</p>
+        <Link href="/portal/admin/engagement" className="text-[13px] font-semibold text-primary">
+          Log interaction
+        </Link>
+      </div>
+      {items.length === 0 ? (
+        <p className="px-5 py-4 text-[13px] text-muted">No interactions logged with {owner.name.split(" ")[0]} yet.</p>
+      ) : (
+        <div className="divide-y divide-border">
+          {items.map((e) => (
+            <div key={e.id} className="flex flex-wrap items-center gap-2 px-5 py-3 text-[13px]">
+              <Pill tone="primary">{e.mode}</Pill>
+              <Pill>{e.category}</Pill>
+              <span className="min-w-0 flex-1">{e.note}</span>
+              <span className="text-[12px] text-muted">{formatDate(e.at)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {owner.mergedFrom?.length ? <p className="border-t border-border px-5 py-3 text-[12px] text-muted">Merged from record {owner.mergedFrom.join(", ")} (L4)</p> : null}
+    </Card>
   );
 }

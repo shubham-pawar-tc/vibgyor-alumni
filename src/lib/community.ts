@@ -30,7 +30,7 @@ export function groupsFor(u: User): Group[] {
 }
 
 export function groupMembers(s: State, g: Group) {
-  return s.users.filter((u) => u.role === "ALU" && u.campusIds[0] === g.campusId && (g.kind === "campus" || u.batch === g.batch));
+  return s.users.filter((u) => u.role === "ALU" && !u.deactivated && u.campusIds[0] === g.campusId && (g.kind === "campus" || u.batch === g.batch));
 }
 
 /** Profile completeness out of 100 (B16: drives the nudge on the alumni home) */

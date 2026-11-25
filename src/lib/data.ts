@@ -1,4 +1,9 @@
 import type {
+  Capability,
+  DataRequest,
+  EngagementEntry,
+  MasterItem,
+  MasterKind,
   AlumniProfile,
   DmMessage,
   DmThread,
@@ -950,7 +955,7 @@ function activeMentor(u: User) {
 }
 
 /* Extra verified alumni so the directory feels real */
-const dirFirst = ["Aditi", "Rahul", "Simran", "Nikhil", "Fatima", "Kunal", "Isha", "Varun", "Ananya", "Siddharth", "Pooja", "Aman", "Tanvi", "Yash", "Nandini", "Harsh", "Sara", "Dev", "Ritika", "Omkar", "Shreya", "Kartik", "Mihika", "Neil"];
+const dirFirst = ["Aditi", "Rahul", "Simran", "Nikhil", "Farah", "Kunal", "Isha", "Varun", "Ananya", "Siddharth", "Pooja", "Aman", "Tanvi", "Yash", "Nandini", "Harsh", "Sara", "Dev", "Ritika", "Omkar", "Shreya", "Kartik", "Mihika", "Neil"];
 const dirLast = ["Bhatia", "Menon", "Chopra", "Deshpande", "Ansari", "Sethi", "Malhotra", "Iyer", "Banerjee", "Reddy", "Gokhale", "Verma", "Saxena", "Shetty", "Rao", "Thakur", "Fernandes", "Mistry", "Ghosh", "Pawar", "Naidu", "Jain", "Kale", "D'Costa"];
 const dirJobs: [string, string, string, string, string][] = [
   // company, title, city, country, field
@@ -1231,6 +1236,7 @@ export const seedPosts: GroupPost[] = [
   { id: "gp2", groupId: "batch:c01:2006", authorId: "dir3", text: "Count me in. I still have the class photo from the farewell, will bring it 📸", at: ago(22), likes: ["alu7"] },
   { id: "gp3", groupId: "campus:c01", authorId: "cad1", text: "Reminder from the Alumni office: the Malad reunion RSVP closes on 15 December. Spouses welcome.", at: ago(50), likes: ["alu5", "dir1"] },
   { id: "gp4", groupId: "campus:c01", authorId: "alu5", text: "Deloitte Mumbai is running a student job-shadowing week in May; I've posted it on the jobs board for current students.", at: ago(110), likes: [] },
+  { id: "gp6", groupId: "campus:c01", authorId: "dir6", text: "Selling my old IB textbooks and a lot of crypto courses at 70% off!! Message me for the link 🔥🔥", at: ago(31), likes: [] },
   { id: "gp5", groupId: "batch:c01:2016", authorId: "alu1", text: "Anyone from 2016 in London this winter? Planning a small dinner before Christmas.", at: ago(75), likes: ["dir1", "dir2"] },
 ];
 
@@ -1251,7 +1257,128 @@ export const seedInvites: Invite[] = [
   })),
 ];
 
-export const STATE_VERSION = 4;
+/* ============================ Phase 3 seed data ============================ */
+
+/* Two duplicate records, as they would arrive from the old portal (L4) */
+{
+  const aditi = seedUsers.find((u) => u.id === "dir1")!;
+  const nikhil = seedUsers.find((u) => u.id === "dir4")!;
+  const d1: User = {
+    ...structuredClone(aditi),
+    id: "dup1",
+    name: "Aditi S. Bhatia",
+    email: "aditi.bhatia@oldportal.example",
+    mobile: "+91 98111 20456",
+    college: "Bombay University",
+    field: "IT Consulting",
+    title: "Consultant",
+    city: "Pune",
+  };
+  d1.profile = { ...emptyProfile(d1), privacy: { ...defaultPrivacy } };
+  const d2: User = {
+    ...structuredClone(nikhil),
+    id: "dup2",
+    name: "Nikhil Deshpandey",
+    email: "nikhil.d@oldportal.example",
+    college: "Mumbai Univ.",
+    company: undefined,
+    title: undefined,
+  };
+  d2.profile = { ...emptyProfile(d2), privacy: { ...defaultPrivacy } };
+  seedUsers.push(d1, d2);
+  // messy values the master lists should catch (L5 / DM-3)
+  seedUsers.find((u) => u.id === "dir15")!.college = "Xaviers Mumbai";
+  seedUsers.find((u) => u.id === "dir13")!.course = "B.A. LL.B";
+}
+
+const masterAliases: Record<MasterKind, Record<string, string[]>> = {
+  college: {
+    "Mumbai University": ["University of Mumbai", "Bombay University", "MU"],
+    "St. Xavier's College": ["St Xaviers College", "SXC Mumbai"],
+    "IIT Bombay": ["Indian Institute of Technology Bombay", "IITB"],
+  },
+  programme: {
+    "B.Com": ["BCom", "Bachelor of Commerce"],
+    "BBA LLB": ["BBA, LLB"],
+    "Computer Science": ["CS", "Computer Engineering"],
+  },
+  industry: {
+    "Software engineering": ["Software", "Software development"],
+    Consulting: ["Management consulting"],
+  },
+};
+const messy = new Set(["Xaviers Mumbai", "B.A. LL.B", "Mumbai Univ.", "IT Consulting", "Bombay University"]);
+const userKey: Record<MasterKind, keyof User> = { college: "college", programme: "course", industry: "field" };
+
+export const seedMasters: Record<MasterKind, MasterItem[]> = (["college", "programme", "industry"] as MasterKind[]).reduce(
+  (acc, kind) => {
+    const names = new Set<string>(Object.keys(masterAliases[kind]));
+    seedUsers.forEach((u) => {
+      const v = u[userKey[kind]] as string | undefined;
+      if (v && !messy.has(v)) names.add(v);
+    });
+    acc[kind] = [...names].sort().map((name, i) => ({ id: `${kind[0]}${i + 1}`, name, aliases: masterAliases[kind][name] ?? [] }));
+    return acc;
+  },
+  {} as Record<MasterKind, MasterItem[]>
+);
+export const masterUserKey = userKey;
+
+export const seedEngagements: EngagementEntry[] = [
+  { id: "en1", alumniId: "alu7", staffId: "cad1", campusId: "c01", mode: "Call", category: "Event", note: "Asked Rohan to speak at the reunion about product careers. Said yes in principle.", at: ago(30), source: "manual" },
+  { id: "en2", alumniId: "alu5", staffId: "cad1", campusId: "c01", mode: "Meeting", category: "Placement", note: "Met at Deloitte office about the May job-shadowing week for Class 12.", at: ago(140), source: "manual" },
+  { id: "en3", alumniId: "alu1", staffId: "cad1", campusId: "c01", mode: "Email", category: "Mentoring", note: "Thanked Priya for answering 6 student questions this term.", at: ago(200), source: "manual" },
+  { id: "en4", alumniId: "dir1", staffId: "cad1", campusId: "c01", mode: "WhatsApp", category: "Data update", note: "Confirmed new employer (TCS).", at: ago(260), source: "bulk" },
+  { id: "en5", alumniId: "dir2", staffId: "cad1", campusId: "c01", mode: "Event", category: "Event", note: "Attended the Diwali alumni evening.", at: ago(500), source: "bulk" },
+  { id: "en6", alumniId: "alu2", staffId: "gao1", campusId: "c02", mode: "Call", category: "Fundraising", note: "Interested in sponsoring a STEM scholarship (Release 3).", at: ago(90), source: "manual" },
+  { id: "en7", alumniId: "alu6", staffId: "gao1", campusId: "c25", mode: "Meeting", category: "General", note: "Founder story for the VAA newsletter.", at: ago(320), source: "manual" },
+];
+
+const due = (fromHoursAgo: number) => new Date(Date.parse(ago(fromHoursAgo)) + 30 * 86400_000).toISOString();
+export const REQUEST_DAYS = 30;
+export const seedDataRequests: DataRequest[] = [
+  { id: "dr1", type: "access", subjectId: "alu5", requesterId: "alu5", campusId: "c01", details: "Please send me a copy of all data you hold about me.", at: ago(72), due: due(72), status: "open" },
+  { id: "dr2", type: "correction", subjectId: "stu1", requesterId: "par1", campusId: "c01", details: "Aarav's date of birth is shown as 2010; it should be 12 March 2009.", at: ago(120), due: due(120), status: "in_progress" },
+  { id: "dr3", type: "deletion", subjectId: "dir19", requesterId: "dir19", campusId: "c01", details: "I no longer want to be on the alumni platform. Please delete my account.", at: ago(26 * 24), due: due(26 * 24), status: "open" },
+  { id: "dr4", type: "complaint", subjectId: "alu4", requesterId: "alu4", campusId: "c17", details: "I received a marketing WhatsApp after opting out.", at: ago(20 * 24), due: due(20 * 24), status: "done", resolution: "Opt-out had not synced to the WhatsApp list. Fixed and apologised.", resolvedBy: "gao1", resolvedAt: ago(15 * 24) },
+];
+
+export const seedModerationReports: Report[] = [
+  { id: "rep2", kind: "post", postId: "gp6", subjectUserId: "dir6", reporterId: "alu5", reason: "Spam / selling", campusId: "c01", at: ago(30), status: "open" },
+  { id: "rep3", kind: "profile", subjectUserId: "dir7", reporterId: "dir1", reason: "Fake or impersonating profile", campusId: "c01", at: ago(5), status: "open" },
+  { id: "rep4", kind: "job", jobId: "job4", subjectUserId: "alu4", reporterId: "dir12", reason: "Misleading job details", campusId: "c17", at: ago(50), status: "actioned", resolution: "Warning sent to user", resolvedBy: "gao1", resolvedAt: ago(41) },
+];
+export const MODERATION_SLA_HOURS = 24;
+
+export const capabilityLabels: Record<Capability, string> = {
+  "records.view": "View alumni records",
+  "records.edit": "Edit or deactivate alumni records",
+  "records.export": "Export data (with a reason)",
+  verify: "Approve alumni verification",
+  "chats.read": "Read student–mentor chats",
+  "broadcast.send": "Send broadcasts",
+  "content.moderate": "Moderate reported content",
+  "duplicates.merge": "Merge duplicate records",
+  "masters.edit": "Edit master lists",
+  "requests.handle": "Handle data & privacy requests",
+  "engagement.log": "Log alumni interactions",
+};
+
+export const seedPermissions: Record<Capability, Role[]> = {
+  "records.view": ["CAD", "GAO", "SAD"],
+  "records.edit": ["CAD", "GAO", "SAD"],
+  "records.export": ["CAD", "GAO", "SAD"],
+  verify: ["CAD", "GAO"],
+  "chats.read": ["CAD", "GAO"],
+  "broadcast.send": ["CAD", "GAO"],
+  "content.moderate": ["CAD", "GAO", "SAD"],
+  "duplicates.merge": ["GAO", "SAD"],
+  "masters.edit": ["GAO", "SAD"],
+  "requests.handle": ["CAD", "GAO", "SAD"],
+  "engagement.log": ["TCH", "CAD", "GAO"],
+};
+
+export const STATE_VERSION = 5;
 
 export function createSeedState(): State {
   return {
@@ -1261,7 +1388,7 @@ export function createSeedState(): State {
     consents: structuredClone(seedConsents),
     conversations: structuredClone(seedConversations),
     messages: structuredClone(seedMessages),
-    reports: structuredClone(seedReports),
+    reports: [...structuredClone(seedReports), ...structuredClone(seedModerationReports)],
     verifications: structuredClone(seedVerifications),
     badgeRequests: structuredClone(seedBadgeRequests),
     broadcasts: [
@@ -1298,6 +1425,10 @@ export function createSeedState(): State {
     dmThreads: structuredClone(seedDmThreads),
     dms: structuredClone(seedDms),
     invites: structuredClone(seedInvites),
+    engagements: structuredClone(seedEngagements),
+    dataRequests: structuredClone(seedDataRequests),
+    masters: structuredClone(seedMasters),
+    permissions: structuredClone(seedPermissions),
   };
 }
 

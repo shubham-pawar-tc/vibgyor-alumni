@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Heart, Send, Users, UsersRound } from "lucide-react";
 import { Gate } from "@/components/Gate";
+import { ReportButton } from "@/components/ReportButton";
 import { Avatar, Button, Card, Empty, PageHeader, Pill, Req, Textarea } from "@/components/ui";
 import { roleLabels } from "@/lib/data";
 import { groupMembers, groupsFor } from "@/lib/community";
@@ -91,9 +92,12 @@ function Groups() {
                     </div>
                   </div>
                   <p className="mt-3 whitespace-pre-wrap text-[14px] leading-relaxed">{p.text}</p>
-                  <button onClick={() => toggleLike(p.id, me.id)} className={cn("mt-3 flex items-center gap-1.5 text-[12.5px] font-medium", liked ? "text-danger" : "text-muted hover:text-text")}>
-                    <Heart className={cn("h-4 w-4", liked && "fill-current")} /> {p.likes.length || ""} {p.likes.length === 1 ? "like" : "likes"}
-                  </button>
+                  <div className="mt-3 flex items-center justify-between">
+                    <button onClick={() => toggleLike(p.id, me.id)} className={cn("flex items-center gap-1.5 text-[12.5px] font-medium", liked ? "text-danger" : "text-muted hover:text-text")}>
+                      <Heart className={cn("h-4 w-4", liked && "fill-current")} /> {p.likes.length || ""} {p.likes.length === 1 ? "like" : "likes"}
+                    </button>
+                    {p.authorId !== me.id && !staff && <ReportButton kind="post" targetId={p.id} compact />}
+                  </div>
                 </Card>
               );
             })
