@@ -1,9 +1,10 @@
 "use client";
 
+import { allOk, check, clean, normalizeMobile, whenFilled } from "@/lib/validate";
 import { useState } from "react";
 import { Pencil, Plus, ShieldCheck, UserX } from "lucide-react";
 import { Gate } from "@/components/Gate";
-import { Avatar, Button, Callout, Card, Input, Modal, PageHeader, Pill, Req, Select } from "@/components/ui";
+import { Avatar, Button, Callout, Card, FieldError, Input, Modal, PageHeader, Pill, Req, Select } from "@/components/ui";
 import { campuses, campusName, roleLabels } from "@/lib/data";
 import { manageableRoles, useStore } from "@/lib/store";
 import type { Role, User } from "@/lib/types";
@@ -122,9 +123,10 @@ function Staff() {
               Cancel
             </Button>
             <Button
+              disabled={!draft || !allOk(check.name(draft.name), check.email(draft.email), check.mobile(draft.mobile))}
               onClick={() => {
                 if (!draft) return;
-                const r = saveStaff(draft, me.id);
+                const r = saveStaff({ ...draft, name: draft.name.trim(), mobile: normalizeMobile(draft.mobile) }, me.id);
                 if (r.ok) setDraft(null);
                 else setErr(r.error ?? "Couldn't save.");
               }}
@@ -137,9 +139,18 @@ function Staff() {
         {draft && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Input placeholder="Full name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} aria-label="Full name" />
-              <Input placeholder="Work email" type="email" value={draft.email} onChange={(e) => setDraft({ ...draft, email: e.target.value })} aria-label="Work email" />
-              <Input placeholder="Mobile (+91 …)" value={draft.mobile} onChange={(e) => setDraft({ ...draft, mobile: e.target.value })} aria-label="Mobile" />
+              <div>
+                <Input placeholder="Full name" value={draft.name} invalid={!!whenFilled(draft.name, check.name(draft.name))} onChange={(e) => setDraft({ ...draft, name: clean.name(e.target.value) })} aria-label="Full name" />
+                <FieldError error={whenFilled(draft.name, check.name(draft.name))} />
+              </div>
+              <div>
+                <Input placeholder="Work email" type="email" value={draft.email} invalid={!!whenFilled(draft.email, check.email(draft.email))} onChange={(e) => setDraft({ ...draft, email: clean.email(e.target.value) })} aria-label="Work email" />
+                <FieldError error={whenFilled(draft.email, check.email(draft.email))} />
+              </div>
+              <div>
+                <Input placeholder="Mobile, e.g. +91 98765 43210" type="tel" value={draft.mobile} invalid={!!whenFilled(draft.mobile, check.mobile(draft.mobile))} onChange={(e) => setDraft({ ...draft, mobile: clean.mobile(e.target.value) })} aria-label="Mobile" />
+                <FieldError error={whenFilled(draft.mobile, check.mobile(draft.mobile))} />
+              </div>
               <Select
                 value={draft.role}
                 aria-label="Role"

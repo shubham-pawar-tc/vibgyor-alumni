@@ -1,10 +1,11 @@
 "use client";
 
+import { allOk, check, clean, whenFilled } from "@/lib/validate";
 import Link from "next/link";
 import { useState } from "react";
 import { Award, Briefcase, GraduationCap, HandCoins, Store, UsersRound } from "lucide-react";
 import { Gate } from "@/components/Gate";
-import { Button, Callout, Card, Checkbox, Input, Modal, PageHeader, Pill, Req, Select, Textarea } from "@/components/ui";
+import { Button, Callout, Card, Checkbox, FieldError, Input, Modal, PageHeader, Pill, Req, Select, Textarea } from "@/components/ui";
 import { SERVICE_CATEGORIES } from "@/lib/data";
 import { activeBadge, useStore } from "@/lib/store";
 import type { BadgeType } from "@/lib/types";
@@ -33,7 +34,13 @@ function Badges() {
   if (!me) return null;
   const pending = (t: BadgeType) => state.badgeRequests.some((b) => b.userId === me.id && b.badge === t && b.status === "pending");
   const held = (t: BadgeType) => me.badges?.find((b) => b.type === t);
-  const svpOk = listing.business.trim().length > 1 && listing.city.trim() && listing.description.trim().length > 10;
+  const le = {
+    business: whenFilled(listing.business, check.text(listing.business, "Business name", { max: 80 })),
+    city: whenFilled(listing.city, check.name(listing.city, "City")),
+    description: whenFilled(listing.description, check.text(listing.description, "Description", { min: 20, max: 500 })),
+  };
+  const svpOk = allOk(check.text(listing.business, "b", { max: 80 }), check.name(listing.city), check.text(listing.description, "d", { min: 20, max: 500 }));
+  const whyErr = whenFilled(why, check.text(why, "Reason", { min: 10, max: 500 }));
 
   return (
     <>
@@ -121,21 +128,27 @@ function Badges() {
       >
         {ask === "ServiceProvider" ? (
           <div className="space-y-3">
-            <Input placeholder="Business name" value={listing.business} onChange={(e) => setListing({ ...listing, business: e.target.value })} aria-label="Business name" />
+            <Input placeholder="Business name" value={listing.business} invalid={!!le.business} onChange={(e) => setListing({ ...listing, business: clean.text(e.target.value) })} aria-label="Business name" />
+            <FieldError error={le.business} />
             <div className="grid grid-cols-2 gap-3">
               <Select value={listing.category} onChange={(e) => setListing({ ...listing, category: e.target.value })} aria-label="Category">
                 {SERVICE_CATEGORIES.map((c) => (
                   <option key={c}>{c}</option>
                 ))}
               </Select>
-              <Input placeholder="City" value={listing.city} onChange={(e) => setListing({ ...listing, city: e.target.value })} aria-label="City" />
+              <div>
+                <Input placeholder="City" value={listing.city} invalid={!!le.city} onChange={(e) => setListing({ ...listing, city: clean.name(e.target.value) })} aria-label="City" />
+                <FieldError error={le.city} />
+              </div>
             </div>
-            <Textarea rows={3} placeholder="What you offer, and any alumni discount" value={listing.description} onChange={(e) => setListing({ ...listing, description: e.target.value })} aria-label="Description" />
+            <Textarea rows={3} placeholder="What you offer, and any alumni discount" value={listing.description} onChange={(e) => setListing({ ...listing, description: clean.text(e.target.value, 500) })} aria-label="Description" />
+            <FieldError error={le.description} />
             <p className="text-[13px] text-muted">Phone numbers and links in the description are hidden; enquiries come through VAA.</p>
           </div>
         ) : (
           <>
-            <Textarea rows={3} placeholder="Which company do you hire for, and what roles?" value={why} onChange={(e) => setWhy(e.target.value)} aria-label="Why" />
+            <Textarea rows={3} placeholder="Which company do you hire for, and what roles?" value={why} onChange={(e) => setWhy(clean.text(e.target.value, 500))} aria-label="Why" />
+            <FieldError error={whyErr} />
             <p className="mt-2 text-[13px] text-muted">Your campus checks you can post on behalf of the company.</p>
           </>
         )}

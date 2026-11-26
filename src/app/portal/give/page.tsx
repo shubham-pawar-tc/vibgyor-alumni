@@ -1,9 +1,10 @@
 "use client";
 
+import { check, clean } from "@/lib/validate";
 import { useState } from "react";
 import { HandCoins, Heart, Receipt } from "lucide-react";
 import { Gate } from "@/components/Gate";
-import { Avatar, Button, Card, CardHeader, Checkbox, Input, PageHeader, Pill, Req, Select } from "@/components/ui";
+import { Avatar, Button, Card, CardHeader, Checkbox, FieldError, Input, PageHeader, Pill, Req, Select } from "@/components/ui";
 import { campusName, DONATION_FUNDS } from "@/lib/data";
 import { activeBadge, useStore } from "@/lib/store";
 import { formatDate } from "@/lib/utils";
@@ -24,6 +25,7 @@ function Give() {
   const [msg, setMsg] = useState("");
   if (!me) return null;
   const mine = state.payments.filter((p) => p.kind === "donation" && p.payerId === me.id);
+  const amtErr = check.number(amount, { min: 100, max: 1000000, label: "Amount" });
   const wallers = state.users.filter((u) => u.donorWall && activeBadge(u, "Donor") && !u.deactivated);
 
   return (
@@ -40,7 +42,10 @@ function Give() {
               ))}
             </div>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Input inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} aria-label="Amount in rupees" placeholder="Amount (₹)" />
+              <div>
+                <Input inputMode="numeric" value={amount} invalid={!!amtErr} onChange={(e) => setAmount(clean.digits(e.target.value, 7))} aria-label="Amount in rupees" placeholder="Amount (₹)" />
+                <FieldError error={amtErr} />
+              </div>
               <Select value={fund} onChange={(e) => setFund(e.target.value)} aria-label="Fund">
                 {DONATION_FUNDS.map((f) => (
                   <option key={f}>{f}</option>
@@ -53,6 +58,7 @@ function Give() {
             <Button
               size="lg"
               className="mt-5 w-full"
+              disabled={!!amtErr}
               onClick={() => {
                 const r = donate(me.id, Number(amount), fund, wall);
                 setMsg(r.ok ? `Thank you! ₹${Number(amount).toLocaleString("en-IN")} received. Receipt sent to your email.` : (r.error ?? ""));

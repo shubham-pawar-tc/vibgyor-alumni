@@ -1,5 +1,6 @@
 "use client";
 
+import { check, clean, whenFilled } from "@/lib/validate";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -126,8 +127,8 @@ export default function LoginPage() {
             </div>
             {step === "id" ? (
               <form key="id" onSubmit={submitId} className="animate-in mt-6 space-y-4">
-                <Field label="Email or mobile number" htmlFor="id" hint={mode === "otp" ? "Indian mobiles get the code by SMS; overseas users by email." : undefined}>
-                  <Input id="id" icon={<AtSign />} value={id} onChange={(e) => setId(e.target.value)} placeholder="+91 98200 45210 or you@example.com" autoComplete="username" />
+                <Field label="Email or mobile number" htmlFor="id" error={whenFilled(id, check.emailOrMobile(id))} hint={mode === "otp" ? "Indian mobiles get the code by SMS; overseas users by email." : undefined}>
+                  <Input id="id" icon={<AtSign />} value={id} invalid={!!whenFilled(id, check.emailOrMobile(id))} onChange={(e) => setId(clean.emailOrMobile(e.target.value))} placeholder="+91 98200 45210 or you@example.com" autoComplete="username" />
                 </Field>
                 {mode === "password" && (
                   <Field label="Password" htmlFor="pw">
@@ -135,7 +136,7 @@ export default function LoginPage() {
                   </Field>
                 )}
                 {err && <p className="animate-in text-[14px] font-medium text-danger">{err}</p>}
-                <Button type="submit" size="lg" className="w-full">
+                <Button type="submit" size="lg" className="w-full" disabled={!!check.emailOrMobile(id)}>
                   {mode === "otp" ? "Send code" : "Sign in"} <ArrowRight className="h-4 w-4" />
                 </Button>
               </form>

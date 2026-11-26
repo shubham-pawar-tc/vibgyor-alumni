@@ -1,15 +1,18 @@
 "use client";
 
+import { allOk, check, clean, whenFilled } from "@/lib/validate";
 import Link from "next/link";
 import { useState } from "react";
 import { CalendarPlus, Heart, Megaphone, Send, Trash2, Users, UsersRound } from "lucide-react";
 import { Gate } from "@/components/Gate";
 import { ReportButton } from "@/components/ReportButton";
-import { Avatar, Button, Card, Checkbox, Empty, Input, Modal, PageHeader, Pill, Req, Textarea } from "@/components/ui";
+import { Avatar, Button, Card, Checkbox, Empty, FieldError, Input, Modal, PageHeader, Pill, Req, Textarea } from "@/components/ui";
 import { roleLabels } from "@/lib/data";
 import { groupMembers, groupsFor } from "@/lib/community";
 import { useStore } from "@/lib/store";
 import { cn, timeAgo } from "@/lib/utils";
+
+const future = (v: string) => (v && new Date(v).getTime() < Date.now() ? "Pick a time in the future" : "");
 
 export default function GroupsPage() {
   return (
@@ -162,7 +165,7 @@ function Groups() {
               Cancel
             </Button>
             <Button
-              disabled={!ev?.title.trim() || !ev?.start || !ev?.venue.trim()}
+              disabled={!ev || !allOk(check.text(ev.title, "t", { min: 3, max: 100 }), check.text(ev.venue, "v", { min: 3, max: 120 })) || !ev.start || new Date(ev.start).getTime() < Date.now()}
               onClick={() => {
                 if (!ev) return;
                 const start = new Date(ev.start);
@@ -190,9 +193,12 @@ function Groups() {
       >
         {ev && (
           <div className="space-y-3">
-            <Input placeholder="Title" value={ev.title} onChange={(e) => setEv({ ...ev, title: e.target.value })} aria-label="Title" />
-            <Input type="datetime-local" value={ev.start} onChange={(e) => setEv({ ...ev, start: e.target.value })} aria-label="Start" />
-            <Input placeholder="Venue" value={ev.venue} onChange={(e) => setEv({ ...ev, venue: e.target.value })} aria-label="Venue" />
+            <Input placeholder="Title" value={ev.title} invalid={!!whenFilled(ev.title, check.text(ev.title, "Title", { min: 3, max: 100 }))} onChange={(e) => setEv({ ...ev, title: clean.text(e.target.value, 100) })} aria-label="Title" />
+            <FieldError error={whenFilled(ev.title, check.text(ev.title, "Title", { min: 3, max: 100 }))} />
+            <Input type="datetime-local" min={new Date().toISOString().slice(0, 16)} value={ev.start} invalid={!!future(ev.start)} onChange={(e) => setEv({ ...ev, start: e.target.value })} aria-label="Start" />
+            <FieldError error={future(ev.start)} />
+            <Input placeholder="Venue" value={ev.venue} invalid={!!whenFilled(ev.venue, check.text(ev.venue, "Venue", { min: 3, max: 120 }))} onChange={(e) => setEv({ ...ev, venue: clean.text(e.target.value, 120) })} aria-label="Venue" />
+            <FieldError error={whenFilled(ev.venue, check.text(ev.venue, "Venue", { min: 3, max: 120 }))} />
             <p className="text-[13px] text-muted">Shown in Events to verified alumni of this group.</p>
           </div>
         )}

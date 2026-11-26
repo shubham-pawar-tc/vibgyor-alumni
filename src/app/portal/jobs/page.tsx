@@ -1,5 +1,6 @@
 "use client";
 
+import { allOk, check, clean, whenFilled } from "@/lib/validate";
 import Link from "next/link";
 import { useState } from "react";
 import { Briefcase, Building2, CheckCircle2, Clock, GraduationCap, MapPin, Plus, Search, ShieldCheck, Users } from "lucide-react";
@@ -267,7 +268,13 @@ function PostJob({ onClose }: { onClose: () => void }) {
   const { me, postJob } = useStore();
   const [f, setF] = useState({ title: "", company: me?.company ?? "", location: me?.city ?? "", type: "Full-time" as JobType, remote: false, description: "", forStudents: false });
   if (!me) return null;
-  const ok = f.title && f.company && f.location && f.description.length > 20;
+  const je = {
+    title: whenFilled(f.title, check.text(f.title, "Job title", { min: 3 })),
+    company: whenFilled(f.company, check.text(f.company, "Company")),
+    location: whenFilled(f.location, check.text(f.location, "Location")),
+    description: whenFilled(f.description, check.text(f.description, "Description", { min: 20, max: 3000 })),
+  };
+  const ok = allOk(check.text(f.title, "t", { min: 3 }), check.text(f.company, "c"), check.text(f.location, "l"), check.text(f.description, "d", { min: 20, max: 3000 }));
   return (
     <Modal
       open
@@ -282,7 +289,7 @@ function PostJob({ onClose }: { onClose: () => void }) {
           <Button
             disabled={!ok}
             onClick={() => {
-              postJob({ ...f, postedBy: me.id, campusId: me.campusIds[0] });
+              postJob({ ...f, title: f.title.trim(), company: f.company.trim(), location: f.location.trim(), description: f.description.trim(), postedBy: me.id, campusId: me.campusIds[0] });
               onClose();
             }}
           >
@@ -292,14 +299,14 @@ function PostJob({ onClose }: { onClose: () => void }) {
       }
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Job title" htmlFor="jt">
-          <Input id="jt" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+        <Field label="Job title" htmlFor="jt" error={je.title}>
+          <Input id="jt" value={f.title} invalid={!!je.title} onChange={(e) => setF({ ...f, title: clean.text(e.target.value) })} />
         </Field>
-        <Field label="Company" htmlFor="jc">
-          <Input id="jc" value={f.company} onChange={(e) => setF({ ...f, company: e.target.value })} />
+        <Field label="Company" htmlFor="jc" error={je.company}>
+          <Input id="jc" value={f.company} invalid={!!je.company} onChange={(e) => setF({ ...f, company: clean.text(e.target.value) })} />
         </Field>
-        <Field label="Location" htmlFor="jl">
-          <Input id="jl" value={f.location} onChange={(e) => setF({ ...f, location: e.target.value })} />
+        <Field label="Location" htmlFor="jl" error={je.location}>
+          <Input id="jl" value={f.location} invalid={!!je.location} onChange={(e) => setF({ ...f, location: clean.text(e.target.value) })} placeholder="e.g. Bengaluru" />
         </Field>
         <Field label="Type" htmlFor="jty">
           <Select id="jty" value={f.type} onChange={(e) => setF({ ...f, type: e.target.value as JobType })}>
@@ -309,7 +316,7 @@ function PostJob({ onClose }: { onClose: () => void }) {
           </Select>
         </Field>
         <div className="sm:col-span-2">
-          <Field label="Description" htmlFor="jd" hint="Don't add phone numbers or personal emails: people mark interest through VAA.">
+          <Field label="Description" htmlFor="jd" error={je.description} hint="At least 20 characters. Don't add phone numbers or personal emails: people mark interest through VAA.">
             <Textarea id="jd" rows={5} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
           </Field>
           <div className="mt-2">

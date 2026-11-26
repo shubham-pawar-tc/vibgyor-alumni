@@ -1,5 +1,6 @@
 "use client";
 
+import { allOk, check, clean, whenFilled } from "@/lib/validate";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Clock, Send, ShieldCheck } from "lucide-react";
@@ -20,7 +21,8 @@ function EnquiryForm() {
   const [done, setDone] = useState<null | { ref: string; ms: number }>(null);
 
   const studentMcz = who === "student" && topic === "mycareerz";
-  const valid = form.name.trim() && (form.mobile.trim() || form.email.trim()) && (topic !== "mycareerz" || shareMcz);
+  const errs = { name: check.name(form.name), mobile: check.mobile(form.mobile, false), email: check.email(form.email, false) };
+  const valid = allOk(...Object.values(errs)) && !!(form.mobile.trim() || form.email.trim()) && (topic !== "mycareerz" || shareMcz);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,15 +122,15 @@ function EnquiryForm() {
               </Select>
             </Field>
           </div>
-          <Field label="Full name" htmlFor="name">
-            <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Neha Mehta" required />
+          <Field label="Full name" htmlFor="name" error={whenFilled(form.name, errs.name)}>
+            <Input id="name" value={form.name} invalid={!!whenFilled(form.name, errs.name)} onChange={(e) => setForm({ ...form, name: clean.name(e.target.value) })} placeholder="e.g. Neha Mehta" required />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Mobile" htmlFor="mobile">
-              <Input id="mobile" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} placeholder="+91" />
+            <Field label="Mobile" htmlFor="mobile" error={errs.mobile} hint="Mobile or email: at least one">
+              <Input id="mobile" type="tel" inputMode="tel" value={form.mobile} invalid={!!errs.mobile} onChange={(e) => setForm({ ...form, mobile: clean.mobile(e.target.value) })} placeholder="+91 98765 43210" />
             </Field>
-            <Field label="Email" htmlFor="email">
-              <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" />
+            <Field label="Email" htmlFor="email" error={errs.email}>
+              <Input id="email" type="email" value={form.email} invalid={!!errs.email} onChange={(e) => setForm({ ...form, email: clean.email(e.target.value) })} placeholder="you@example.com" />
             </Field>
           </div>
           <Field label="Campus" htmlFor="campus">

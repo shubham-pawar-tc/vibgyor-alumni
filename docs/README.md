@@ -4,6 +4,7 @@ Flow documents for the VIBGYOR Alumni Platform prototype. Paths like `src/...` a
 
 | File | What it covers |
 |---|---|
+| [INPUT-RULES.md](INPUT-RULES.md) | Format rules for names, emails, mobiles, years, links in every form |
 | [ANNEX-B-COVERAGE.md](ANNEX-B-COVERAGE.md) | Every Annex B role, badge and rule → where it is in the prototype, and what isn't |
 | [USER_ROLES_AND_FLOWS.md](USER_ROLES_AND_FLOWS.md) | All roles, page access, capability matrix, key flows, full user list |
 | [PARENT-FLOW.md](PARENT-FLOW.md) | Parent / guardian: consent, consent centre, multi-child, mentor chats (read and join), events |

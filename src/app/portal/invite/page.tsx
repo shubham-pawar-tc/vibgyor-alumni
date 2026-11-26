@@ -1,5 +1,6 @@
 "use client";
 
+import { check, clean, normalizeMobile, whenFilled } from "@/lib/validate";
 import { useState } from "react";
 import { Copy, Mail, MessageCircle, Send, Trophy } from "lucide-react";
 import { Gate } from "@/components/Gate";
@@ -23,7 +24,8 @@ function Invite() {
   const [copied, setCopied] = useState(false);
   if (!me) return null;
 
-  const valid = channel === "email" ? /^\S+@\S+\.\S+$/.test(to) : to.replace(/\D/g, "").length >= 10;
+  const toErr = channel === "email" ? check.email(to) : check.mobile(to);
+  const valid = !toErr;
   const mine = state.invites.filter((i) => i.by === me.id);
   const board = Object.entries(
     state.invites.reduce<Record<string, { sent: number; joined: number }>>((acc, i) => {
@@ -51,7 +53,7 @@ function Invite() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!valid) return;
-                sendInvite(me.id, to.trim(), channel);
+                sendInvite(me.id, channel === "email" ? to.trim() : normalizeMobile(to), channel);
                 setTo("");
               }}
             >
@@ -65,15 +67,15 @@ function Invite() {
                   <button
                     type="button"
                     key={id}
-                    onClick={() => setChannel(id)}
+                    onClick={() => { setChannel(id); setTo(""); }}
                     className={cn("flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border text-[14.5px] font-semibold", channel === id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2")}
                   >
                     <Icon className="h-4 w-4" /> {label}
                   </button>
                 ))}
               </div>
-              <Field label={channel === "email" ? "Their email" : "Their WhatsApp number"} htmlFor="to">
-                <Input id="to" value={to} onChange={(e) => setTo(e.target.value)} placeholder={channel === "email" ? "friend@example.com" : "+91 98XXX XXXXX"} />
+              <Field label={channel === "email" ? "Their email" : "Their WhatsApp number"} htmlFor="to" error={whenFilled(to, toErr)}>
+                <Input id="to" type={channel === "email" ? "email" : "tel"} value={to} invalid={!!whenFilled(to, toErr)} onChange={(e) => setTo(channel === "email" ? clean.email(e.target.value) : clean.mobile(e.target.value))} placeholder={channel === "email" ? "friend@example.com" : "+91 98XXX XXXXX"} />
               </Field>
               <Button type="submit" disabled={!valid}>
                 <Send className="h-4 w-4" /> Send invite

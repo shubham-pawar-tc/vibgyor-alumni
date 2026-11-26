@@ -193,24 +193,45 @@ export function Avatar({ name, size = 40, className }: { name: string; size?: nu
 
 /* ------------------------------ Form ------------------------------ */
 
-export function Field({ label, hint, children, htmlFor }: { label: string; hint?: React.ReactNode; children: React.ReactNode; htmlFor?: string }) {
+export function Field({ label, hint, children, htmlFor, error }: { label: string; hint?: React.ReactNode; children: React.ReactNode; htmlFor?: string; error?: string }) {
   return (
     <div className="space-y-1.5">
       <label htmlFor={htmlFor} className="block text-[14px] font-semibold">
         {label}
       </label>
       {children}
-      {hint && <p className="text-[13px] text-muted">{hint}</p>}
+      {error ? (
+        <p className="text-[13px] font-medium text-danger" role="alert" id={htmlFor ? `${htmlFor}-err` : undefined}>
+          {error}
+        </p>
+      ) : (
+        hint && <p className="text-[13px] text-muted">{hint}</p>
+      )}
     </div>
+  );
+}
+
+/** Inline error under a field that isn't wrapped in <Field>. */
+export function FieldError({ error }: { error?: string }) {
+  if (!error) return null;
+  return (
+    <p className="mt-1 text-[13px] font-medium text-danger" role="alert">
+      {error}
+    </p>
   );
 }
 
 const inputBase =
   "w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-text placeholder:text-muted/70 transition-colors focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15";
 
-type InputProps = React.InputHTMLAttributes<HTMLInputElement> & { icon?: React.ReactNode };
+type InputProps = React.InputHTMLAttributes<HTMLInputElement> & { icon?: React.ReactNode; invalid?: boolean };
+const invalidCls = "border-danger focus:border-danger focus:ring-danger/15";
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ className, icon, ...rest }, ref) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ className, icon, invalid, ...rest }, ref) {
+  if (invalid) {
+    rest["aria-invalid"] = true;
+    className = cn(invalidCls, className);
+  }
   if (!icon) return <input ref={ref} className={cn(inputBase, "h-11", className)} {...rest} />;
   return (
     <div className="group/input relative">

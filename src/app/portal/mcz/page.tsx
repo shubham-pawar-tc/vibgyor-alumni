@@ -1,15 +1,18 @@
 "use client";
 
+import { check, clean, whenFilled } from "@/lib/validate";
 import { useState } from "react";
 import { Eye, Plus } from "lucide-react";
 import { Gate } from "@/components/Gate";
 import { NoPermission } from "@/components/admin";
-import { Avatar, Button, Callout, Card, Empty, Input, Modal, PageHeader, Pill, Req, Stat, Tabs } from "@/components/ui";
+import { Avatar, Button, Callout, Card, Empty, FieldError, Input, Modal, PageHeader, Pill, Req, Stat, Tabs } from "@/components/ui";
 import { campusName } from "@/lib/data";
 import { bookingStatus } from "@/lib/labels";
 import { can, hasConsent, useStore } from "@/lib/store";
 import type { Booking, User } from "@/lib/types";
 import { formatDateTime, timeAgo } from "@/lib/utils";
+
+const future = (v: string) => (v && new Date(v).getTime() < Date.now() ? "Pick a time in the future" : "");
 
 export default function MczPage() {
   return (
@@ -35,7 +38,8 @@ function Mcz() {
   const guides = state.users.filter((u) => u.role === "ALU" && u.mczGuide && !u.deactivated);
   const webinars = state.events.filter((e) => e.createdBy === me.id);
   const name = (id: string) => state.users.find((u) => u.id === id)?.name ?? "—";
-  const urlOk = /^https:\/\/[^\s.]+\.[^\s]+$/.test(w.url);
+  const urlOk = !check.url(w.url);
+  const wTitle = whenFilled(w.title, check.text(w.title, "Title", { min: 3, max: 100 }));
 
   const open = (u: User) => {
     logView(me.id, `${u.name} (MyCareerZ)`, u.campusIds[0]);
@@ -213,7 +217,7 @@ function Mcz() {
               Cancel
             </Button>
             <Button
-              disabled={!slot}
+              disabled={!slot || !!future(slot)}
               onClick={() => {
                 if (confirm) updateBooking(confirm.id, "confirmed", me.id, new Date(slot).toISOString());
                 setConfirm(null);
@@ -224,7 +228,8 @@ function Mcz() {
           </>
         }
       >
-        <Input type="datetime-local" value={slot} onChange={(e) => setSlot(e.target.value)} aria-label="Session time" />
+        <Input type="datetime-local" min={new Date().toISOString().slice(0, 16)} value={slot} invalid={!!future(slot)} onChange={(e) => setSlot(e.target.value)} aria-label="Session time" />
+        <FieldError error={future(slot)} />
       </Modal>
 
       <Modal
@@ -237,7 +242,7 @@ function Mcz() {
               Cancel
             </Button>
             <Button
-              disabled={!w.title.trim() || !w.start || !urlOk}
+              disabled={!!check.text(w.title, "t", { min: 3, max: 100 }) || !w.start || !!future(w.start) || !urlOk}
               onClick={() => {
                 const start = new Date(w.start);
                 createEvent({
@@ -263,9 +268,12 @@ function Mcz() {
         }
       >
         <div className="space-y-3">
-          <Input placeholder="Title" value={w.title} onChange={(e) => setW({ ...w, title: e.target.value })} aria-label="Title" />
-          <Input type="datetime-local" value={w.start} onChange={(e) => setW({ ...w, start: e.target.value })} aria-label="Start" />
-          <Input placeholder="https://meet… (meeting link)" value={w.url} onChange={(e) => setW({ ...w, url: e.target.value })} aria-label="Meeting link" />
+          <Input placeholder="Title" value={w.title} invalid={!!wTitle} onChange={(e) => setW({ ...w, title: clean.text(e.target.value, 100) })} aria-label="Title" />
+          <FieldError error={wTitle} />
+          <Input type="datetime-local" min={new Date().toISOString().slice(0, 16)} value={w.start} invalid={!!future(w.start)} onChange={(e) => setW({ ...w, start: e.target.value })} aria-label="Start" />
+          <FieldError error={future(w.start)} />
+          <Input placeholder="https://meet.google.com/abc-defg-hij" value={w.url} invalid={!!whenFilled(w.url, check.url(w.url))} onChange={(e) => setW({ ...w, url: clean.url(e.target.value) })} aria-label="Meeting link" />
+          <FieldError error={whenFilled(w.url, check.url(w.url))} />
         </div>
       </Modal>
     </>

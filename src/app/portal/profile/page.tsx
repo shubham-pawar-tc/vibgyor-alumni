@@ -1,10 +1,11 @@
 "use client";
 
+import { allOk, check, clean, whenFilled } from "@/lib/validate";
 import { useState } from "react";
 import { CheckCircle2, Eye, Lock, Plus, ShieldCheck, Trash2, Upload, X } from "lucide-react";
 import { MyData } from "@/components/MyData";
 import { ProfileCard } from "@/components/ProfileCard";
-import { Button, Callout, Card, CardHeader, Field, Input, PageHeader, Pill, Req, Select, Switch, Tabs } from "@/components/ui";
+import { Button, Callout, Card, CardHeader, Field, FieldError, Input, PageHeader, Pill, Req, Select, Switch, Tabs } from "@/components/ui";
 import { campusName, privateFieldLabels, visibilityLabels } from "@/lib/data";
 import { completeness } from "@/lib/community";
 import { useStore } from "@/lib/store";
@@ -88,7 +89,30 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
   const [newEdu, setNewEdu] = useState({ institution: "", degree: "", from: "", to: "" });
   const [ach, setAch] = useState("");
   const [skill, setSkill] = useState("");
-  const set = (k: keyof typeof basics) => (e: React.ChangeEvent<HTMLInputElement>) => setBasics({ ...basics, [k]: e.target.value });
+  const cleaners: Record<keyof typeof basics, (v: string) => string> = { headline: (v) => clean.text(v, 120), city: clean.name, country: clean.name, company: (v) => clean.text(v), title: (v) => clean.text(v), linkedin: clean.url };
+  const set = (k: keyof typeof basics) => (e: React.ChangeEvent<HTMLInputElement>) => setBasics({ ...basics, [k]: cleaners[k](e.target.value) });
+  const be = {
+    headline: check.text(basics.headline, "Headline", { required: false, max: 120 }),
+    title: check.text(basics.title, "Job title", { required: false }),
+    company: check.text(basics.company, "Company", { required: false }),
+    city: basics.city.trim() ? check.name(basics.city, "City") : "",
+    country: basics.country.trim() ? check.name(basics.country, "Country") : "",
+    linkedin: check.linkedin(basics.linkedin),
+  };
+  const now = new Date().getFullYear();
+  const we = {
+    title: whenFilled(newWork.title, check.text(newWork.title, "Job title")),
+    company: whenFilled(newWork.company, check.text(newWork.company, "Company")),
+    from: whenFilled(newWork.from, check.year(newWork.from, { min: 1990, max: now, label: "From" })),
+    to: whenFilled(newWork.to, check.year(newWork.to, { min: Number(newWork.from) || 1990, max: now, required: false, label: "To" })),
+  };
+  const ee = {
+    institution: whenFilled(newEdu.institution, check.text(newEdu.institution, "College")),
+    degree: whenFilled(newEdu.degree, check.text(newEdu.degree, "Degree", { required: false })),
+    from: whenFilled(newEdu.from, check.year(newEdu.from, { min: 1990, max: now, label: "From" })),
+    to: whenFilled(newEdu.to, check.year(newEdu.to, { min: Number(newEdu.from) || 1990, max: now + 6, label: "To" })),
+  };
+  const yr = (v: string) => clean.digits(v, 4);
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -98,33 +122,34 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
           className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
-            save({ headline: basics.headline || undefined, linkedin: basics.linkedin || undefined }, { city: basics.city, country: basics.country, company: basics.company, title: basics.title });
+            if (!allOk(...Object.values(be))) return;
+            save({ headline: basics.headline.trim() || undefined, linkedin: basics.linkedin.trim() || undefined }, { city: basics.city.trim(), country: basics.country.trim(), company: basics.company.trim(), title: basics.title.trim() });
           }}
         >
           <div className="sm:col-span-2">
-            <Field label="Headline" htmlFor="hl" hint="Always visible to verified alumni, so leave out anything you have hidden in Privacy">
-              <Input id="hl" value={basics.headline} onChange={set("headline")} placeholder="e.g. Product designer at Swiggy · Batch of 2015" />
+            <Field label="Headline" htmlFor="hl" error={be.headline} hint="Always visible to verified alumni, so leave out anything you have hidden in Privacy">
+              <Input id="hl" value={basics.headline} invalid={!!be.headline} onChange={set("headline")} placeholder="e.g. Product designer at Swiggy · Batch of 2015" />
             </Field>
           </div>
-          <Field label="Job title" htmlFor="ti">
-            <Input id="ti" value={basics.title} onChange={set("title")} />
+          <Field label="Job title" htmlFor="ti" error={be.title}>
+            <Input id="ti" value={basics.title} invalid={!!be.title} onChange={set("title")} />
           </Field>
-          <Field label="Company" htmlFor="co">
-            <Input id="co" value={basics.company} onChange={set("company")} />
+          <Field label="Company" htmlFor="co" error={be.company}>
+            <Input id="co" value={basics.company} invalid={!!be.company} onChange={set("company")} />
           </Field>
-          <Field label="City" htmlFor="ci">
-            <Input id="ci" value={basics.city} onChange={set("city")} />
+          <Field label="City" htmlFor="ci" error={be.city}>
+            <Input id="ci" value={basics.city} invalid={!!be.city} onChange={set("city")} />
           </Field>
-          <Field label="Country" htmlFor="cn">
-            <Input id="cn" value={basics.country} onChange={set("country")} />
+          <Field label="Country" htmlFor="cn" error={be.country}>
+            <Input id="cn" value={basics.country} invalid={!!be.country} onChange={set("country")} />
           </Field>
           <div className="sm:col-span-2">
-            <Field label="LinkedIn" htmlFor="li">
-              <Input id="li" value={basics.linkedin} onChange={set("linkedin")} placeholder="linkedin.com/in/…" />
+            <Field label="LinkedIn" htmlFor="li" error={be.linkedin}>
+              <Input id="li" value={basics.linkedin} invalid={!!be.linkedin} onChange={set("linkedin")} placeholder="linkedin.com/in/your-name" />
             </Field>
           </div>
           <div className="sm:col-span-2 flex justify-end">
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={!allOk(...Object.values(be))}>Save</Button>
           </div>
         </form>
       </Card>
@@ -146,15 +171,16 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
             </div>
           ))}
           <div className="grid grid-cols-2 gap-2 pt-2">
-            <Input placeholder="Job title" value={newWork.title} onChange={(e) => setNewWork({ ...newWork, title: e.target.value })} />
-            <Input placeholder="Company" value={newWork.company} onChange={(e) => setNewWork({ ...newWork, company: e.target.value })} />
-            <Input placeholder="From (year)" inputMode="numeric" value={newWork.from} onChange={(e) => setNewWork({ ...newWork, from: e.target.value })} />
-            <Input placeholder="To (blank = now)" inputMode="numeric" value={newWork.to} onChange={(e) => setNewWork({ ...newWork, to: e.target.value })} />
+            <Input placeholder="Job title" aria-label="Job title" value={newWork.title} invalid={!!we.title} onChange={(e) => setNewWork({ ...newWork, title: clean.text(e.target.value) })} />
+            <Input placeholder="Company" aria-label="Company" value={newWork.company} invalid={!!we.company} onChange={(e) => setNewWork({ ...newWork, company: clean.text(e.target.value) })} />
+            <Input placeholder="From (year)" aria-label="From year" inputMode="numeric" value={newWork.from} invalid={!!we.from} onChange={(e) => setNewWork({ ...newWork, from: yr(e.target.value) })} />
+            <Input placeholder="To (blank = now)" aria-label="To year" inputMode="numeric" value={newWork.to} invalid={!!we.to} onChange={(e) => setNewWork({ ...newWork, to: yr(e.target.value) })} />
           </div>
+          <FieldError error={we.title || we.company || we.from || we.to} />
           <Button
             variant="soft"
             size="sm"
-            disabled={!newWork.title || !newWork.company || !newWork.from}
+            disabled={!allOk(check.text(newWork.title, "t"), check.text(newWork.company, "c"), check.year(newWork.from, { min: 1990, max: now }), we.to)}
             onClick={() => {
               save({ work: [{ id: uid("w"), title: newWork.title, company: newWork.company, from: +newWork.from, to: newWork.to ? +newWork.to : undefined }, ...p.work] });
               setNewWork({ company: "", title: "", from: "", to: "" });
@@ -182,15 +208,16 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
             </div>
           ))}
           <div className="grid grid-cols-2 gap-2 pt-2">
-            <Input placeholder="College / university" value={newEdu.institution} onChange={(e) => setNewEdu({ ...newEdu, institution: e.target.value })} />
-            <Input placeholder="Degree" value={newEdu.degree} onChange={(e) => setNewEdu({ ...newEdu, degree: e.target.value })} />
-            <Input placeholder="From" inputMode="numeric" value={newEdu.from} onChange={(e) => setNewEdu({ ...newEdu, from: e.target.value })} />
-            <Input placeholder="To" inputMode="numeric" value={newEdu.to} onChange={(e) => setNewEdu({ ...newEdu, to: e.target.value })} />
+            <Input placeholder="College / university" aria-label="College" value={newEdu.institution} invalid={!!ee.institution} onChange={(e) => setNewEdu({ ...newEdu, institution: clean.text(e.target.value, 120) })} />
+            <Input placeholder="Degree" aria-label="Degree" value={newEdu.degree} invalid={!!ee.degree} onChange={(e) => setNewEdu({ ...newEdu, degree: clean.text(e.target.value) })} />
+            <Input placeholder="From (year)" aria-label="From year" inputMode="numeric" value={newEdu.from} invalid={!!ee.from} onChange={(e) => setNewEdu({ ...newEdu, from: yr(e.target.value) })} />
+            <Input placeholder="To (year)" aria-label="To year" inputMode="numeric" value={newEdu.to} invalid={!!ee.to} onChange={(e) => setNewEdu({ ...newEdu, to: yr(e.target.value) })} />
           </div>
+          <FieldError error={ee.institution || ee.degree || ee.from || ee.to} />
           <Button
             variant="soft"
             size="sm"
-            disabled={!newEdu.institution || !newEdu.from || !newEdu.to}
+            disabled={!allOk(check.text(newEdu.institution, "c"), ee.degree, check.year(newEdu.from, { min: 1990, max: now }), check.year(newEdu.to, { min: Number(newEdu.from) || 1990, max: now + 6 }))}
             onClick={() => {
               save({ education: [{ id: uid("e"), institution: newEdu.institution, degree: newEdu.degree, from: +newEdu.from, to: +newEdu.to }, ...p.education] });
               setNewEdu({ institution: "", degree: "", from: "", to: "" });
@@ -385,9 +412,9 @@ function StudentProfile({ me }: { me: User }) {
               {threeC.map((c, i) => (
                 <div key={i} className="grid grid-cols-1 gap-2 rounded-xl bg-surface-2 p-3 sm:grid-cols-[28px_1fr_1fr_1fr_32px] sm:items-center">
                   <span className="grid h-7 w-7 place-items-center rounded-xl bg-primary-soft text-[13px] font-bold text-primary">{i + 1}</span>
-                  <Input placeholder="Country" value={c.country} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, country: e.target.value } : x)))} />
-                  <Input placeholder="Course" value={c.course} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, course: e.target.value } : x)))} />
-                  <Input placeholder="College" value={c.college} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, college: e.target.value } : x)))} />
+                  <Input placeholder="Country" value={c.country} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, country: clean.name(e.target.value) } : x)))} />
+                  <Input placeholder="Course" value={c.course} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, course: clean.text(e.target.value) } : x)))} />
+                  <Input placeholder="College" value={c.college} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, college: clean.text(e.target.value, 120) } : x)))} />
                   <button onClick={() => setThreeC(threeC.filter((_, j) => j !== i))} className="grid h-8 w-8 place-items-center text-muted hover:text-danger" aria-label="Remove">
                     <Trash2 className="h-4 w-4" />
                   </button>

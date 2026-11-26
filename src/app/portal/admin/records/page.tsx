@@ -1,5 +1,6 @@
 "use client";
 
+import { allOk, check, clean, normalizeMobile, whenFilled } from "@/lib/validate";
 import Link from "next/link";
 import { useState } from "react";
 import { CheckCircle2, Download, Mail, MessageCircle, Pencil, Power, Search, Send, Smartphone } from "lucide-react";
@@ -225,7 +226,17 @@ function Records() {
 function EditRecord({ u, onClose }: { u: User; onClose: () => void }) {
   const { me, editUser } = useStore();
   const [f, setF] = useState({ name: u.name, email: u.email, mobile: u.mobile, batch: String(u.batch ?? ""), title: u.title ?? "", company: u.company ?? "", city: u.city ?? "" });
-  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
+  const cleaners: Record<keyof typeof f, (v: string) => string> = { name: clean.name, email: clean.email, mobile: clean.mobile, batch: (v) => clean.digits(v, 4), title: (v) => clean.text(v), company: (v) => clean.text(v), city: clean.name };
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: cleaners[k](e.target.value) });
+  const errs = {
+    name: check.name(f.name),
+    email: check.email(f.email),
+    mobile: u.mobile === "—" && !f.mobile.trim() ? "" : check.mobile(f.mobile),
+    batch: u.batch === undefined && !f.batch ? "" : check.year(f.batch, { min: 1990, label: "Batch" }),
+    title: check.text(f.title, "Job title", { required: false }),
+    company: check.text(f.company, "Company", { required: false }),
+    city: f.city.trim() ? check.name(f.city, "City") : "",
+  };
   return (
     <Modal
       open
@@ -237,9 +248,10 @@ function EditRecord({ u, onClose }: { u: User; onClose: () => void }) {
             Cancel
           </Button>
           <Button
+            disabled={!allOk(...Object.values(errs))}
             onClick={() => {
               const changed = Object.fromEntries(
-                Object.entries({ ...f, batch: Number(f.batch) }).filter(([k, v]) => (u as unknown as Record<string, unknown>)[k] !== v && !(v === "" && (u as unknown as Record<string, unknown>)[k] === undefined))
+                Object.entries({ ...f, name: f.name.trim(), mobile: f.mobile === u.mobile ? f.mobile : normalizeMobile(f.mobile), batch: Number(f.batch) }).filter(([k, v]) => (u as unknown as Record<string, unknown>)[k] !== v && !(v === "" && (u as unknown as Record<string, unknown>)[k] === undefined))
               ) as Partial<User>;
               if (Object.keys(changed).length) editUser(u.id, changed, me!.id);
               onClose();
@@ -251,13 +263,13 @@ function EditRecord({ u, onClose }: { u: User; onClose: () => void }) {
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Full name" htmlFor="rn"><Input id="rn" value={f.name} onChange={set("name")} /></Field>
-        <Field label="Batch" htmlFor="rb"><Input id="rb" inputMode="numeric" value={f.batch} onChange={set("batch")} /></Field>
-        <Field label="Email" htmlFor="re"><Input id="re" value={f.email} onChange={set("email")} /></Field>
-        <Field label="Mobile" htmlFor="rm"><Input id="rm" value={f.mobile} onChange={set("mobile")} /></Field>
-        <Field label="Job title" htmlFor="rt"><Input id="rt" value={f.title} onChange={set("title")} /></Field>
-        <Field label="Company" htmlFor="rc"><Input id="rc" value={f.company} onChange={set("company")} /></Field>
-        <Field label="City" htmlFor="rci"><Input id="rci" value={f.city} onChange={set("city")} /></Field>
+        <Field label="Full name" htmlFor="rn" error={errs.name}><Input id="rn" value={f.name} invalid={!!errs.name} onChange={set("name")} /></Field>
+        <Field label="Batch" htmlFor="rb" error={errs.batch}><Input id="rb" inputMode="numeric" value={f.batch} invalid={!!errs.batch} onChange={set("batch")} /></Field>
+        <Field label="Email" htmlFor="re" error={errs.email}><Input id="re" type="email" value={f.email} invalid={!!errs.email} onChange={set("email")} /></Field>
+        <Field label="Mobile" htmlFor="rm" error={errs.mobile}><Input id="rm" type="tel" value={f.mobile} invalid={!!errs.mobile} onChange={set("mobile")} /></Field>
+        <Field label="Job title" htmlFor="rt" error={errs.title}><Input id="rt" value={f.title} invalid={!!errs.title} onChange={set("title")} /></Field>
+        <Field label="Company" htmlFor="rc" error={errs.company}><Input id="rc" value={f.company} invalid={!!errs.company} onChange={set("company")} /></Field>
+        <Field label="City" htmlFor="rci" error={errs.city}><Input id="rci" value={f.city} invalid={!!errs.city} onChange={set("city")} /></Field>
       </div>
       <p className="mt-3 text-[13px] text-muted">The change and the fields you edited go into the audit log.</p>
     </Modal>

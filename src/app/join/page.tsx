@@ -1,5 +1,6 @@
 "use client";
 
+import { allOk, check, clean, normalizeMobile, whenFilled } from "@/lib/validate";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, AtSign, BadgeCheck, Check, CheckCircle2, Clock, Copy, Database, Hash, HeartHandshake, History, Lock, Mail, MailCheck, PartyPopper, Phone, Search, ShieldCheck, Sparkles, User, UserPlus, Users, Wand2 } from "lucide-react";
@@ -58,12 +59,14 @@ export default function JoinPage() {
       return;
     }
     const ref = new URLSearchParams(window.location.search).get("ref") ?? undefined;
-    const r = submitVerification({ ...form, migratedId: migrated?.id, ref });
+    const r = submitVerification({ ...form, name: form.name.trim(), mobile: normalizeMobile(form.mobile), migratedId: migrated?.id, ref });
     setResult(r);
     setStep("result");
   };
 
-  const detailsValid = form.name.trim().length > 2 && /\S+@\S+\.\S+/.test(form.email) && form.passYear;
+  const errs = { name: check.name(form.name), email: check.email(form.email), mobile: check.mobile(form.mobile), admissionNo: check.admission(form.admissionNo) };
+  const detailsValid = allOk(...Object.values(errs)) && !!form.passYear;
+  const lookupErr2 = check.emailOrMobile(lookup);
 
   return (
     <>
@@ -125,11 +128,11 @@ export default function JoinPage() {
               <h1 className="mt-2 text-2xl font-extrabold tracking-tight">Find your profile</h1>
               <p className="mt-1 text-sm text-muted">Enter the email or mobile number you used on the previous alumni portal.</p>
               <div className="mt-6 space-y-4">
-                <Field label="Email or mobile" htmlFor="lookup" hint={<>Demo: <button type="button" className="font-semibold text-primary" onClick={() => setLookup("karan.malhotra@example.com")}>karan.malhotra@example.com</button></>}>
-                  <Input id="lookup" icon={<AtSign />} value={lookup} onChange={(e) => setLookup(e.target.value)} placeholder="you@example.com" autoFocus />
+                <Field label="Email or mobile" htmlFor="lookup" error={whenFilled(lookup, lookupErr2)} hint={<>Demo: <button type="button" className="font-semibold text-primary" onClick={() => setLookup("karan.malhotra@example.com")}>karan.malhotra@example.com</button></>}>
+                  <Input id="lookup" icon={<AtSign />} value={lookup} invalid={!!whenFilled(lookup, lookupErr2)} onChange={(e) => setLookup(clean.emailOrMobile(e.target.value))} placeholder="you@example.com" autoFocus />
                 </Field>
                 {lookupErr && <Callout tone="warning">{lookupErr}</Callout>}
-                <Button type="submit" size="lg" className="w-full" disabled={!lookup.trim()}>
+                <Button type="submit" size="lg" className="w-full" disabled={!!lookupErr2}>
                   <Search className="h-4 w-4" /> Search
                 </Button>
               </div>
@@ -178,15 +181,15 @@ export default function JoinPage() {
               <h1 className="mt-2 text-2xl font-extrabold tracking-tight">Tell us about your time at VIBGYOR</h1>
               <p className="mt-1 text-sm text-muted">We check these against school records to verify you automatically.</p>
               <div className="mt-6 space-y-4">
-                <Field label="Full name (as in school records)" htmlFor="n">
-                  <Input id="n" icon={<User />} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Karan Malhotra" />
+                <Field label="Full name (as in school records)" htmlFor="n" error={whenFilled(form.name, errs.name)}>
+                  <Input id="n" icon={<User />} value={form.name} invalid={!!whenFilled(form.name, errs.name)} onChange={(e) => setForm({ ...form, name: clean.name(e.target.value) })} placeholder="e.g. Karan Malhotra" autoComplete="name" />
                 </Field>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Email" htmlFor="e">
-                    <Input id="e" icon={<Mail />} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" />
+                  <Field label="Email" htmlFor="e" error={whenFilled(form.email, errs.email)}>
+                    <Input id="e" icon={<Mail />} type="email" value={form.email} invalid={!!whenFilled(form.email, errs.email)} onChange={(e) => setForm({ ...form, email: clean.email(e.target.value) })} placeholder="you@example.com" autoComplete="email" />
                   </Field>
-                  <Field label="Mobile" htmlFor="m">
-                    <Input id="m" icon={<Phone />} inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} placeholder="+91 / +44 / +1 …" />
+                  <Field label="Mobile" htmlFor="m" error={whenFilled(form.mobile, errs.mobile)} hint="India: 10 digits. Abroad: + country code">
+                    <Input id="m" icon={<Phone />} type="tel" inputMode="tel" value={form.mobile} invalid={!!whenFilled(form.mobile, errs.mobile)} onChange={(e) => setForm({ ...form, mobile: clean.mobile(e.target.value) })} placeholder="+91 98765 43210" autoComplete="tel" />
                   </Field>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -209,8 +212,8 @@ export default function JoinPage() {
                     </Select>
                   </Field>
                 </div>
-                <Field label="Admission / roll number" htmlFor="a" hint="Optional, but it lets us verify you instantly. It's on your school ID or leaving certificate.">
-                  <Input id="a" icon={<Hash />} value={form.admissionNo} onChange={(e) => setForm({ ...form, admissionNo: e.target.value.toUpperCase() })} placeholder="VG-MAL-2014-0187" className="font-mono" />
+                <Field label="Admission / roll number" htmlFor="a" error={whenFilled(form.admissionNo, errs.admissionNo)} hint="Optional, but it lets us verify you instantly. It's on your school ID or leaving certificate.">
+                  <Input id="a" icon={<Hash />} value={form.admissionNo} invalid={!!whenFilled(form.admissionNo, errs.admissionNo)} onChange={(e) => setForm({ ...form, admissionNo: clean.admission(e.target.value) })} placeholder="VG-MAL-2014-0187" className="font-mono" />
                 </Field>
                 <div className="rounded-xl border border-dashed border-warning/40 bg-warning-soft/50 p-3.5 text-[13.5px] text-muted">
                   <p className="mb-2 flex items-center gap-1.5 font-semibold text-text">

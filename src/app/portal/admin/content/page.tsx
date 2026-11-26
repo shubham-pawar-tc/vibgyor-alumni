@@ -1,11 +1,12 @@
 "use client";
 
+import { allOk, check, clean, whenFilled } from "@/lib/validate";
 import Link from "next/link";
 import { useState } from "react";
 import { CalendarDays, CheckCircle2, Flag, GraduationCap, Plus, XCircle } from "lucide-react";
 import { AdminOnly, useScope } from "@/components/admin";
 import { MaskedText } from "@/components/MaskPreview";
-import { Avatar, Button, Callout, Card, Checkbox, Empty, Field, Input, Modal, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
+import { Avatar, Button, Callout, Card, Checkbox, Empty, Field, FieldError, Input, Modal, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
 import { campuses, campusName } from "@/lib/data";
 import { maskKindLabel } from "@/lib/mask";
 import { useStore } from "@/lib/store";
@@ -210,8 +211,16 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
   });
   if (!me) return null;
   const aud = (Object.keys(f.audience) as ("ALU" | "STU" | "PAR")[]).filter((k) => f.audience[k]);
-  const linkOk = /^https:\/\/[^\s.]+\.[^\s]+$/i.test(f.joinUrl.trim());
-  const ok = f.title && (f.online ? linkOk : f.venue.trim()) && aud.length > 0;
+  const linkOk = !check.url(f.joinUrl);
+  const startAt = f.date && f.time ? new Date(`${f.date}T${f.time}:00+05:30`) : null;
+  const ee = {
+    title: whenFilled(f.title, check.text(f.title, "Title", { min: 3, max: 100 })),
+    when: startAt && startAt.getTime() < Date.now() ? "Pick a date and time in the future" : "",
+    hours: f.hours < 1 || f.hours > 12 ? "Between 1 and 12 hours" : "",
+    capacity: f.capacity < 1 || f.capacity > 5000 ? "Between 1 and 5,000" : "",
+    venue: !f.online ? whenFilled(f.venue, check.text(f.venue, "Venue", { min: 3, max: 120 })) : "",
+  };
+  const ok = !check.text(f.title, "t", { min: 3, max: 100 }) && !!startAt && allOk(ee.when, ee.hours, ee.capacity) && (f.online ? linkOk : !check.text(f.venue, "v", { min: 3, max: 120 })) && aud.length > 0;
   const studentsInvited = f.audience.STU;
 
   return (
@@ -253,8 +262,8 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <Field label="Title" htmlFor="et">
-            <Input id="et" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Pune chapter meetup" />
+          <Field label="Title" htmlFor="et" error={ee.title}>
+            <Input id="et" value={f.title} invalid={!!ee.title} onChange={(e) => setF({ ...f, title: clean.text(e.target.value, 100) })} placeholder="e.g. Pune chapter meetup" />
           </Field>
         </div>
         <Field label="Type" htmlFor="ek">
@@ -274,15 +283,15 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
             ))}
           </Select>
         </Field>
-        <Field label="Date" htmlFor="ed">
-          <Input id="ed" type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
+        <Field label="Date" htmlFor="ed" error={ee.when}>
+          <Input id="ed" type="date" min={new Date().toISOString().slice(0, 10)} value={f.date} invalid={!!ee.when} onChange={(e) => setF({ ...f, date: e.target.value })} />
         </Field>
         <div className="grid grid-cols-2 gap-2">
           <Field label="Start (IST)" htmlFor="eti">
             <Input id="eti" type="time" value={f.time} onChange={(e) => setF({ ...f, time: e.target.value })} />
           </Field>
-          <Field label="Hours" htmlFor="eh">
-            <Input id="eh" type="number" min={1} max={12} value={f.hours} onChange={(e) => setF({ ...f, hours: +e.target.value || 1 })} />
+          <Field label="Hours" htmlFor="eh" error={ee.hours}>
+            <Input id="eh" type="number" min={1} max={12} value={f.hours} invalid={!!ee.hours} onChange={(e) => setF({ ...f, hours: Math.min(12, Number(clean.digits(e.target.value, 2)) || 1) })} />
           </Field>
         </div>
         <div className="space-y-3 sm:col-span-2">
@@ -294,7 +303,7 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
                 htmlFor="ejl"
                 hint="Zoom, Google Meet, Teams or YouTube Live (https://…). Shown only to people who tapped Going, from 15 minutes before the start."
               >
-                <Input id="ejl" type="url" value={f.joinUrl} onChange={(e) => setF({ ...f, joinUrl: e.target.value })} placeholder="https://zoom.us/j/123456789" />
+                <Input id="ejl" type="url" value={f.joinUrl} invalid={!!whenFilled(f.joinUrl, check.url(f.joinUrl))} onChange={(e) => setF({ ...f, joinUrl: clean.url(e.target.value) })} placeholder="https://zoom.us/j/123456789" />
               </Field>
               <Field label="Venue text (optional)" htmlFor="ev" hint='Shown on the card. Default: "Online – link sent to registered attendees".'>
                 <Input id="ev" value={f.venue} onChange={(e) => setF({ ...f, venue: e.target.value })} placeholder="Online – link sent to registered attendees" />
@@ -303,12 +312,13 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
             </div>
           ) : (
             <Field label="Venue" htmlFor="ev">
-              <Input id="ev" value={f.venue} onChange={(e) => setF({ ...f, venue: e.target.value })} placeholder="e.g. VIBGYOR High, Malad – auditorium" />
+              <Input id="ev" value={f.venue} invalid={!!ee.venue} onChange={(e) => setF({ ...f, venue: clean.text(e.target.value, 120) })} placeholder="e.g. VIBGYOR High, Malad – auditorium" />
+              <FieldError error={ee.venue} />
             </Field>
           )}
         </div>
-        <Field label="Capacity" htmlFor="ecap">
-          <Input id="ecap" type="number" min={1} value={f.capacity} onChange={(e) => setF({ ...f, capacity: +e.target.value || 1 })} />
+        <Field label="Capacity" htmlFor="ecap" error={ee.capacity}>
+          <Input id="ecap" type="number" min={1} max={5000} value={f.capacity} invalid={!!ee.capacity} onChange={(e) => setF({ ...f, capacity: Number(clean.digits(e.target.value, 4)) || 1 })} />
         </Field>
         <div className="sm:col-span-2">
           <Field label="Description" htmlFor="ede">

@@ -30,6 +30,7 @@ import type {
   VerificationRequest,
 } from "./types";
 import { childTag, firstName, maskMobile, uid } from "./utils";
+import { check } from "./validate";
 
 const KEY = "vaa-prototype-state";
 
@@ -965,6 +966,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       /* ---------------- Phase 3: administration ---------------- */
       editUser: (userId, fields, actorId) => {
         const u = getUser(userId);
+        if ((fields.name !== undefined && check.name(fields.name)) || (fields.email !== undefined && check.email(fields.email)) || (fields.mobile !== undefined && fields.mobile !== "—" && check.mobile(fields.mobile))) return;
         setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, ...fields } : x)) }));
         log({ actorId, action: "Alumni record edited", target: u?.name ?? userId, campusId: u?.campusIds[0], category: "admin", detail: Object.keys(fields).join(", ") });
       },
@@ -1235,7 +1237,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (!may.includes(input.role) || (target && !may.includes(target.role))) return { ok: false, error: "Your role can't manage that kind of staff account." };
         if (actor?.role === "CAD" && (input.campusIds.length !== 1 || !actor.campusIds.includes(input.campusIds[0]) || (target && !actor.campusIds.includes(target.campusIds[0]))))
           return { ok: false, error: "Campus Admins manage teachers at their own campus only." };
-        if (input.name.trim().length < 3 || !/\S+@\S+\.\S+/.test(input.email)) return { ok: false, error: "Enter a name and a valid email." };
+        const fmt = check.name(input.name) || check.email(input.email) || check.mobile(input.mobile);
+        if (fmt) return { ok: false, error: fmt };
         const all = campusIdsAll();
         const campusIds = input.role === "GAO" || input.role === "SAD" ? all : input.campusIds;
         if ((input.role === "TCH" || input.role === "CAD") && campusIds.length !== 1) return { ok: false, error: "Teachers and Campus Admins have exactly one campus." };

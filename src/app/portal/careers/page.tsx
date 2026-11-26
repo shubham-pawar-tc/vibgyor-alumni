@@ -1,9 +1,10 @@
 "use client";
 
+import { check, clean, whenFilled } from "@/lib/validate";
 import { useState } from "react";
 import { Compass } from "lucide-react";
 import { Gate } from "@/components/Gate";
-import { Button, Callout, Card, CardHeader, Empty, Input, PageHeader, Pill, Req, Tabs } from "@/components/ui";
+import { Button, Callout, Card, CardHeader, Empty, FieldError, Input, PageHeader, Pill, Req, Tabs } from "@/components/ui";
 import { MCZ_SESSION_FEE } from "@/lib/data";
 import { bookingStatus, rupees } from "@/lib/labels";
 import { hasConsent, useStore } from "@/lib/store";
@@ -59,11 +60,18 @@ function Careers() {
       ) : (
         <Card className="mb-5 p-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Input placeholder="What would you like help with?" value={topic} onChange={(e) => setTopic(e.target.value)} aria-label="Topic" />
-            <Input type="datetime-local" value={slot} onChange={(e) => setSlot(e.target.value)} aria-label="Preferred time" />
+            <div>
+              <Input placeholder="What would you like help with?" value={topic} invalid={!!whenFilled(topic, check.text(topic, "Topic", { min: 3, max: 120 }))} onChange={(e) => setTopic(clean.text(e.target.value, 120))} aria-label="Topic" />
+              <FieldError error={whenFilled(topic, check.text(topic, "Topic", { min: 3, max: 120 }))} />
+            </div>
+            <div>
+              <Input type="datetime-local" min={new Date().toISOString().slice(0, 16)} value={slot} invalid={!!(slot && new Date(slot).getTime() < Date.now())} onChange={(e) => setSlot(e.target.value)} aria-label="Preferred time" />
+              <FieldError error={slot && new Date(slot).getTime() < Date.now() ? "Pick a time in the future" : ""} />
+            </div>
           </div>
           <Button
             className="mt-4"
+            disabled={!!check.text(topic, "t", { min: 3, max: 120 }) || !slot || new Date(slot).getTime() < Date.now()}
             onClick={() => {
               const r = bookMcz({ studentId: stu.id, bookedBy: me.id, topic, slot: slot ? new Date(slot).toISOString() : "" });
               setMsg(r.ok ? { ok: true, text: parent ? `Booked and paid ${rupees(MCZ_SESSION_FEE)}. The counsellor will confirm the time.` : "Request sent. The counsellor will confirm with your parent." } : { ok: false, text: r.error ?? "" });
