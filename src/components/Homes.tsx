@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { AskMentorPermission } from "./AskMentorPermission";
 import {
   ArrowRight,
   BadgeCheck,
@@ -25,7 +27,7 @@ import {
   Users,
 } from "lucide-react";
 import { campuses, campusName, consentPurposes, population, roleLabels } from "@/lib/data";
-import { activeBadge, hasConsent, latestConsent, useStore } from "@/lib/store";
+import { activeBadge, belowAgeGate, hasConsent, latestConsent, useStore } from "@/lib/store";
 import type { ConsentPurpose, User } from "@/lib/types";
 import { cn, firstName, fmt, formatDate, timeAgo } from "@/lib/utils";
 import { completeness, groupsFor } from "@/lib/community";
@@ -39,6 +41,22 @@ export function StudentHome({ me }: { me: User }) {
   const parents = (me.parentIds ?? []).map((id) => state.users.find((u) => u.id === id)).filter((u): u is User => !!u);
   const parentNames = parents.length ? parents.map((p) => p.name).join(" and ") : undefined;
   const sentRecently = state.outbox.some((o) => parents.some((p) => p.id === o.toUserId) && o.link?.href.startsWith(`/consent/${me.id}`));
+
+  if (belowAgeGate(state, me)) {
+    const min = state.campusMinClass?.[me.campusIds[0]] ?? 8;
+    return (
+      <div className="mx-auto max-w-2xl">
+        <Card className="p-8 text-center">
+          <Lock className="mx-auto h-10 w-10 text-muted" />
+          <h1 className="mt-4 text-2xl font-bold tracking-tight">Not open for your class yet, {firstName(me.name)}</h1>
+          <p className="mx-auto mt-2 max-w-md text-[15px] text-muted">
+            {campusName(me.campusIds[0])} opens the VIBGYOR Alumni Platform to students from <b>Class {min}</b>. You&apos;re in Class {me.className}, so your account stays switched off and no one has been asked for consent.
+          </p>
+          <p className="mt-4 text-[13.5px] text-muted">We&apos;ll invite your parent when you reach Class {min}.</p>
+        </Card>
+      </div>
+    );
+  }
 
   if (me.studentStatus === "awaiting_consent" || me.studentStatus === "paused") {
     const paused = me.studentStatus === "paused";
@@ -119,6 +137,9 @@ export function StudentHome({ me }: { me: User }) {
             ) : (
               <Callout tone="warning" className="mt-5" title="Mentor contact is switched off">
                 Your parent hasn&apos;t allowed mentor contact. Ask them to switch it on in their Parent portal.
+                <div>
+                  <AskMentorPermission me={me} />
+                </div>
               </Callout>
             )}
           </Card>
@@ -425,9 +446,53 @@ export function AlumniHome({ me }: { me: User }) {
 }
 
 export function PendingAlumniHome({ me }: { me: User }) {
-  const { state } = useStore();
-  const req = state.verifications.find((v) => v.userId === me.id);
+  const { state, answerInfoRequest } = useStore();
+  const [reply, setReply] = useState("");
+  const req = [...state.verifications].reverse().find((v) => v.userId === me.id);
   const vouches = req?.vouches.length ?? 0;
+
+  if (req?.status === "rejected")
+    return (
+      <div className="mx-auto max-w-2xl">
+        <PageHeader eyebrow={<Pill tone="danger">Not verified</Pill>} title={`Sorry ${firstName(me.name)}, we couldn't verify you`} description={`${campusName(req.campusId)} alumni office · ${req.decidedAt ? timeAgo(req.decidedAt) : ""}`} />
+        <Card className="p-6">
+          <p className="font-semibold">Reason</p>
+          <p className="mt-1 text-[14.5px] text-muted">{req.note || "Your details didn't match school records."}</p>
+          <p className="mt-5 font-semibold">What you can do</p>
+          <ul className="mt-2 space-y-1.5 text-[14.5px] text-muted">
+            <li>• Reply to the WhatsApp or email from your campus with a school ID or leaving certificate</li>
+            <li>• If you think this is wrong, raise it under My profile → My data → Privacy complaint</li>
+          </ul>
+        </Card>
+      </div>
+    );
+
+  if (req?.status === "info_requested")
+    return (
+      <div className="mx-auto max-w-2xl">
+        <PageHeader eyebrow={<Pill tone="warning">Alumni – Pending</Pill>} title="Your campus needs a little more information" description={`${campusName(req.campusId)} alumni office · ${req.decidedAt ? timeAgo(req.decidedAt) : ""}`} />
+        <Card className="p-6">
+          <p className="font-semibold">They asked</p>
+          <p className="mt-1 rounded-xl bg-surface-2 px-3.5 py-2.5 text-[14.5px]">{req.note || "Please share a school ID or leaving certificate."}</p>
+          <label htmlFor="info-reply" className="mt-5 block font-semibold">
+            Your reply
+          </label>
+          <textarea
+            id="info-reply"
+            rows={3}
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder="e.g. My admission number was VG-MAL-2006-0112. I've emailed a photo of my leaving certificate."
+            className="mt-2 w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-[14.5px] outline-none focus:border-primary"
+          />
+          <Button className="mt-3" disabled={!reply.trim()} onClick={() => { answerInfoRequest(req.id, me.id, reply); setReply(""); }}>
+            Send to the alumni office
+          </Button>
+          <p className="mt-2 text-[13px] text-muted">Your request goes back into the review queue. Vouching pauses until then.</p>
+        </Card>
+      </div>
+    );
+
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader eyebrow={<Pill tone="warning">Alumni – Pending</Pill>} title={`Hi ${firstName(me.name)}, we're verifying you`} description="This keeps the community safe for students. It usually takes up to 2 working days." />
@@ -464,6 +529,11 @@ export function PendingAlumniHome({ me }: { me: User }) {
                   ✓ {v.byName} · {timeAgo(v.at)}
                 </p>
               ))}
+              {req && (
+                <p className="mt-2 text-[13.5px] text-muted">
+                  Share this link with verified batchmates: <span className="font-mono text-text">vaa.vibgyor.in/vouch/{req.id}</span>
+                </p>
+              )}
             </div>
           </li>
         </ol>

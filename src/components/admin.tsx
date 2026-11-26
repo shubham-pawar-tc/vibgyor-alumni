@@ -14,8 +14,8 @@ export function useScope() {
   };
 }
 
-export function AdminOnly({ me, children }: { me: User | undefined; children: React.ReactNode }) {
-  if (!me || !["CAD", "GAO", "SAD"].includes(me.role))
+export function AdminOnly({ me, children, alsoAllow = [] }: { me: User | undefined; children: React.ReactNode; alsoAllow?: User["role"][] }) {
+  if (!me || !["CAD", "GAO", "SAD", ...alsoAllow].includes(me.role))
     return (
       <Card>
         <Empty icon={<ShieldX className="h-6 w-6" />} title="Staff only">

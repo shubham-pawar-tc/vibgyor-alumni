@@ -16,7 +16,7 @@ const CATS: EngagementCategory[] = ["Mentoring", "Event", "Placement", "Fundrais
 export default function EngagementPage() {
   const { me } = useStore();
   return (
-    <AdminOnly me={me}>
+    <AdminOnly me={me} alsoAllow={["TCH"]}>
       <Engagement />
     </AdminOnly>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { Gate } from "@/components/Gate";
 import { useState } from "react";
 import { BadgeCheck, CheckCircle2, Clock, GraduationCap, ShieldCheck } from "lucide-react";
 import { Button, Callout, Card, CardHeader, Checkbox, Field, PageHeader, Pill, Req, Textarea } from "@/components/ui";
@@ -16,6 +17,14 @@ const code = [
 ];
 
 export default function MentorPage() {
+  return (
+    <Gate roles={["ALU"]}>
+      <MentorPageInner />
+    </Gate>
+  );
+}
+
+function MentorPageInner() {
   const { me, state, applyBadge } = useStore();
   const [motivation, setMotivation] = useState("");
   const [checks, setChecks] = useState<boolean[]>(code.map(() => false));

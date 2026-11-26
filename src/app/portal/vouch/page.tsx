@@ -1,5 +1,6 @@
 "use client";
 
+import { Gate } from "@/components/Gate";
 import { useState } from "react";
 import { CheckCircle2, HeartHandshake } from "lucide-react";
 import { Avatar, Button, Callout, Card, Checkbox, Empty, Modal, PageHeader, Pill, Req } from "@/components/ui";
@@ -9,6 +10,14 @@ import type { VerificationRequest } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
 
 export default function VouchPage() {
+  return (
+    <Gate roles={["ALU"]}>
+      <VouchPageInner />
+    </Gate>
+  );
+}
+
+function VouchPageInner() {
   const { me, state, vouch } = useStore();
   const [confirm, setConfirm] = useState<VerificationRequest | null>(null);
   const [sure, setSure] = useState(false);

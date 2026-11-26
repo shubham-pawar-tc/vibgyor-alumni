@@ -7,6 +7,7 @@ import { Avatar, Button, Callout, Card, Empty, Field, Input, Modal, PageHeader, 
 import { MaskPreview } from "@/components/MaskPreview";
 import { campusName } from "@/lib/data";
 import { activeBadge, hasConsent, useStore } from "@/lib/store";
+import { AskMentorPermission } from "@/components/AskMentorPermission";
 import type { ThreeC, User } from "@/lib/types";
 import { firstName } from "@/lib/utils";
 
@@ -73,6 +74,9 @@ export default function MentorsPage() {
           {me.studentStatus !== "active"
             ? "Your account needs a parent's consent first."
             : "Your parent hasn't allowed (or has withdrawn) mentor contact. They can switch it on in their Parent portal."}
+          <div className="flex justify-center">
+            <AskMentorPermission me={me} />
+          </div>
           <div className="mt-3 flex justify-center">
             <Req ids="CS-3" />
           </div>

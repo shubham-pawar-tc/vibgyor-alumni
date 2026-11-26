@@ -23,7 +23,7 @@ function Inner() {
     .filter((u) => filter === "all" || u.studentStatus === filter)
     .filter((u) => !q || u.name.toLowerCase().includes(q.toLowerCase()))
     .sort((a, b) => (a.studentStatus === "awaiting_consent" ? -1 : 1) - (b.studentStatus === "awaiting_consent" ? -1 : 1));
-  const awaiting = state.users.filter((u) => u.role === "STU" && inScope(u.campusIds[0]) && u.studentStatus === "awaiting_consent");
+  const awaiting = state.users.filter((u) => u.role === "STU" && inScope(u.campusIds[0]) && u.studentStatus === "awaiting_consent" && (u.className ?? 0) >= (state.campusMinClass[u.campusIds[0]] ?? 8));
 
   const send = (ids: string[]) => {
     ids.forEach((id) => requestConsent(id, me!.id));
@@ -79,7 +79,7 @@ function Inner() {
             <tbody className="divide-y divide-border">
               {students.map((s) => {
                 const guardianNames = (s.parentIds ?? []).map((id) => state.users.find((u) => u.id === id)?.name).filter(Boolean).join(", ");
-                const below = (s.className ?? 0) < minClass;
+                const below = (s.className ?? 0) < (state.campusMinClass[s.campusIds[0]] ?? 8);
                 return (
                   <tr key={s.id} className={cn("hover:bg-surface-2/50", below && "opacity-60")}>
                     <td className="px-5 py-3">

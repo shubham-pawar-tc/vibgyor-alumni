@@ -7,7 +7,8 @@ import { Gate } from "@/components/Gate";
 import { Avatar, Card, Empty, Input, PageHeader, Pill, Req, Select } from "@/components/ui";
 import { campuses, campusName } from "@/lib/data";
 import { canSee, completeness } from "@/lib/community";
-import { activeBadge, useStore } from "@/lib/store";
+import { activeBadge, can, useStore } from "@/lib/store";
+import { NoPermission } from "@/components/admin";
 import { fmt } from "@/lib/utils";
 
 export default function DirectoryPage() {
@@ -20,6 +21,7 @@ export default function DirectoryPage() {
 
 function Directory() {
   const { me, state } = useStore();
+  const staffBlocked = !!me && ["CAD", "GAO", "SAD"].includes(me.role) && !can(state, me, "records.view");
   const [q, setQ] = useState("");
   const [campus, setCampus] = useState("all");
   const [batch, setBatch] = useState("all");
@@ -40,6 +42,12 @@ function Directory() {
   );
 
   if (!me) return null;
+  if (staffBlocked)
+    return (
+      <Card className="p-6">
+        <NoPermission what="view alumni records" />
+      </Card>
+    );
   const n = q.trim().toLowerCase();
   const list = alumni
     .filter((u) => campus === "all" || u.campusIds[0] === campus)

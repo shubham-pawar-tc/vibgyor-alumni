@@ -121,6 +121,8 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
           : []),
       ];
     }
+    case "TCH":
+      return [home, { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen }];
     default:
       return [home];
   }

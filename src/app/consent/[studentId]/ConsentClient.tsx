@@ -7,7 +7,7 @@ import { ArrowRight, CheckCircle2, Eye, FileText, Lock, MessageSquareText, Shiel
 import { Avatar, Button, Callout, Card, Checkbox, Input, Logo, Pill, Req, Switch } from "@/components/ui";
 import { ThemeToggle } from "@/components/Public";
 import { campusName, consentPurposes, NOTICE_VERSION } from "@/lib/data";
-import { hasConsent, latestConsent, useStore } from "@/lib/store";
+import { belowAgeGate, hasConsent, latestConsent, useStore } from "@/lib/store";
 import type { ConsentPurpose, User } from "@/lib/types";
 import { cn, firstName, formatDateTime, maskMobile } from "@/lib/utils";
 import { DemoOtpFill } from "@/components/DemoOtpFill";
@@ -39,6 +39,19 @@ export default function ParentConsentPage() {
         <Card className="p-8 text-center">
           <p className="font-semibold">This link is no longer valid.</p>
           <p className="mt-1 text-sm text-muted">Please ask your child&apos;s campus for a new consent link.</p>
+        </Card>
+      </Shell>
+    );
+  }
+
+  if (belowAgeGate(state, stu)) {
+    return (
+      <Shell>
+        <Card className="p-8 text-center">
+          <p className="font-semibold">This link is not active</p>
+          <p className="mt-1 text-sm text-muted">
+            {stu.name}&apos;s campus opens the platform from Class {state.campusMinClass?.[stu.campusIds[0]] ?? 8}. We&apos;ll send you a new link when {firstName(stu.name)} reaches that class.
+          </p>
         </Card>
       </Shell>
     );

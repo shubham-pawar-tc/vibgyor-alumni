@@ -69,6 +69,12 @@ export function loginInviteBody(template: string, u: User) {
   return body;
 }
 
+/** Age gate (Settings): a student below their campus's minimum class can't be activated. Already-active accounts are not affected. */
+export function belowAgeGate(s: State, u: User | undefined) {
+  if (!u || u.role !== "STU" || u.studentStatus === "active") return false;
+  return u.studentStatus === "not_eligible" || (u.className ?? 0) < (s.campusMinClass?.[u.campusIds[0]] ?? 8);
+}
+
 export function can(s: State, u: User | undefined, cap: Capability) {
   return !!u && (s.permissions?.[cap] ?? []).includes(u.role);
 }
@@ -115,6 +121,8 @@ export interface VerificationInput {
   passYear: number;
   admissionNo: string;
   migratedId?: string;
+  /** Alumnus who invited this person (from /join?ref=). */
+  ref?: string;
 }
 
 export interface VerificationResult {
@@ -136,6 +144,7 @@ interface Ctx {
   clearOutbox: () => void;
   // consent
   requestConsent: (studentId: string, actorId: string) => void;
+  requestMentorPermission: (studentId: string) => void;
   sendOtp: (key: string, to: string, toUserId: string | undefined, purpose: string) => string;
   checkOtp: (key: string, code: string) => boolean;
   /** Demo only: read the latest code so the UI can autofill it */
@@ -154,6 +163,7 @@ interface Ctx {
   submitVerification: (input: VerificationInput) => VerificationResult;
   decideVerification: (id: string, decision: "approved" | "rejected" | "info_requested", actorId: string, note?: string) => void;
   vouch: (id: string, voucherId: string) => void;
+  answerInfoRequest: (id: string, userId: string, reply: string) => void;
   applyBadge: (userId: string, badge: BadgeType, motivation: string) => void;
   decideBadge: (id: string, approve: boolean, actorId: string) => void;
   // broadcast
@@ -256,7 +266,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       /* ---------------- consent ---------------- */
       requestConsent: (studentId, actorId) => {
         const stu = getUser(studentId);
-        if (!stu) return;
+        if (!stu || belowAgeGate(stateRef.current, stu)) return;
         // Every guardian on record gets the request; the first one to verify and confirm counts.
         const parents = (stu.parentIds ?? []).map((id) => getUser(id)).filter((u): u is User => !!u);
         if (parents.length === 0) return;
@@ -296,6 +306,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           detail: "SMS, WhatsApp, email",
         });
       },
+      requestMentorPermission: (studentId) => {
+        const stu = getUser(studentId);
+        if (!stu || stu.studentStatus !== "active") return;
+        (stu.parentIds ?? []).map((id) => getUser(id)).forEach((p) => {
+          if (!p) return;
+          pushOutbox({
+            channel: "whatsapp",
+            to: `${p.name} · ${maskMobile(p.mobile)}`,
+            toUserId: p.id,
+            body: `${childTag(stu)} ${firstName(stu.name)} would like to talk to approved alumni mentors on the VIBGYOR Alumni Platform. Every message is recorded, contact details are hidden, and you can read and join the conversations. Switch on "Mentor contact" if you agree.`,
+            link: { label: "Open consent centre", href: `/portal/consent?child=${stu.id}` },
+          });
+        });
+        log({ actorId: studentId, action: "Asked parent for mentor contact", target: stu.name, campusId: stu.campusIds[0], category: "consent" });
+      },
       sendOtp: (key, to, toUserId, purpose) => {
         const code = String(Math.floor(100000 + Math.random() * 900000));
         setState((s) => ({ ...s, pendingOtps: { ...s.pendingOtps, [key]: code } }));
@@ -310,6 +335,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       checkOtp: (key, code) => stateRef.current.pendingOtps[key] === code.trim(),
       peekOtp: (key) => stateRef.current.pendingOtps[key],
       grantConsents: (studentId, parentId, choices) => {
+        if (belowAgeGate(stateRef.current, getUser(studentId))) return;
         const at = now();
         const otpRef = `OTP-${Math.floor(10000 + Math.random() * 89999)}`;
         setState((s) => {
@@ -713,6 +739,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             ? `Welcome to the VIBGYOR Alumni Association, ${firstName(input.name)}! Your profile is verified.`
             : `Thanks ${firstName(input.name)}. Your campus alumni office will verify your details, usually within 2 working days. You can also ask two batchmates to vouch for you.`,
         });
+        // Invite tracking: mark the referrer's invite as joined (C11)
+        if (input.ref && getUser(input.ref)) {
+          const digits = (x: string) => x.replace(/\D/g, "").slice(-10);
+          setState((s) => {
+            const hit = s.invites.find(
+              (i) => i.by === input.ref && !i.joined && (i.to.toLowerCase() === input.email.toLowerCase() || (digits(i.to).length === 10 && digits(i.to) === digits(input.mobile)))
+            );
+            return {
+              ...s,
+              invites: hit
+                ? s.invites.map((i) => (i.id === hit.id ? { ...i, joined: true } : i))
+                : [{ id: uid("inv"), by: input.ref!, to: input.email, channel: "email" as const, at: now(), joined: true }, ...s.invites],
+            };
+          });
+          log({ actorId: userId, action: "Joined from an invite", target: getUser(input.ref)?.name ?? input.ref, campusId: input.campusId, category: "community" });
+        }
         return { outcome, userId, request: req };
       },
       decideVerification: (id, decision, actorId, note) => {
@@ -745,10 +787,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 : `Hi ${firstName(req.name)}, your campus alumni office needs a little more information to verify you: ${note || "please upload a school ID or leaving certificate"}.`,
         });
       },
+      answerInfoRequest: (id, userId, reply) => {
+        const req = stateRef.current.verifications.find((v) => v.id === id);
+        if (!req || req.userId !== userId || req.status !== "info_requested" || !reply.trim()) return;
+        setState((s) => ({
+          ...s,
+          verifications: s.verifications.map((v) =>
+            v.id === id ? { ...v, status: "pending", note: `Alumnus replied: ${reply.trim()}`, decidedBy: undefined, decidedAt: undefined } : v
+          ),
+        }));
+        log({ actorId: userId, action: "Replied to verification info request", target: req.name, campusId: req.campusId, category: "verification", detail: reply.trim().slice(0, 120) });
+      },
       vouch: (id, voucherId) => {
         const req = stateRef.current.verifications.find((v) => v.id === id);
         const voucher = getUser(voucherId);
         if (!req || !voucher || req.vouches.some((v) => v.by === voucherId)) return;
+        if (voucher.role !== "ALU" || voucher.deactivated || voucher.campusIds[0] !== req.campusId || voucher.batch !== req.passYear || req.status !== "pending") return;
         const vouches = [...req.vouches, { by: voucherId, byName: `${voucher.name} (Batch ${voucher.batch})`, at: now() }];
         const done = vouches.length >= 2;
         setState((s) => ({
@@ -775,6 +829,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       applyBadge: (userId, badge, motivation) => {
         const u = getUser(userId);
+        if (!u || u.role !== "ALU" || u.deactivated) return;
         const at = now();
         setState((s) => ({
           ...s,
@@ -1166,7 +1221,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           channel,
           to,
           body: `${u?.name} (VIBGYOR ${u?.batch ? `Batch ${u.batch}` : "alumni"}) invited you to the VIBGYOR Alumni Association. Join or claim your profile: vaa.vibgyor.in/join?ref=${by}`,
-          link: { label: "Join VAA", href: "/join" },
+          link: { label: "Join VAA", href: `/join?ref=${by}` },
         });
         log({ actorId: by, action: "Invited a friend", target: channel === "email" ? to.replace(/(.).+@/, "$1***@") : "WhatsApp contact", campusId: u?.campusIds[0], category: "community" });
       },

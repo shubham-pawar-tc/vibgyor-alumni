@@ -63,6 +63,10 @@ export default function LoginPage() {
       setErr("We couldn't find that email or mobile. Try a demo account on the right.");
       return;
     }
+    if (u.deactivated) {
+      setErr("This account has been switched off. Please contact your campus alumni office.");
+      return;
+    }
     if (mode === "password") {
       finish(u);
       return;

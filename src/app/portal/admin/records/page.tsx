@@ -40,11 +40,19 @@ function Records() {
     .filter((u) => status === "all" || (status === "off" ? u.deactivated : !u.deactivated && (status === "verified" ? u.role === "ALU" : u.role === "ALP")))
     .filter((u) => !n || `${u.name} ${u.email} ${u.company ?? ""}`.toLowerCase().includes(n))
     .sort((a, b) => a.name.localeCompare(b.name));
+  const canView = can(state, me, "records.view");
   const canEdit = can(state, me, "records.edit");
   const canExport = can(state, me, "records.export");
   const sendable = rows.filter((u) => !u.deactivated);
   const selectedRows = sendable.filter((u) => selected.includes(u.id));
   const allOn = sendable.length > 0 && sendable.every((u) => selected.includes(u.id));
+
+  if (!canView)
+    return (
+      <Card className="p-6">
+        <NoPermission what="view alumni records" />
+      </Card>
+    );
 
   return (
     <>

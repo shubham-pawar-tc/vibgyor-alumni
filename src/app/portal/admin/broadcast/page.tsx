@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { Bell, CalendarClock, Check, Loader2, Lock, Mail, Megaphone, MessageCircle, MessageSquareText, Plus, Send, Users } from "lucide-react";
 import { Button, Callout, Card, CardHeader, Field, Input, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
-import { AdminOnly } from "@/components/admin";
+import { AdminOnly, NoPermission } from "@/components/admin";
 import { campuses, campusName, countries, population, waTemplates } from "@/lib/data";
-import { useStore } from "@/lib/store";
+import { can, useStore } from "@/lib/store";
 import type { Broadcast, Channel } from "@/lib/types";
 import { cn, fmt, formatDateTime, timeAgo } from "@/lib/utils";
 
@@ -389,7 +389,8 @@ function History() {
 }
 
 export default function BroadcastPage() {
-  const { me } = useStore();
+  const { me, state } = useStore();
+  const canSend = can(state, me, "broadcast.send");
   const [composing, setComposing] = useState(false);
   return (
     <AdminOnly me={me}>
@@ -402,14 +403,16 @@ export default function BroadcastPage() {
             <Button variant="secondary" onClick={() => setComposing(false)}>
               Cancel
             </Button>
-          ) : (
+          ) : canSend ? (
             <Button onClick={() => setComposing(true)}>
               <Plus className="h-4 w-4" /> New broadcast
             </Button>
+          ) : (
+            <NoPermission what="send broadcasts" />
           )
         }
       />
-      {composing ? <Composer onDone={() => setComposing(false)} /> : <History />}
+      {composing && canSend ? <Composer onDone={() => setComposing(false)} /> : <History />}
     </AdminOnly>
   );
 }

@@ -4,15 +4,16 @@ import { useState } from "react";
 import { Ban, Bot, CheckCircle2, Eye, Flag, MessagesSquare, RotateCcw, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Avatar, Button, Callout, Card, Empty, Modal, PageHeader, Pill, Req, Tabs } from "@/components/ui";
 import { MaskedText } from "@/components/MaskPreview";
-import { AdminOnly, useScope } from "@/components/admin";
+import { AdminOnly, NoPermission, useScope } from "@/components/admin";
 import { campusName } from "@/lib/data";
-import { activeBadge, hasBadge, useStore } from "@/lib/store";
+import { activeBadge, can, hasBadge, useStore } from "@/lib/store";
 import { cn, formatDateTime, hoursSince, timeAgo } from "@/lib/utils";
 
 type Tab = "reports" | "conversations" | "mentors";
 
 function Inner() {
   const { me, state, resolveReport, setBadgeStatus, logView } = useStore();
+  const canRead = can(state, me, "chats.read");
   const { inScope, group } = useScope();
   const [tab, setTab] = useState<Tab>("reports");
   const [showClosed, setShowClosed] = useState(false);
@@ -101,7 +102,8 @@ function Inner() {
                 </div>
                 {r.status === "open" && (
                   <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4 md:pl-14">
-                    {r.convId && (
+                    {r.convId && !canRead && <NoPermission what="read student chats" />}
+                    {r.convId && canRead && (
                       <Button size="sm" variant="secondary" onClick={() => openConv(r.convId!)}>
                         <Eye className="h-4 w-4" /> View conversation
                       </Button>
@@ -157,9 +159,13 @@ function Inner() {
                     </div>
                     <div className="flex items-center gap-2">
                       {masked > 0 && <Pill tone="warning">{masked} masked</Pill>}
+                      {!canRead ? (
+                        <NoPermission what="read student chats" />
+                      ) : (
                       <Button size="sm" variant="secondary" onClick={() => openConv(c.id)}>
                         <Eye className="h-4 w-4" /> Review
                       </Button>
+                      )}
                     </div>
                   </div>
                 );

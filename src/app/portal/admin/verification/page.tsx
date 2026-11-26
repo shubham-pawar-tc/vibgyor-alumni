@@ -4,9 +4,9 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, BadgeCheck, Check, CheckCircle2, GraduationCap, HeartHandshake, Inbox, Minus, X } from "lucide-react";
 import { Avatar, Button, Callout, Card, CardHeader, Empty, Field, Modal, PageHeader, Pill, Req, Tabs, Textarea } from "@/components/ui";
-import { AdminOnly, useScope } from "@/components/admin";
+import { AdminOnly, NoPermission, useScope } from "@/components/admin";
 import { campusName } from "@/lib/data";
-import { useStore } from "@/lib/store";
+import { can, useStore } from "@/lib/store";
 import type { MatchField, VerificationRequest } from "@/lib/types";
 import { cn, formatDateTime, timeAgo } from "@/lib/utils";
 
@@ -30,6 +30,7 @@ function MatchIcon({ m }: { m?: MatchField }) {
 
 function Inner() {
   const { me, state, decideVerification, decideBadge } = useStore();
+  const canVerify = can(state, me, "verify");
   const { inScope, group } = useScope();
   const params = useSearchParams();
   const [tab, setTab] = useState<Tab>((params.get("tab") as Tab) || "queue");
@@ -143,6 +144,11 @@ function Inner() {
                     )}
                   </div>
 
+                  {!canVerify ? (
+                    <div className="mt-5">
+                      <NoPermission what="approve verifications" />
+                    </div>
+                  ) : (
                   <div className="mt-5 flex flex-wrap gap-2">
                     <Button onClick={() => decideVerification(sel.id, "approved", me!.id)}>
                       <BadgeCheck className="h-4 w-4" /> Approve
@@ -154,6 +160,7 @@ function Inner() {
                       Reject
                     </Button>
                   </div>
+                  )}
                 </div>
               </Card>
             )}
@@ -188,7 +195,8 @@ function Inner() {
                         </p>
                       </div>
                     </div>
-                    {b.status === "pending" && (
+                    {b.status === "pending" && !canVerify && <NoPermission what="approve badges" />}
+                    {b.status === "pending" && canVerify && (
                       <div className="flex gap-2">
                         <Button onClick={() => decideBadge(b.id, true, me!.id)}>Approve</Button>
                         <Button variant="secondary" onClick={() => decideBadge(b.id, false, me!.id)}>

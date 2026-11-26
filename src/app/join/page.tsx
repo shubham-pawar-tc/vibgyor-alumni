@@ -57,7 +57,8 @@ export default function JoinPage() {
       setCodeErr("That code isn't right. Check the device simulator.");
       return;
     }
-    const r = submitVerification({ ...form, migratedId: migrated?.id });
+    const ref = new URLSearchParams(window.location.search).get("ref") ?? undefined;
+    const r = submitVerification({ ...form, migratedId: migrated?.id, ref });
     setResult(r);
     setStep("result");
   };
