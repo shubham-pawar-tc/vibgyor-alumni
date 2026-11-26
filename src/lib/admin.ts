@@ -1,4 +1,4 @@
-import { masterUserKey } from "./data";
+import { campusName as campusNameOf, masterUserKey, roleLabels } from "./data";
 import { canSee } from "./community";
 import type { MasterItem, MasterKind, State, User } from "./types";
 
@@ -143,4 +143,73 @@ export function buildDataExport(s: State, userId: string) {
     dataRequests: s.dataRequests.filter((r) => r.subjectId === userId),
   };
   return JSON.stringify(data, null, 2);
+}
+
+/** Same data as buildDataExport, as a plain-text file a person can read (A11 / CS-11). */
+export function buildDataText(s: State, userId: string) {
+  const u = s.users.find((x) => x.id === userId);
+  if (!u) return "No data found.";
+  const d = (iso?: string) => (iso ? new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—");
+  const name = (id: string) => s.users.find((x) => x.id === id)?.name ?? id;
+  const out: string[] = [];
+  const section = (title: string, lines: string[]) => {
+    out.push("", title.toUpperCase(), "-".repeat(title.length));
+    out.push(...(lines.length ? lines : ["(none)"]));
+  };
+  const row = (label: string, v: unknown) => (v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0) ? [] : [`${label.padEnd(22)}${Array.isArray(v) ? v.join(", ") : String(v)}`]);
+
+  out.push("VIBGYOR ALUMNI ASSOCIATION – YOUR DATA", "======================================", `Prepared for: ${u.name}`, `Generated:    ${d(new Date().toISOString())}`, "", "This is everything the platform holds about this account (DPDP Act 2023).", "Prototype export: in production it is sent over a secure link.");
+
+  section("Account", [
+    ...row("Name", u.name),
+    ...row("Role", roleLabels[u.role]),
+    ...row("Email", u.email),
+    ...row("Mobile", u.mobile),
+    ...row("Campus", u.campusIds.map((c) => campusNameOf(c)).join(", ")),
+    ...row("Batch", u.batch),
+    ...row("Class", u.className),
+    ...row("Date of birth", u.dob),
+    ...row("Student status", u.studentStatus),
+    ...row("Job title", u.title),
+    ...row("Company", u.company),
+    ...row("City", u.city),
+    ...row("Country", u.country),
+    ...row("College", u.college),
+    ...row("Course", u.course),
+    ...row("Parents / guardians", (u.parentIds ?? []).map(name)),
+    ...row("Children", (u.childIds ?? []).map(name)),
+    ...row("Interests", u.interests),
+    ...row("Switched off", u.deactivated ? "yes" : undefined),
+  ]);
+  if (u.threeC?.length) section("3C choices (country · course · college)", u.threeC.map((c, i) => `${i + 1}. ${[c.country, c.course, c.college].filter(Boolean).join(" · ")}`));
+  const p = u.profile;
+  if (p)
+    section("Profile", [
+      ...row("Headline", p.headline),
+      ...row("LinkedIn", p.linkedin),
+      ...row("Skills", p.skills),
+      ...row("Achievements", p.achievements),
+      ...p.work.map((w) => `Work: ${w.title}, ${w.company} (${w.from}–${w.to ?? "present"})`),
+      ...p.education.map((e) => `Education: ${e.degree}, ${e.institution} (${e.from}–${e.to})`),
+      ...Object.entries(p.privacy).map(([k, v]) => `Privacy – ${k}: ${v}`),
+    ]);
+  section("Badges", (u.badges ?? []).map((b) => `${b.type} · ${b.status} · since ${d(b.since)}${b.group ? ` · ${b.group}` : ""}`));
+  section(
+    "Consents",
+    s.consents
+      .filter((c) => c.studentId === userId || c.givenBy === userId)
+      .map((c) => `${d(c.at)} · ${c.purpose} · ${c.status}${c.withdrawnAt ? ` (withdrawn ${d(c.withdrawnAt)})` : ""} · for ${name(c.studentId)} · by ${name(c.givenBy)} · ${c.channel} ${c.otpRef}`)
+  );
+  section("Student–mentor messages you sent", s.messages.filter((m) => m.senderId === userId).map((m) => `${d(m.at)}  ${m.text}`));
+  section("Alumni chats you sent", s.dms.filter((m) => m.senderId === userId).map((m) => `${d(m.at)}  ${m.text}`));
+  section("Group posts", s.posts.filter((x) => x.authorId === userId).map((x) => `${d(x.at)}  ${x.text}`));
+  section("Jobs posted", s.jobs.filter((j) => j.postedBy === userId).map((j) => `${j.title} · ${j.company} · ${j.status}`));
+  section("Event registrations", s.events.flatMap((e) => e.rsvps.filter((r) => r.userId === userId).map((r) => `${e.title} · ${r.status} · ${d(e.start)}`)));
+  section("Payments", s.payments.filter((x) => x.payerId === userId || x.forUserId === userId).map((x) => `${d(x.at)} · ${x.kind} · ₹${x.amount.toLocaleString("en-IN")} · ${x.ref} · ${x.status}`));
+  section("Document requests", s.docRequests.filter((x) => x.userId === userId).map((x) => `${d(x.at)} · ${x.doc} × ${x.copies} · ${x.delivery} · ${x.status}`));
+  section("MyCareerZ sessions", s.bookings.filter((x) => x.studentId === userId).map((x) => `${d(x.at)} · ${x.topic} · ${x.status}`));
+  section("Contact logged by the alumni office", s.engagements.filter((e) => e.alumniId === userId).map((e) => `${d(e.at)} · ${e.mode} · ${e.category} · ${e.note}`));
+  section("Your data requests", s.dataRequests.filter((r) => r.subjectId === userId).map((r) => `${d(r.at)} · ${r.type} · ${r.status} · "${r.details}"`));
+  out.push("", "Questions? Use My data → Privacy complaint, or contact your campus alumni office.");
+  return out.join("\n");
 }

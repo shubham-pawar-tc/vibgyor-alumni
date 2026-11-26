@@ -155,7 +155,7 @@ Reported **student chats** still go to **Safeguarding** (Phase 1). Moderation co
 Member / parent                         Alumni office
      │                                       │
 My data card:                                │
-  Download data  → instant JSON file         │
+  Download data  → instant .txt file          │
   Correct something ─┐                       │
   Delete account ────┼──► Data requests ───► due date (30 days [TBC])
   Privacy complaint ─┘     (email receipt)    "Due within 7 days" warning

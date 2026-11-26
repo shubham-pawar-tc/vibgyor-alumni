@@ -25,7 +25,7 @@
 | 4 | See each child's status and permissions at a glance | `/portal` (Parent home) |
 | 5 | Turn any permission on or off later, with immediate effect | `/portal/consent` |
 | 6 | See the consent history (who, when, channel, OTP ref, notice version) | `/portal/consent` → History |
-| 7 | Download the child's data (JSON) | Consent centre → *"<Child>'s data"* card |
+| 7 | Download the child's data (text file) | Consent centre → *"<Child>'s data"* card |
 | 8 | Ask for a correction, deletion, or raise a privacy complaint | Consent centre → *"<Child>'s data"* card |
 | 9 | Browse and RSVP to parent events, add to calendar | `/portal/events` |
 | 10 | **Read each child's mentor conversations, join them to message the mentor**, and report a message | `/portal/child-chats` |
@@ -179,7 +179,7 @@ Every change shows in **History** with time, channel and OTP reference.
 ```mermaid
 flowchart LR
     A([Consent centre →<br/>Child's data card]) --> B[Download data]
-    B --> B1[Instant JSON file]
+    B --> B1[Instant .txt file]
     A --> C[Correct something]
     A --> D[Delete account]
     A --> E[Privacy complaint]

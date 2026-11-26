@@ -6,7 +6,7 @@ import { AdminOnly, NoPermission, useScope } from "@/components/admin";
 import { statusPill } from "@/components/MyData";
 import { Avatar, Button, Callout, Card, Empty, Field, Modal, PageHeader, Pill, Req, Stat, Tabs, Textarea } from "@/components/ui";
 import { campusName, REQUEST_DAYS, roleLabels } from "@/lib/data";
-import { buildDataExport, download } from "@/lib/admin";
+import { buildDataText, download } from "@/lib/admin";
 import { can, useStore } from "@/lib/store";
 import type { DataRequest } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -113,7 +113,7 @@ function Requests() {
                           </Button>
                         )}
                         {r.type === "access" && (
-                          <Button size="sm" variant="secondary" onClick={() => download(`data-${r.subjectId}.json`, buildDataExport(state, r.subjectId), "application/json")}>
+                          <Button size="sm" variant="secondary" onClick={() => download(`data-${r.subjectId}.txt`, buildDataText(state, r.subjectId), "text/plain;charset=utf-8")}>
                             <Download className="h-4 w-4" /> Prepare data file
                           </Button>
                         )}

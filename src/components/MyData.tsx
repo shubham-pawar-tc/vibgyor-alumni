@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Eraser, FileLock2, MessageSquareWarning, PenLine } from "lucide-react";
 import { REQUEST_DAYS } from "@/lib/data";
-import { buildDataExport, download } from "@/lib/admin";
+import { buildDataText, download } from "@/lib/admin";
 import { useStore } from "@/lib/store";
 import type { DataRequest, User } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -42,7 +42,7 @@ export function MyData({ subject }: { subject: User }) {
       />
       <div className="grid grid-cols-2 gap-2 p-5 sm:grid-cols-4">
         <button
-          onClick={() => download(`vaa-data-${subject.name.toLowerCase().replace(/[^a-z]+/g, "-")}.json`, buildDataExport(state, subject.id), "application/json")}
+          onClick={() => download(`vaa-data-${subject.name.toLowerCase().replace(/[^a-z]+/g, "-")}.txt`, buildDataText(state, subject.id), "text/plain;charset=utf-8")}
           className="flex flex-col items-start gap-2 rounded-xl border border-border p-3 text-left text-[14px] font-semibold hover:bg-surface-2"
         >
           <Download className="h-4 w-4 text-primary" /> Download data

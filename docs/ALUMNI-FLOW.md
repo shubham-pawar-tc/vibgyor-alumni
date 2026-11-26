@@ -171,7 +171,7 @@ flowchart LR
     T1 --> E1[About you · headline<br/>Work history · Education after VIBGYOR<br/>Achievements & skills<br/>Resume & open to: hiring, mentoring…]
     T2 --> E2[Per field: All verified alumni /<br/>My batch only / Only me]
     T3 --> E3[View as: another batch ·<br/>a batchmate · a student]
-    T4 --> E4[Download JSON · Correct ·<br/>Delete account · Privacy complaint]
+    T4 --> E4[Download text file · Correct ·<br/>Delete account · Privacy complaint]
 ```
 
 ### Default privacy
