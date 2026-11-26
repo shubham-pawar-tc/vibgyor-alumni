@@ -74,7 +74,7 @@ export default function JoinPage() {
       <AuthBand
         eyebrow="Join the VIBGYOR Alumni Association"
         eyebrowIcon={UserPlus}
-        title={<>Once VIBGYOR, <span className="accent-underline">always VIBGYOR.</span></>}
+        title={<>One VIBGYOR. Every Generation. <span className="accent-underline">A Lifetime of Connections.</span></>}
         body="Claim the profile you had on the old portal or sign up fresh. It takes under two minutes."
         chips={[
           { icon: History, label: "Old profiles kept", color: "var(--o)" },

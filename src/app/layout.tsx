@@ -13,7 +13,7 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "VIBGYOR Alumni Platform",
-  description: "Prototype of the VIBGYOR Alumni Association platform: safe mentoring, verified alumni and campus communications.",
+  description: "One VIBGYOR. Every Generation. A Lifetime of Connections. The VIBGYOR Alumni Association platform: safe mentoring, verified alumni and campus communications.",
 };
 
 export const viewport: Viewport = {
