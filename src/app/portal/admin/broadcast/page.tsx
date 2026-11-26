@@ -169,7 +169,7 @@ function Composer({ onDone }: { onDone: () => void }) {
                     on ? "border-primary bg-primary-soft/50" : "border-border hover:border-primary/40"
                   )}
                 >
-                  <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg", on ? "bg-primary text-primary-fg" : "bg-surface-2 text-muted")}>
+                  <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl", on ? "bg-primary text-primary-fg" : "bg-surface-2 text-muted")}>
                     <I className="h-[18px] w-[18px]" />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -177,8 +177,8 @@ function Composer({ onDone }: { onDone: () => void }) {
                       <span className="text-[14px] font-semibold">{channelInfo[c].label}</span>
                       {on && <Check className="h-4 w-4 text-primary" />}
                     </span>
-                    <span className="mt-0.5 block text-[12px] text-muted">{channelInfo[c].note}</span>
-                    {c !== "sms" && <span className="mt-1.5 block text-[12px] font-semibold tabular-nums">{fmt(aud[c as "email" | "whatsapp" | "push"])} reachable</span>}
+                    <span className="mt-0.5 block text-[13px] text-muted">{channelInfo[c].note}</span>
+                    {c !== "sms" && <span className="mt-1.5 block text-[13px] font-semibold tabular-nums">{fmt(aud[c as "email" | "whatsapp" | "push"])} reachable</span>}
                   </span>
                 </button>
               );
@@ -235,9 +235,9 @@ function Composer({ onDone }: { onDone: () => void }) {
       {/* Summary + preview */}
       <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
         <Card className="p-5">
-          <p className="text-[13px] font-medium text-muted">Audience</p>
+          <p className="text-[14px] font-medium text-muted">Audience</p>
           <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">{fmt(aud.total)}</p>
-          <p className="text-[12.5px] text-muted">
+          <p className="text-[13.5px] text-muted">
             verified alumni · {campus === "all" ? "all campuses" : campusName(campus).split(",")[0]} · batches {batchFrom}–{batchTo}
           </p>
           <div className="mt-4 space-y-2.5">
@@ -246,7 +246,7 @@ function Composer({ onDone }: { onDone: () => void }) {
               const on = channels.includes(c);
               return (
                 <div key={c} className={cn(!on && "opacity-40")}>
-                  <div className="flex justify-between text-[12.5px]">
+                  <div className="flex justify-between text-[13.5px]">
                     <span className="font-medium">{channelInfo[c].label}</span>
                     <span className="tabular-nums">
                       {fmt(aud[c])} <span className="text-muted">· {fmt(aud.total - aud[c])} opted out / no consent</span>
@@ -278,29 +278,29 @@ function Composer({ onDone }: { onDone: () => void }) {
             />
           </div>
           <div className="bg-surface-2 p-5">
-            <div className="mx-auto w-full max-w-[290px] rounded-[28px] border-[6px] border-text/85 bg-bg p-3 shadow-xl">
+            <div className="mx-auto w-full max-w-[290px] rounded-2xl border-[6px] border-text/85 bg-bg p-3 shadow-lift">
               <div className="mx-auto mb-3 h-1.5 w-16 rounded-full bg-text/20" />
               {preview === "whatsapp" && (
-                <div className="rounded-xl bg-[#e7f7e2] p-3 text-[12.5px] leading-relaxed text-[#111] dark:bg-[#1f3b2a] dark:text-[#e9f5ec]">
-                  <p className="mb-1 text-[11px] font-semibold text-[#128c4b] dark:text-[#5fd394]">VIBGYOR Alumni ✓</p>
+                <div className="rounded-xl bg-[#e7f7e2] p-3 text-[13.5px] leading-relaxed text-[#111] dark:bg-[#1f3b2a] dark:text-[#e9f5ec]">
+                  <p className="mb-1 text-[12px] font-semibold text-[#128c4b] dark:text-[#5fd394]">VIBGYOR Alumni ✓</p>
                   {waText}
-                  <div className="mt-2 rounded-lg bg-white/70 py-1.5 text-center text-[12px] font-semibold text-[#128c4b] dark:bg-black/20 dark:text-[#5fd394]">RSVP</div>
+                  <div className="mt-2 rounded-xl bg-white/70 py-1.5 text-center text-[13px] font-semibold text-[#128c4b] dark:bg-black/20 dark:text-[#5fd394]">RSVP</div>
                 </div>
               )}
               {preview === "email" && (
-                <div className="rounded-xl bg-surface p-3 text-[12px] leading-relaxed">
+                <div className="rounded-xl bg-surface p-3 text-[13px] leading-relaxed">
                   <div className="spectrum mb-2 h-1 rounded-full" />
                   <p className="font-semibold">{subject}</p>
                   <p className="mt-2 line-clamp-[10] whitespace-pre-line text-muted">{body.replace(/{{first_name}}/g, "Karan")}</p>
-                  <p className="mt-2 text-[10px] text-muted underline">Unsubscribe</p>
+                  <p className="mt-2 text-[11px] text-muted underline">Unsubscribe</p>
                 </div>
               )}
               {preview === "push" && (
                 <div className="flex gap-2.5 rounded-xl bg-surface p-3 shadow">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary text-[12px] font-bold text-primary-fg">V</span>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-[13px] font-bold text-primary-fg">V</span>
                   <div className="min-w-0">
-                    <p className="text-[12px] font-semibold">VIBGYOR Alumni</p>
-                    <p className="line-clamp-2 text-[12px] text-muted">{subject}</p>
+                    <p className="text-[13px] font-semibold">VIBGYOR Alumni</p>
+                    <p className="line-clamp-2 text-[13px] text-muted">{subject}</p>
                   </div>
                 </div>
               )}
@@ -339,7 +339,7 @@ function History() {
                 )}
                 {b.status === "scheduled" && <Pill tone="warning">Scheduled {b.scheduledFor && formatDateTime(b.scheduledFor)}</Pill>}
               </div>
-              <p className="mt-1 text-[12.5px] text-muted">
+              <p className="mt-1 text-[13.5px] text-muted">
                 {fmt(b.audience)} alumni · {b.campusIds === "all" ? "All campuses" : b.campusIds.map((c) => campusName(c).split(",")[0]).join(", ")} · batches {b.batchFrom}–{b.batchTo} · by{" "}
                 {state.users.find((u) => u.id === b.createdBy)?.name} · {timeAgo(b.createdAt)}
               </p>
@@ -348,7 +348,7 @@ function History() {
               {b.channels.map((c) => {
                 const I = channelInfo[c].icon;
                 return (
-                  <span key={c} className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-muted" title={channelInfo[c].label}>
+                  <span key={c} className="grid h-8 w-8 place-items-center rounded-xl bg-surface-2 text-muted" title={channelInfo[c].label}>
                     <I className="h-4 w-4" />
                   </span>
                 );
@@ -362,7 +362,7 @@ function History() {
                 if (!s) return null;
                 return (
                   <div key={c} className="rounded-xl bg-surface-2 p-3.5">
-                    <p className="text-[12px] font-semibold">{channelInfo[c].label}</p>
+                    <p className="text-[13px] font-semibold">{channelInfo[c].label}</p>
                     <div className="mt-2 grid grid-cols-3 gap-2 text-center">
                       {[
                         ["Delivered", s.delivered, s.sent],
@@ -371,7 +371,7 @@ function History() {
                       ].map(([l, v, base]) => (
                         <div key={l as string}>
                           <p className="text-[15px] font-bold tabular-nums">{fmt(v as number)}</p>
-                          <p className="text-[10.5px] text-muted">
+                          <p className="text-[11.5px] text-muted">
                             {l} · {base ? Math.round(((v as number) / (base as number)) * 100) : 0}%
                           </p>
                         </div>

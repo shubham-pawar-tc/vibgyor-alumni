@@ -163,33 +163,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const sidebar = (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center justify-between px-5">
+      <div className="flex h-[72px] items-center justify-between px-5 pt-1">
         <Logo href="/portal" />
-        <button className="grid h-9 w-9 place-items-center rounded-lg hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(false)} aria-label="Close menu">
+        <button className="grid h-9 w-9 place-items-center rounded-xl hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(false)} aria-label="Close menu">
           <X className="h-5 w-5" />
         </button>
       </div>
       <div className="px-4 pb-2">
         <div className="rounded-xl bg-surface-2 px-3 py-2.5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Signed in as</p>
-          <p className="mt-0.5 truncate text-[13px] font-semibold">{roleLabels[me.role]}</p>
-          <p className="truncate text-[12px] text-muted">{scope ? (scope.length === 1 ? campusName(scope[0]) : `${scope.length} campuses`) : "All 39 campuses"}</p>
+          <p className="text-[12px] font-semibold uppercase tracking-wider text-muted">Signed in as</p>
+          <p className="mt-0.5 truncate text-[14px] font-semibold">{roleLabels[me.role]}</p>
+          <p className="truncate text-[13px] text-muted">{scope ? (scope.length === 1 ? campusName(scope[0]) : `${scope.length} campuses`) : "All 39 campuses"}</p>
         </div>
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
         {nav.map((n) => {
           const heading = n.section ? (
-            <p key={`s-${n.section}`} className="px-3 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-wider text-muted/80">
+            <p key={`s-${n.section}`} className="px-3 pb-1 pt-4 text-[11.5px] font-semibold uppercase tracking-wider text-muted/80">
               {n.section}
             </p>
           ) : null;
           const active = n.href === "/portal" ? pathname === "/portal" : pathname.startsWith(n.href) && n.href !== "#";
           if (n.soon)
             return (
-              <div key={n.label} className="flex h-10 cursor-not-allowed items-center gap-3 rounded-xl px-3 text-[13.5px] font-medium text-muted/60" title="Arrives in a later prototype phase">
+              <div key={n.label} className="flex h-10 cursor-not-allowed items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium text-muted/60" title="Arrives in a later prototype phase">
                 <n.icon className="h-[18px] w-[18px]" />
                 <span className="flex-1">{n.label}</span>
-                <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">Soon</span>
+                <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide">Soon</span>
               </div>
             );
           return [
@@ -198,19 +198,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               key={n.label}
               href={n.href}
               className={cn(
-                "flex h-10 items-center gap-3 rounded-xl px-3 text-[13.5px] font-medium transition-colors",
+                "group relative flex h-10 items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium transition-colors",
                 active ? "bg-primary-soft text-primary" : "text-text/80 hover:bg-surface-2 hover:text-text"
               )}
             >
-              <n.icon className="h-[18px] w-[18px]" />
+              {active && <span className="absolute -left-3 top-2 h-6 w-1 rounded-r-full bg-primary" />}
+              <n.icon className="icon-bounce h-[18px] w-[18px]" />
               <span className="flex-1">{n.label}</span>
-              {!!n.count && <span className={cn("grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold tabular-nums", active ? "bg-primary text-primary-fg" : "bg-danger text-white")}>{n.count}</span>}
+              {!!n.count && <span className={cn("grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[12px] font-bold tabular-nums", active ? "bg-primary text-primary-fg" : "bg-danger text-white")}>{n.count}</span>}
             </Link>,
           ];
         })}
       </nav>
       <div className="space-y-0.5 border-t border-border px-3 py-3">
-        <Link href="/demo" className="flex h-10 items-center gap-3 rounded-xl px-3 text-[13.5px] font-medium text-text/80 hover:bg-surface-2">
+        <Link href="/demo" className="flex h-10 items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium text-text/80 hover:bg-surface-2">
           <PlayCircle className="h-[18px] w-[18px]" />
           Guided tours
         </Link>
@@ -219,7 +220,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             reset();
             router.push("/demo");
           }}
-          className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[13.5px] font-medium text-text/80 hover:bg-surface-2"
+          className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium text-text/80 hover:bg-surface-2"
         >
           <RotateCcw className="h-[18px] w-[18px]" />
           Reset demo data
@@ -232,7 +233,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen lg:pl-[264px]">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[264px] border-r border-border bg-surface lg:block">
-        <div className="spectrum absolute inset-x-0 top-0 h-[3px]" />
+        <div className="spectrum-flow absolute inset-x-0 top-0 h-[3px]" />
         {sidebar}
       </aside>
       {/* Mobile drawer */}
@@ -245,9 +246,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       <header className="sticky top-0 z-20 border-b border-border bg-surface/85 backdrop-blur-md">
-        <div className="spectrum h-[3px] lg:hidden" />
+        <div className="spectrum-flow h-[3px] lg:hidden" />
         <div className="flex h-16 items-center gap-2 px-4 sm:px-6">
-          <button className="grid h-9 w-9 place-items-center rounded-lg hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(true)} aria-label="Open menu">
+          <button className="grid h-9 w-9 place-items-center rounded-xl hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(true)} aria-label="Open menu">
             <Menu className="h-5 w-5" />
           </button>
           <div className="lg:hidden">
@@ -265,7 +266,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+      <main key={pathname} className="page-in mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
     </div>
   );
 }
@@ -290,16 +291,16 @@ export function RoleSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-9 items-center gap-2 rounded-lg border border-dashed border-primary/50 bg-primary-soft/60 px-2.5 text-[12.5px] font-semibold text-primary hover:bg-primary-soft"
+        className="flex h-9 items-center gap-2 rounded-xl border border-dashed border-primary/50 bg-primary-soft/60 px-2.5 text-[13.5px] font-semibold text-primary hover:bg-primary-soft"
       >
         <span className="hidden sm:inline">Demo:</span> Switch role
         <ChevronDown className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="animate-in absolute right-0 top-11 z-50 w-[300px] max-w-[calc(100vw-32px)] overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl">
+        <div className="animate-in absolute right-0 top-11 z-50 w-[300px] max-w-[calc(100vw-32px)] overflow-hidden rounded-2xl border border-border bg-surface shadow-lift">
           <div className="border-b border-border px-4 py-3">
-            <p className="text-[13px] font-semibold">Switch persona</p>
-            <p className="text-[12px] text-muted">Demo only · real users sign in with OTP</p>
+            <p className="text-[14px] font-semibold">Switch persona</p>
+            <p className="text-[13px] text-muted">Demo only · real users sign in with OTP</p>
           </div>
           <div className="max-h-[60vh] overflow-y-auto p-1.5">
             {personas.map((p) => {
@@ -318,9 +319,9 @@ export function RoleSwitcher() {
                   <Avatar name={u.name} size={32} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
-                      <span className="truncate text-[13px] font-semibold">{u.name}</span>
+                      <span className="truncate text-[14px] font-semibold">{u.name}</span>
                     </span>
-                    <span className="block truncate text-[11.5px] text-muted">
+                    <span className="block truncate text-[12.5px] text-muted">
                       {roleLabels[u.role]} · {p.blurb}
                     </span>
                   </span>
@@ -343,15 +344,15 @@ function UserMenu({ me, onLogout }: { me: User; onLogout: () => void }) {
       <button onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-full p-0.5 hover:bg-surface-2 sm:pr-2" aria-label="Account menu">
         <Avatar name={me.name} size={34} />
         <span className="hidden text-left md:block">
-          <span className="block max-w-[140px] truncate text-[13px] font-semibold leading-tight">{me.name}</span>
-          <span className="block text-[11px] leading-tight text-muted">{roleLabels[me.role]}</span>
+          <span className="block max-w-[140px] truncate text-[14px] font-semibold leading-tight">{me.name}</span>
+          <span className="block text-[12px] leading-tight text-muted">{roleLabels[me.role]}</span>
         </span>
       </button>
       {open && (
-        <div className="animate-in absolute right-0 top-12 z-50 w-60 rounded-2xl border border-border bg-surface p-1.5 shadow-2xl">
+        <div className="animate-in absolute right-0 top-12 z-50 w-60 rounded-2xl border border-border bg-surface p-1.5 shadow-lift">
           <div className="px-3 py-2.5">
-            <p className="truncate text-[13px] font-semibold">{me.name}</p>
-            <p className="truncate text-[12px] text-muted">{me.email}</p>
+            <p className="truncate text-[14px] font-semibold">{me.name}</p>
+            <p className="truncate text-[13px] text-muted">{me.email}</p>
             <div className="mt-2 flex flex-wrap gap-1">
               <Pill tone="primary">{roleLabels[me.role]}</Pill>
               {me.badges?.map((b) => (
@@ -362,7 +363,7 @@ function UserMenu({ me, onLogout }: { me: User; onLogout: () => void }) {
               ))}
             </div>
           </div>
-          <button onClick={onLogout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-medium hover:bg-surface-2">
+          <button onClick={onLogout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-medium hover:bg-surface-2">
             <LogOut className="h-4 w-4" /> Sign out
           </button>
         </div>

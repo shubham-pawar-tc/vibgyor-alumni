@@ -67,7 +67,7 @@ function Duplicates() {
                 {[p.a, p.b].map((u) => (
                   <div key={u.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
                     <Avatar name={u.name} size={40} />
-                    <div className="min-w-0 text-[13px]">
+                    <div className="min-w-0 text-[14px]">
                       <p className="truncate font-semibold">{u.name}</p>
                       <p className="truncate text-muted">{u.email}</p>
                       <p className="truncate text-muted">
@@ -133,11 +133,11 @@ function MergeModal({ pair, onClose }: { pair: DuplicatePair; onClose: () => voi
         </>
       }
     >
-      <p className="mb-3 text-[13px] text-muted">Pick the correct value for each field. Posts, chats, job interest, RSVPs, invites and engagement history move to the record you keep.</p>
+      <p className="mb-3 text-[14px] text-muted">Pick the correct value for each field. Posts, chats, job interest, RSVPs, invites and engagement history move to the record you keep.</p>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-[13px]">
+        <table className="w-full min-w-[520px] text-[14px]">
           <thead>
-            <tr className="text-left text-[12px] text-muted">
+            <tr className="text-left text-[13px] text-muted">
               <th className="py-2 pr-3 font-semibold">Field</th>
               {[pair.a, pair.b].map((u) => (
                 <th key={u.id} className="py-2 pr-3">
@@ -163,7 +163,7 @@ function MergeModal({ pair, onClose }: { pair: DuplicatePair; onClose: () => voi
                         disabled={!v || same}
                         onClick={() => setPick({ ...pick, [f.key]: u.id })}
                         className={cn(
-                          "w-full rounded-lg border px-2.5 py-1.5 text-left",
+                          "w-full rounded-xl border px-2.5 py-1.5 text-left",
                           same ? "border-transparent text-muted" : pick[f.key] === u.id ? "border-primary bg-primary-soft font-semibold text-primary" : "border-border hover:bg-surface-2",
                           !v && "opacity-40"
                         )}
@@ -178,7 +178,7 @@ function MergeModal({ pair, onClose }: { pair: DuplicatePair; onClose: () => voi
           </tbody>
         </table>
       </div>
-      <p className="mt-3 flex items-center gap-1.5 text-[12px] text-muted">
+      <p className="mt-3 flex items-center gap-1.5 text-[13px] text-muted">
         <Copy className="h-3.5 w-3.5" /> The other record is removed. Its ID is kept on the merged record for traceability.
       </p>
     </Modal>

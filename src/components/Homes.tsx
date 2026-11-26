@@ -29,6 +29,7 @@ import { activeBadge, hasConsent, latestConsent, useStore } from "@/lib/store";
 import type { ConsentPurpose, User } from "@/lib/types";
 import { cn, firstName, fmt, formatDate, timeAgo } from "@/lib/utils";
 import { completeness, groupsFor } from "@/lib/community";
+import { pageIconFor } from "@/lib/pageIcons";
 import { Avatar, Button, Callout, Card, CardHeader, PageHeader, Pill, Req, Stat } from "./ui";
 
 /* ================================ Student ================================ */
@@ -70,7 +71,7 @@ export function StudentHome({ me }: { me: User }) {
                   {s.done || i === 0 ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" /> : i === 1 ? <Clock className="mt-0.5 h-5 w-5 shrink-0 text-warning" /> : <Circle className="mt-0.5 h-5 w-5 shrink-0 text-border" />}
                   <div>
                     <p className="text-[14px] font-semibold">{s.title}</p>
-                    <p className="text-[13px] text-muted">{s.sub}</p>
+                    <p className="text-[14px] text-muted">{s.sub}</p>
                   </div>
                 </li>
               ))}
@@ -126,10 +127,10 @@ export function StudentHome({ me }: { me: User }) {
             <div className="divide-y divide-border">
               {me.threeC?.map((c, i) => (
                 <div key={i} className="flex items-center gap-4 px-5 py-3.5">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-[13px] font-bold text-primary">{i + 1}</span>
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary-soft text-[14px] font-bold text-primary">{i + 1}</span>
                   <div className="min-w-0">
                     <p className="truncate text-[14px] font-semibold">{c.college}</p>
-                    <p className="truncate text-[13px] text-muted">
+                    <p className="truncate text-[14px] text-muted">
                       {c.course} · {c.country}
                     </p>
                   </div>
@@ -141,9 +142,9 @@ export function StudentHome({ me }: { me: User }) {
 
         <div className="min-w-0 space-y-5">
           <Card>
-            <CardHeader title="Conversations" action={<Link href="/portal/messages" className="text-[13px] font-semibold text-primary">Open</Link>} />
+            <CardHeader title="Conversations" action={<Link href="/portal/messages" className="text-[14px] font-semibold text-primary">Open</Link>} />
             {myConvs.length === 0 ? (
-              <p className="px-5 py-6 text-[13px] text-muted">No conversations yet. Ask a mentor your first question.</p>
+              <p className="px-5 py-6 text-[14px] text-muted">No conversations yet. Ask a mentor your first question.</p>
             ) : (
               <div className="divide-y divide-border">
                 {myConvs.map((c) => {
@@ -153,8 +154,8 @@ export function StudentHome({ me }: { me: User }) {
                     <Link key={c.id} href={`/portal/messages?c=${c.id}`} className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-2">
                       <Avatar name={m.name} size={36} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13.5px] font-semibold">{m.name}</p>
-                        <p className="truncate text-[12.5px] text-muted">{last?.text}</p>
+                        <p className="truncate text-[14.5px] font-semibold">{m.name}</p>
+                        <p className="truncate text-[13.5px] text-muted">{last?.text}</p>
                       </div>
                     </Link>
                   );
@@ -164,7 +165,7 @@ export function StudentHome({ me }: { me: User }) {
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[13px] font-semibold">What your parent allowed</p>
+              <p className="text-[14px] font-semibold">What your parent allowed</p>
               <Req ids="CS-2" />
             </div>
             <div className="mt-3 space-y-2.5">
@@ -174,12 +175,12 @@ export function StudentHome({ me }: { me: User }) {
                 const by = rec ? state.users.find((u) => u.id === rec.givenBy) : undefined;
                 return (
                   <div key={p} className="rounded-xl bg-surface-2 px-3 py-2.5">
-                    <div className="flex items-center justify-between gap-2 text-[13px]">
+                    <div className="flex items-center justify-between gap-2 text-[14px]">
                       <span className="font-medium">{consentPurposes[p].short}</span>
                       {on ? <Pill tone="success">On</Pill> : <Pill>Off</Pill>}
                     </div>
                     {rec && (
-                      <p className="mt-1 text-[11.5px] leading-snug text-muted">
+                      <p className="mt-1 text-[12.5px] leading-snug text-muted">
                         {rec.status === "granted" ? "Allowed" : "Switched off"} by <span className="font-semibold text-text">{by?.name ?? "parent"}</span> on{" "}
                         {formatDate(rec.withdrawnAt ?? rec.at)}
                         {rec.status === "granted" && <> · ref <span className="font-mono">{rec.otpRef}</span></>}
@@ -189,17 +190,17 @@ export function StudentHome({ me }: { me: User }) {
                 );
               })}
             </div>
-            <p className="mt-3 text-[11.5px] text-muted">Only your parent can change these, from their Parent portal.</p>
+            <p className="mt-3 text-[12.5px] text-muted">Only your parent can change these, from their Parent portal.</p>
           </Card>
           <Card className="p-5">
-            <p className="text-[13px] font-semibold">Coming up for you</p>
+            <p className="text-[14px] font-semibold">Coming up for you</p>
             <div className="mt-3 grid gap-2">
-              <Link href="/portal/events" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[13px] hover:bg-border/60">
+              <Link href="/portal/events" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[14px] hover:bg-border/60">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span className="flex-1">Career talks and webinars</span>
                 <span className="font-semibold">{state.events.filter((e) => e.audience.includes("STU") && (e.campusIds === "all" || e.campusIds.includes(me.campusIds[0]))).length}</span>
               </Link>
-              <Link href="/portal/jobs" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[13px] hover:bg-border/60">
+              <Link href="/portal/jobs" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[14px] hover:bg-border/60">
                 <Briefcase className="h-4 w-4 text-primary" />
                 <span className="flex-1">Internships approved by your campus</span>
                 <span className="font-semibold">{state.jobs.filter((j) => j.forStudents && j.status === "approved").length}</span>
@@ -229,7 +230,7 @@ export function ParentHome({ me }: { me: User }) {
                 <Avatar name={k.name} size={52} />
                 <div className="min-w-0 flex-1">
                   <p className="text-lg font-semibold">{k.name}</p>
-                  <p className="text-[13px] text-muted">
+                  <p className="text-[14px] text-muted">
                     Class {k.className} · {campusName(k.campusIds[0])}
                   </p>
                 </div>
@@ -237,7 +238,7 @@ export function ParentHome({ me }: { me: User }) {
               </div>
               <div className="mt-5 space-y-2">
                 {(Object.keys(consentPurposes) as ConsentPurpose[]).map((p) => (
-                  <div key={p} className="flex items-center justify-between rounded-xl bg-surface-2 px-3.5 py-2.5 text-[13.5px]">
+                  <div key={p} className="flex items-center justify-between rounded-xl bg-surface-2 px-3.5 py-2.5 text-[14.5px]">
                     <span>{consentPurposes[p].short}</span>
                     {hasConsent(state, k.id, p) ? <Pill tone="success">Allowed</Pill> : <Pill>Not allowed</Pill>}
                   </div>
@@ -258,7 +259,7 @@ export function ParentHome({ me }: { me: User }) {
         <Card className="p-6">
           <ShieldCheck className="h-7 w-7 text-primary" />
           <p className="mt-3 font-semibold">How we keep your child safe</p>
-          <ul className="mt-3 space-y-2.5 text-[13.5px] text-muted">
+          <ul className="mt-3 space-y-2.5 text-[14.5px] text-muted">
             <li>• Only approved alumni mentors can be contacted</li>
             <li>• All messages are recorded and reviewed by the campus</li>
             <li>• Phone numbers, emails and links are hidden automatically</li>
@@ -353,19 +354,19 @@ export function AlumniHome({ me }: { me: User }) {
       </div>
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="min-w-0">
-          <CardHeader title="Latest in your groups" action={<Link href="/portal/groups" className="text-[13px] font-semibold text-primary">Open</Link>} />
+          <CardHeader title="Latest in your groups" action={<Link href="/portal/groups" className="text-[14px] font-semibold text-primary">Open</Link>} />
           <div className="divide-y divide-border">
-            {posts.length === 0 && <p className="px-5 py-4 text-[13px] text-muted">No posts yet.</p>}
+            {posts.length === 0 && <p className="px-5 py-4 text-[14px] text-muted">No posts yet.</p>}
             {posts.map((p) => {
               const a = state.users.find((u) => u.id === p.authorId);
               return (
                 <div key={p.id} className="flex gap-3 px-5 py-3">
                   <Avatar name={a?.name ?? "?"} size={32} />
                   <div className="min-w-0">
-                    <p className="text-[13px]">
+                    <p className="text-[14px]">
                       <span className="font-semibold">{a?.name}</span> <span className="text-muted">· {timeAgo(p.at)}</span>
                     </p>
-                    <p className="line-clamp-2 text-[13px] text-muted">{p.text}</p>
+                    <p className="line-clamp-2 text-[14px] text-muted">{p.text}</p>
                   </div>
                 </div>
               );
@@ -373,7 +374,7 @@ export function AlumniHome({ me }: { me: User }) {
           </div>
         </Card>
         <Card className="min-w-0">
-          <CardHeader title="Upcoming events" action={<Link href="/portal/events" className="text-[13px] font-semibold text-primary">All events</Link>} />
+          <CardHeader title="Upcoming events" action={<Link href="/portal/events" className="text-[14px] font-semibold text-primary">All events</Link>} />
           <div className="divide-y divide-border">
             {events.map((e) => {
               const d = new Date(e.start);
@@ -381,12 +382,12 @@ export function AlumniHome({ me }: { me: User }) {
               return (
                 <Link key={e.id} href="/portal/events" className="flex items-center gap-3 px-5 py-3 hover:bg-surface-2">
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-center text-primary">
-                    <span className="text-[10px] font-bold uppercase leading-none">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                    <span className="text-[11px] font-bold uppercase leading-none">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
                     <span className="text-[16px] font-bold leading-none">{d.getDate()}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13.5px] font-semibold">{e.title}</span>
-                    <span className="block truncate text-[12px] text-muted">{e.venue}</span>
+                    <span className="block truncate text-[14.5px] font-semibold">{e.title}</span>
+                    <span className="block truncate text-[13px] text-muted">{e.venue}</span>
                   </span>
                   {going && <Pill tone="success">Going</Pill>}
                 </Link>
@@ -412,7 +413,7 @@ export function PendingAlumniHome({ me }: { me: User }) {
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
             <div>
               <p className="font-semibold">Details submitted</p>
-              <p className="text-[13px] text-muted">
+              <p className="text-[14px] text-muted">
                 Batch {req?.passYear ?? me.batch} · {campusName(me.campusIds[0])} {req && `· ${timeAgo(req.submittedAt)}`}
               </p>
             </div>
@@ -421,7 +422,7 @@ export function PendingAlumniHome({ me }: { me: User }) {
             <Clock className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <div>
               <p className="font-semibold">Campus alumni office review</p>
-              <p className="text-[13px] text-muted">{req?.note ?? "Checking your details against school records."}</p>
+              <p className="text-[14px] text-muted">{req?.note ?? "Checking your details against school records."}</p>
             </div>
           </li>
           <li className="flex gap-3">
@@ -432,10 +433,10 @@ export function PendingAlumniHome({ me }: { me: User }) {
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
                   <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(vouches / 2) * 100}%` }} />
                 </div>
-                <span className="text-[13px] font-semibold tabular-nums">{vouches} / 2</span>
+                <span className="text-[14px] font-semibold tabular-nums">{vouches} / 2</span>
               </div>
               {req?.vouches.map((v) => (
-                <p key={v.by} className="mt-1.5 text-[12.5px] text-muted">
+                <p key={v.by} className="mt-1.5 text-[13.5px] text-muted">
                   ✓ {v.byName} · {timeAgo(v.at)}
                 </p>
               ))}
@@ -510,7 +511,7 @@ export function StaffDashboard({ me }: { me: User }) {
           <div className="space-y-4 p-5">
             {completeness.map((c) => (
               <div key={c.label}>
-                <div className="flex justify-between text-[13px]">
+                <div className="flex justify-between text-[14px]">
                   <span className="font-medium">{c.label}</span>
                   <span className="font-semibold tabular-nums">{c.v}%</span>
                 </div>
@@ -526,12 +527,12 @@ export function StaffDashboard({ me }: { me: User }) {
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
         {group ? <CampusTable /> : <ScopeNote />}
         <Card>
-          <CardHeader title="Recent activity" action={<Link href="/portal/admin/audit" className="text-[13px] font-semibold text-primary">Audit log</Link>} />
+          <CardHeader title="Recent activity" action={<Link href="/portal/admin/audit" className="text-[14px] font-semibold text-primary">Audit log</Link>} />
           <div className="divide-y divide-border">
             {recent.map((a) => (
               <div key={a.id} className="px-5 py-3">
-                <p className="text-[13px] font-medium">{a.action}</p>
-                <p className="truncate text-[12px] text-muted">
+                <p className="text-[14px] font-medium">{a.action}</p>
+                <p className="truncate text-[13px] text-muted">
                   {a.target} · {timeAgo(a.at)}
                 </p>
               </div>
@@ -548,7 +549,7 @@ function ScopeNote() {
     <Card className="p-6">
       <ShieldCheck className="h-7 w-7 text-primary" />
       <p className="mt-3 font-semibold">Campus-scoped access</p>
-      <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">
+      <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted">
         Queues, reports, broadcasts and exports on this account are limited to your campus. The Group Alumni Office sees all 39 campuses. Every view of student data is recorded in the audit log.
       </p>
       <div className="mt-3 flex gap-1.5">
@@ -570,9 +571,9 @@ function CampusTable() {
     <Card className="overflow-hidden">
       <CardHeader title="Campuses" subtitle="Top 8 by alumni records" action={<Req ids="M1" />} />
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[480px] text-[13px]">
+        <table className="w-full min-w-[480px] text-[14px]">
           <thead>
-            <tr className="border-b border-border text-left text-[12px] text-muted">
+            <tr className="border-b border-border text-left text-[13px] text-muted">
               <th className="px-5 py-2.5 font-semibold">Campus</th>
               <th className="px-3 py-2.5 text-right font-semibold">Alumni</th>
               <th className="px-3 py-2.5 text-right font-semibold">Verified</th>
@@ -598,19 +599,20 @@ function CampusTable() {
 }
 
 function QueueRow({ href, icon: Icon, title, sub, count, danger }: { href: string; icon: typeof Users; title: string; sub: string; count: number; danger?: boolean }) {
+  const color = pageIconFor(href.split("?")[0])?.color ?? "var(--primary)";
   return (
-    <Link href={href} className="flex items-center gap-4 px-5 py-4 hover:bg-surface-2/60">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-primary">
+    <Link href={href} className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface-2/60">
+      <span className="icon-bounce grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ color, background: `color-mix(in srgb, ${color} 14%, transparent)` }}>
         <Icon className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-[14px] font-semibold">{title}</p>
-        <p className="truncate text-[12.5px] text-muted">{sub}</p>
+        <p className="truncate text-[13.5px] text-muted">{sub}</p>
       </div>
-      <span className={cn("grid h-7 min-w-7 place-items-center rounded-full px-2 text-[13px] font-bold tabular-nums", count ? (danger ? "bg-danger text-white" : "bg-primary text-primary-fg") : "bg-surface-2 text-muted")}>
+      <span className={cn("grid h-7 min-w-7 place-items-center rounded-full px-2 text-[14px] font-bold tabular-nums", count ? (danger ? "bg-danger text-white" : "bg-primary text-primary-fg") : "bg-surface-2 text-muted")}>
         {count}
       </span>
-      <ArrowRight className="h-4 w-4 text-muted" />
+      <ArrowRight className="icon-nudge h-4 w-4 text-muted group-hover:text-primary" />
     </Link>
   );
 }
@@ -646,7 +648,7 @@ export function RoleOverview({ me }: { me: User }) {
           <ul className="space-y-3 p-5">
             {f?.items.map((i) => (
               <li key={i} className="flex items-center gap-3 text-[14px]">
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-surface-2 text-muted">
+                <span className="grid h-7 w-7 place-items-center rounded-xl bg-surface-2 text-muted">
                   <Clock className="h-3.5 w-3.5" />
                 </span>
                 {i}
@@ -673,15 +675,20 @@ export function RoleOverview({ me }: { me: User }) {
 }
 
 function ActionCard({ href, icon: Icon, title, body, cta, highlight, disabled }: { href: string; icon: typeof Users; title: string; body: string; cta: string; highlight?: boolean; disabled?: boolean }) {
+  const color = pageIconFor(href.split("?")[0])?.color ?? "var(--primary)";
   const inner = (
-    <Card className={cn("flex h-full flex-col p-5 transition-shadow", !disabled && "hover:shadow-lg", highlight && "border-primary/40", disabled && "opacity-60")}>
-      <span className={cn("grid h-10 w-10 place-items-center rounded-xl", highlight ? "bg-primary text-primary-fg" : "bg-primary-soft text-primary")}>
+    <Card className={cn("group relative flex h-full flex-col overflow-hidden p-5", !disabled && "lift", highlight && "border-primary/40", disabled && "opacity-60")}>
+      <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100" style={{ background: color }} />
+      <span
+        className="icon-bounce grid h-11 w-11 place-items-center rounded-xl"
+        style={highlight ? { background: color, color: "#fff" } : { color, background: `color-mix(in srgb, ${color} 14%, transparent)` }}
+      >
         <Icon className="h-5 w-5" />
       </span>
-      <p className="mt-4 font-semibold">{title}</p>
-      <p className="mt-1 flex-1 text-[13px] text-muted">{body}</p>
-      <span className={cn("mt-4 inline-flex items-center gap-1 text-[13px] font-semibold", disabled ? "text-muted" : "text-primary")}>
-        {cta} {!disabled && <ArrowRight className="h-3.5 w-3.5" />}
+      <p className="mt-4 font-bold">{title}</p>
+      <p className="mt-1 flex-1 text-[14px] text-muted">{body}</p>
+      <span className={cn("mt-4 inline-flex items-center gap-1 text-[14px] font-semibold", disabled ? "text-muted" : "text-primary")}>
+        {cta} {!disabled && <ArrowRight className="icon-nudge h-3.5 w-3.5" />}
       </span>
     </Card>
   );

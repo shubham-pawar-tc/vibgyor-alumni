@@ -80,8 +80,8 @@ function Records() {
       </Card>
 
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-[13px]">
-          <thead className="border-b border-border text-left text-[11.5px] uppercase tracking-wider text-muted">
+        <table className="w-full min-w-[760px] text-[14px]">
+          <thead className="border-b border-border text-left text-[12.5px] uppercase tracking-wider text-muted">
             <tr>
               <th className="px-4 py-3 font-semibold">Name</th>
               <th className="px-4 py-3 font-semibold">Batch · campus</th>
@@ -101,7 +101,7 @@ function Records() {
                       <Avatar name={u.name} size={30} />
                       <span className="min-w-0">
                         <span className="block font-semibold">{u.name}</span>
-                        <span className="block text-[12px] text-muted">{u.email}</span>
+                        <span className="block text-[13px] text-muted">{u.email}</span>
                       </span>
                     </Link>
                   </td>
@@ -121,12 +121,12 @@ function Records() {
                   <td className="px-4 py-3">
                     {canEdit && (
                       <div className="flex justify-end gap-1">
-                        <button onClick={() => setEditing(u)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2" aria-label={`Edit ${u.name}`}>
+                        <button onClick={() => setEditing(u)} className="grid h-8 w-8 place-items-center rounded-xl hover:bg-surface-2" aria-label={`Edit ${u.name}`}>
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => setDeactivated(u.id, !u.deactivated, me.id)}
-                          className={`grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2 ${u.deactivated ? "text-success" : "text-danger"}`}
+                          className={`grid h-8 w-8 place-items-center rounded-xl hover:bg-surface-2 ${u.deactivated ? "text-success" : "text-danger"}`}
                           aria-label={u.deactivated ? `Reactivate ${u.name}` : `Deactivate ${u.name}`}
                           title={u.deactivated ? "Reactivate" : "Deactivate"}
                         >
@@ -141,7 +141,7 @@ function Records() {
           </tbody>
         </table>
       </Card>
-      <p className="mt-2 text-[12px] text-muted">{rows.length} records. Deactivated people disappear from the directory, groups and chats, but their history is kept.</p>
+      <p className="mt-2 text-[13px] text-muted">{rows.length} records. Deactivated people disappear from the directory, groups and chats, but their history is kept.</p>
 
       {editing && <EditRecord u={editing} onClose={() => setEditing(null)} />}
       {exporting && <ExportModal rows={rows} onClose={() => setExporting(false)} />}
@@ -186,7 +186,7 @@ function EditRecord({ u, onClose }: { u: User; onClose: () => void }) {
         <Field label="Company" htmlFor="rc"><Input id="rc" value={f.company} onChange={set("company")} /></Field>
         <Field label="City" htmlFor="rci"><Input id="rci" value={f.city} onChange={set("city")} /></Field>
       </div>
-      <p className="mt-3 text-[12px] text-muted">The change and the fields you edited go into the audit log.</p>
+      <p className="mt-3 text-[13px] text-muted">The change and the fields you edited go into the audit log.</p>
     </Modal>
   );
 }
@@ -222,7 +222,7 @@ function ExportModal({ rows, onClose }: { rows: User[]; onClose: () => void }) {
     >
       <div className="space-y-4">
         <div>
-          <p className="mb-2 text-[13px] font-semibold">Columns</p>
+          <p className="mb-2 text-[14px] font-semibold">Columns</p>
           <div className="grid grid-cols-2 gap-2">
             {exportFields.map((f) => (
               <Checkbox key={f.key} checked={fields.includes(f.key)} onChange={(v) => setFields(v ? [...fields, f.key] : fields.filter((x) => x !== f.key))} label={f.label} />

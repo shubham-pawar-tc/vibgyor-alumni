@@ -62,9 +62,9 @@ function Inner() {
       </Card>
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-[13px]">
+          <table className="w-full min-w-[760px] text-[14px]">
             <thead>
-              <tr className="border-b border-border text-left text-[12px] text-muted">
+              <tr className="border-b border-border text-left text-[13px] text-muted">
                 <th className="px-5 py-3 font-semibold">Student</th>
                 <th className="px-3 py-3 font-semibold">Parent</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
@@ -87,7 +87,7 @@ function Inner() {
                         <Avatar name={s.name} size={30} />
                         <div>
                           <p className="font-semibold">{s.name}</p>
-                          <p className="text-[12px] text-muted">Class {s.className}</p>
+                          <p className="text-[13px] text-muted">Class {s.className}</p>
                         </div>
                       </div>
                     </td>
@@ -101,7 +101,7 @@ function Inner() {
                     <td className="px-5 py-3 text-right">
                       {s.studentStatus === "awaiting_consent" && !below && (
                         sent.includes(s.id) ? (
-                          <span className="text-[12px] font-semibold text-success">Sent</span>
+                          <span className="text-[13px] font-semibold text-success">Sent</span>
                         ) : (
                           <Button size="sm" variant="secondary" onClick={() => send([s.id])}>
                             Send reminder
@@ -116,7 +116,7 @@ function Inner() {
           </table>
         </div>
       </Card>
-      <p className="mt-3 text-[12px] text-muted">Staff can see consent status but can never give consent on a parent&apos;s behalf.</p>
+      <p className="mt-3 text-[13px] text-muted">Staff can see consent status but can never give consent on a parent&apos;s behalf.</p>
     </>
   );
 }

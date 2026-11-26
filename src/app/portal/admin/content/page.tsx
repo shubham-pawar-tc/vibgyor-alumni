@@ -72,13 +72,13 @@ function Content() {
                   <div className="flex flex-wrap items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-[16px] font-semibold">{j.title}</p>
-                      <p className="text-[13px] text-muted">
+                      <p className="text-[14px] text-muted">
                         {j.company} · {j.location} · {j.type}
                       </p>
                     </div>
                     {j.forStudents && <Pill tone="warning" icon={<GraduationCap className="h-3 w-3" />}>Wants to reach students</Pill>}
                   </div>
-                  <p className="mt-3 rounded-xl bg-surface-2 p-3 text-[13.5px] leading-relaxed">
+                  <p className="mt-3 rounded-xl bg-surface-2 p-3 text-[14.5px] leading-relaxed">
                     <MaskedText text={j.description} />
                   </p>
                   {kinds.length > 0 && (
@@ -88,7 +88,7 @@ function Content() {
                   )}
                   <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
                     <Avatar name={poster?.name ?? "?"} size={30} />
-                    <span className="min-w-0 flex-1 text-[12.5px] text-muted">
+                    <span className="min-w-0 flex-1 text-[13.5px] text-muted">
                       {poster?.name} · {poster?.role === "ALU" ? "Verified alumni" : poster?.role} · Batch {poster?.batch} · posted {timeAgo(j.at)}
                     </span>
                     <Button variant="secondary" size="sm" onClick={() => decideJob(j.id, false, me.id)}>
@@ -106,8 +106,8 @@ function Content() {
 
       {tab === "jobs" && (
         <Card className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-[13px]">
-            <thead className="border-b border-border text-left text-[12px] uppercase tracking-wider text-muted">
+          <table className="w-full min-w-[640px] text-[14px]">
+            <thead className="border-b border-border text-left text-[13px] uppercase tracking-wider text-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">Job</th>
                 <th className="px-4 py-3 font-semibold">Posted by</th>
@@ -147,15 +147,15 @@ function Content() {
                 <Card key={e.id} className="p-5">
                   <div className="flex items-center gap-2">
                     <Pill tone="primary">{e.kind}</Pill>
-                    <span className="text-[12.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
+                    <span className="text-[13.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
                   </div>
                   <p className="mt-2 text-[15px] font-semibold">{e.title}</p>
-                  <p className="text-[13px] text-muted">
+                  <p className="text-[14px] text-muted">
                     {formatDateTime(e.start)} · {e.venue}
                   </p>
-                  <p className="mt-1 text-[12.5px] text-muted">For: {e.audience.map((a) => ({ ALU: "Alumni", STU: "Students", PAR: "Parents" })[a]).join(", ")}</p>
+                  <p className="mt-1 text-[13.5px] text-muted">For: {e.audience.map((a) => ({ ALU: "Alumni", STU: "Students", PAR: "Parents" })[a]).join(", ")}</p>
                   <div className="mt-3">
-                    <div className="flex justify-between text-[12.5px]">
+                    <div className="flex justify-between text-[13.5px]">
                       <span className="text-muted">
                         {seats} going · {e.rsvps.filter((r) => r.status === "maybe").length} maybe
                       </span>
@@ -279,7 +279,7 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
           </Field>
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <p className="text-[13px] font-semibold">Who can sign up?</p>
+          <p className="text-[14px] font-semibold">Who can sign up?</p>
           <div className="flex flex-wrap gap-4">
             <Checkbox checked={f.audience.ALU} onChange={(v) => setF({ ...f, audience: { ...f.audience, ALU: v } })} label="Alumni" />
             <Checkbox checked={f.audience.STU} onChange={(v) => setF({ ...f, audience: { ...f.audience, STU: v } })} label="Students" />

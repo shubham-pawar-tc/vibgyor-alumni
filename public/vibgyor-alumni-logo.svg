@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 364 112" role="img" aria-label="VIBGYOR Alumni Association">
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="40" fill="#fff" text-anchor="middle">
+    <rect x="0"   y="0" width="50" height="66" rx="6" fill="#d8392e"/><text x="25"  y="47">V</text>
+    <rect x="52"  y="0" width="50" height="66" rx="2" fill="#ea7336"/><text x="77"  y="47">I</text>
+    <rect x="104" y="0" width="50" height="66" rx="2" fill="#f2a53a"/><text x="129" y="47">B</text>
+    <rect x="156" y="0" width="50" height="66" rx="2" fill="#78bb4c"/><text x="181" y="47">G</text>
+    <rect x="208" y="0" width="50" height="66" rx="2" fill="#3a8ed6"/><text x="233" y="47">Y</text>
+    <rect x="260" y="0" width="50" height="66" rx="2" fill="#2f3180"/><text x="285" y="47">O</text>
+    <rect x="312" y="0" width="52" height="66" rx="6" fill="#7b3f9d"/><text x="338" y="47">R</text>
+  </g>
+  <text x="182" y="104" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="24" letter-spacing="5" fill="#2b2d72">ALUMNI ASSOCIATION</text>
+</svg>

@@ -44,14 +44,14 @@ export default function VouchPage() {
                   <Avatar name={v.name} size={48} />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{v.name}</p>
-                    <p className="text-[13px] text-muted">
+                    <p className="text-[14px] text-muted">
                       Batch {v.passYear} · signed up {timeAgo(v.submittedAt)}
                     </p>
                   </div>
                   {v.status === "peer_approved" ? <Pill tone="success">Verified</Pill> : <Pill tone="warning">Pending</Pill>}
                 </div>
                 <div className="mt-4">
-                  <div className="flex items-center justify-between text-[12.5px]">
+                  <div className="flex items-center justify-between text-[13.5px]">
                     <span className="font-medium text-muted">Vouches</span>
                     <span className="font-semibold tabular-nums">{v.vouches.length} / 2</span>
                   </div>
@@ -60,7 +60,7 @@ export default function VouchPage() {
                   </div>
                   <ul className="mt-2 space-y-1">
                     {v.vouches.map((x) => (
-                      <li key={x.by} className="text-[12.5px] text-muted">
+                      <li key={x.by} className="text-[13.5px] text-muted">
                         ✓ {x.byName}
                       </li>
                     ))}
@@ -68,7 +68,7 @@ export default function VouchPage() {
                 </div>
                 <div className="mt-4 border-t border-border pt-4">
                   {iVouched ? (
-                    <p className="flex items-center gap-1.5 text-[13px] font-semibold text-success">
+                    <p className="flex items-center gap-1.5 text-[14px] font-semibold text-success">
                       <CheckCircle2 className="h-4 w-4" /> You vouched for {v.name.split(" ")[0]}
                     </p>
                   ) : (

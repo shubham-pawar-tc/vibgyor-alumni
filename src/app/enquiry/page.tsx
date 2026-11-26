@@ -53,7 +53,7 @@ function EnquiryForm() {
         <h1 className="mt-5 text-2xl font-bold">Thank you, we&apos;ve got it</h1>
         <p className="mt-2 text-muted">Your reference is <span className="font-mono font-semibold text-text">{done.ref}</span>.</p>
         {topic === "mycareerz" && (
-          <div className="mx-auto mt-6 max-w-sm space-y-2 rounded-xl bg-surface-2 p-4 text-left text-[13px]">
+          <div className="mx-auto mt-6 max-w-sm space-y-2 rounded-xl bg-surface-2 p-4 text-left text-[14px]">
             {studentMcz ? (
               <p className="flex items-start gap-2">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-warning" /> Held until your parent confirms consent. We&apos;ve asked them by SMS.
@@ -94,7 +94,7 @@ function EnquiryForm() {
               <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
               <div>
                 <p className="text-sm font-semibold">{t}</p>
-                <p className="text-[13px] text-muted">{d}</p>
+                <p className="text-[14px] text-muted">{d}</p>
               </div>
             </div>
           ))}

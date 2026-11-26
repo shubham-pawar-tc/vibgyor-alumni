@@ -19,7 +19,7 @@ export function ReportButton({ kind, targetId, compact }: { kind: "post" | "job"
     <>
       <button
         onClick={() => !already && setOpen(true)}
-        className={cn("flex items-center gap-1.5 text-[12.5px] font-medium", already ? "text-success" : "text-muted hover:text-danger", !compact && "rounded-xl border border-border px-3 py-2 hover:bg-surface-2")}
+        className={cn("flex items-center gap-1.5 text-[13.5px] font-medium", already ? "text-success" : "text-muted hover:text-danger", !compact && "rounded-xl border border-border px-3 py-2 hover:bg-surface-2")}
         aria-label={`Report this ${kind}`}
       >
         {already ? <CheckCircle2 className="h-4 w-4" /> : <Flag className="h-4 w-4" />}
@@ -46,10 +46,10 @@ export function ReportButton({ kind, targetId, compact }: { kind: "post" | "job"
           </>
         }
       >
-        <p className="mb-3 text-[13.5px] text-muted">The campus alumni office reviews every report. The person won&apos;t see who reported them.</p>
+        <p className="mb-3 text-[14.5px] text-muted">The campus alumni office reviews every report. The person won&apos;t see who reported them.</p>
         <div className="space-y-1.5">
           {REASONS.map((r) => (
-            <label key={r} className={cn("flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[13.5px]", reason === r ? "border-primary bg-primary-soft/50" : "border-border hover:bg-surface-2")}>
+            <label key={r} className={cn("flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[14.5px]", reason === r ? "border-primary bg-primary-soft/50" : "border-border hover:bg-surface-2")}>
               <input type="radio" name="reason" checked={reason === r} onChange={() => setReason(r)} className="accent-[var(--primary)]" />
               {r}
             </label>

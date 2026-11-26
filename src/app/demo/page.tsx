@@ -93,7 +93,7 @@ export default function DemoPage() {
               </span>
               <div>
                 <p className="text-[14px] font-semibold">{x.t}</p>
-                <p className="mt-0.5 text-[13px] text-muted">{x.d}</p>
+                <p className="mt-0.5 text-[14px] text-muted">{x.d}</p>
               </div>
             </Card>
           ))}
@@ -111,9 +111,9 @@ export default function DemoPage() {
                     <f.icon className="h-6 w-6" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[12px] font-semibold uppercase tracking-wider text-muted">Story {t.id} · {t.steps.length} steps · about 2 minutes</p>
+                    <p className="text-[13px] font-semibold uppercase tracking-wider text-muted">Story {t.id} · {t.steps.length} steps · about 2 minutes</p>
                     <h3 className="text-lg font-bold">{t.title}</h3>
-                    <p className="text-[13.5px] text-muted">{t.short}</p>
+                    <p className="text-[14.5px] text-muted">{t.short}</p>
                   </div>
                   <Button size="lg" onClick={() => start(t.id)} className="shrink-0">
                     Start tour <ArrowRight className="h-4 w-4" />
@@ -127,13 +127,13 @@ export default function DemoPage() {
                       <div key={i} className="flex flex-col items-stretch gap-2 md:flex-1 md:flex-row md:items-center">
                         <div className="flex flex-1 items-center gap-3 rounded-xl border border-border bg-surface p-3">
                           {c.who === "System" ? (
-                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warning-soft text-[11px] font-bold text-warning">⚙</span>
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warning-soft text-[12px] font-bold text-warning">⚙</span>
                           ) : (
                             <Avatar name={c.who} size={36} />
                           )}
                           <div className="min-w-0">
-                            <p className="text-[13px] font-semibold leading-tight">{c.does}</p>
-                            <p className="mt-0.5 truncate text-[11.5px] text-muted">
+                            <p className="text-[14px] font-semibold leading-tight">{c.does}</p>
+                            <p className="mt-0.5 truncate text-[12.5px] text-muted">
                               {c.who === "System" ? "Platform does it" : `${c.who.split(" ")[0]} · ${c.role}`}
                             </p>
                           </div>
@@ -144,7 +144,7 @@ export default function DemoPage() {
                       </div>
                     ))}
                   </div>
-                  <p className="mt-4 flex items-start gap-2 text-[13px]">
+                  <p className="mt-4 flex items-start gap-2 text-[14px]">
                     <span className="font-semibold text-success">Result:</span>
                     <span className="text-muted">{f.result}</span>
                   </p>
@@ -160,15 +160,15 @@ export default function DemoPage() {
             <Users className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold tracking-tight">Who&apos;s who in the demo</h2>
           </div>
-          <p className="mt-1 text-[13.5px] text-muted">Sample people. The tour switches between them for you, or use “Switch role” in the top bar.</p>
+          <p className="mt-1 text-[14.5px] text-muted">Sample people. The tour switches between them for you, or use “Switch role” in the top bar.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {people.map((p) => (
               <Card key={p.name} className="flex items-center gap-3 p-3.5">
                 <Avatar name={p.name} size={40} />
                 <div className="min-w-0">
-                  <p className="truncate text-[13.5px] font-semibold">{p.name}</p>
-                  <p className="truncate text-[12px] text-muted">{p.role}</p>
-                  <p className="truncate text-[11.5px] text-muted">{p.note}</p>
+                  <p className="truncate text-[14.5px] font-semibold">{p.name}</p>
+                  <p className="truncate text-[13px] text-muted">{p.role}</p>
+                  <p className="truncate text-[12.5px] text-muted">{p.note}</p>
                 </div>
               </Card>
             ))}

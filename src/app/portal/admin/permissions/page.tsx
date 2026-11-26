@@ -42,12 +42,12 @@ function Permissions() {
     <>
       <PageHeader eyebrow={<Req ids="A6" />} title="Permissions" description="What each staff role can do. Changes apply immediately and are written to the audit log." />
       <Card className="mb-5 overflow-x-auto">
-        <table className="w-full min-w-[720px] text-[13px]">
+        <table className="w-full min-w-[720px] text-[14px]">
           <thead className="border-b border-border">
             <tr>
-              <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-muted">Can…</th>
+              <th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wider text-muted">Can…</th>
               {ROLES.map((r) => (
-                <th key={r} className="px-2 py-3 text-center text-[12px] font-semibold leading-tight">
+                <th key={r} className="px-2 py-3 text-center text-[13px] font-semibold leading-tight">
                   {roleLabels[r]}
                 </th>
               ))}
@@ -90,7 +90,7 @@ function Permissions() {
           <CardHeader title="Fixed safety rules" subtitle="Built in. No role can switch these off." icon={<ShieldCheck className="h-5 w-5" />} />
           <ul className="space-y-2 p-5">
             {FIXED.map((f) => (
-              <li key={f} className="flex items-start gap-2 text-[13px]">
+              <li key={f} className="flex items-start gap-2 text-[14px]">
                 <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted" /> {f}
               </li>
             ))}

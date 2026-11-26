@@ -74,7 +74,7 @@ export default function ParentConsentPage() {
         {["About", "Verify", "Choose", "Done"].map((l, i) => (
           <div key={l} className="flex flex-1 flex-col gap-1.5">
             <div className={cn("h-1.5 rounded-full", i <= stepIdx ? "bg-primary" : "bg-border")} />
-            <span className={cn("text-[11px] font-semibold", i <= stepIdx ? "text-text" : "text-muted")}>{l}</span>
+            <span className={cn("text-[12px] font-semibold", i <= stepIdx ? "text-text" : "text-muted")}>{l}</span>
           </div>
         ))}
       </div>
@@ -95,12 +95,12 @@ export default function ParentConsentPage() {
               <Avatar name={stu.name} size={44} />
               <div className="min-w-0">
                 <p className="font-semibold">{stu.name}</p>
-                <p className="text-[13px] text-muted">
+                <p className="text-[14px] text-muted">
                   Class {stu.className} · {campusName(stu.campusIds[0])}
                 </p>
               </div>
             </div>
-            <p className="mt-6 text-[13px] font-semibold uppercase tracking-wider text-muted">What you should know</p>
+            <p className="mt-6 text-[14px] font-semibold uppercase tracking-wider text-muted">What you should know</p>
             <ul className="mt-3 space-y-3.5">
               {[
                 { icon: UserRound, t: "Your child only talks to approved alumni mentors, never the full alumni directory." },
@@ -126,7 +126,7 @@ export default function ParentConsentPage() {
             >
               <Smartphone className="h-4 w-4" /> Send code to my mobile
             </Button>
-            <p className="mt-3 text-center text-[12px] text-muted">Not the right number? Contact the school office to update it.</p>
+            <p className="mt-3 text-center text-[13px] text-muted">Not the right number? Contact the school office to update it.</p>
           </div>
         </Card>
       )}
@@ -149,19 +149,19 @@ export default function ParentConsentPage() {
             }}
           >
             <Input inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} className="h-14 text-center font-mono text-2xl tracking-[0.5em]" autoFocus aria-label="6-digit code" />
-            {err && <p className="text-[13px] font-medium text-danger">{err}</p>}
+            {err && <p className="text-[14px] font-medium text-danger">{err}</p>}
             <Button type="submit" size="lg" className="w-full" disabled={code.length !== 6}>
               Verify
             </Button>
             <button
               type="button"
-              className="w-full text-[13px] font-semibold text-primary"
+              className="w-full text-[14px] font-semibold text-primary"
               onClick={() => sendOtp(otpKey, `${parent.name} · ${maskMobile(parent.mobile)}`, parent.id, `consent for ${stu.name}`)}
             >
               Resend code
             </button>
             <DemoOtpFill otpKey={otpKey} onFill={(c) => { setCode(c); setErr(""); }} />
-            <p className="text-center text-[12px] text-muted">Demo: the latest SMS is also at the top of the device simulator.</p>
+            <p className="text-center text-[13px] text-muted">Demo: the latest SMS is also at the top of the device simulator.</p>
           </form>
         </Card>
       )}
@@ -184,7 +184,7 @@ export default function ParentConsentPage() {
                         <p className="font-semibold">{c.title}</p>
                         {c.required ? <Pill tone="primary">Needed for the account</Pill> : <Pill>Optional</Pill>}
                       </div>
-                      <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">{c.body}</p>
+                      <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted">{c.body}</p>
                     </div>
                     <Switch
                       label={c.title}
@@ -205,7 +205,7 @@ export default function ParentConsentPage() {
           <div className="mt-5 rounded-xl bg-surface-2 p-4">
             <Checkbox checked={guardian} onChange={setGuardian} label={`I am ${sn}'s parent or legal guardian`} description="Your choice, the time, and this notice version are recorded as proof of consent." />
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[12px] text-muted">
+          <div className="mt-3 flex items-center gap-1.5 text-[13px] text-muted">
             <FileText className="h-3.5 w-3.5" /> Notice {NOTICE_VERSION}
           </div>
           <Button
@@ -231,7 +231,7 @@ export default function ParentConsentPage() {
           <p className="mx-auto mt-2 max-w-sm text-[14px] text-muted">We&apos;ve sent a confirmation to your WhatsApp. Here&apos;s what you agreed to:</p>
           <div className="mx-auto mt-5 max-w-sm space-y-2 text-left">
             {(Object.keys(consentPurposes) as ConsentPurpose[]).map((p) => (
-              <div key={p} className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5 text-[13.5px]">
+              <div key={p} className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5 text-[14.5px]">
                 <span className="font-medium">{consentPurposes[p].short}</span>
                 {choices[p] ? <Pill tone="success">Allowed</Pill> : <Pill>Not allowed</Pill>}
               </div>

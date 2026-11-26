@@ -78,10 +78,10 @@ function Chats() {
                 <Avatar name={other?.name ?? "?"} size={40} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate text-[13.5px] font-semibold">{other?.name}</p>
-                    {last && <span className="shrink-0 text-[11px] text-muted">{timeAgo(last.at)}</span>}
+                    <p className="truncate text-[14.5px] font-semibold">{other?.name}</p>
+                    {last && <span className="shrink-0 text-[12px] text-muted">{timeAgo(last.at)}</span>}
                   </div>
-                  <p className="truncate text-[12.5px] text-muted">{last ? `${last.senderId === me.id ? "You: " : ""}${last.text}` : "Say hello 👋"}</p>
+                  <p className="truncate text-[13.5px] text-muted">{last ? `${last.senderId === me.id ? "You: " : ""}${last.text}` : "Say hello 👋"}</p>
                 </div>
               </Link>
             ))
@@ -105,20 +105,20 @@ function Chats() {
                   <Link href={`/portal/people/${active.other?.id}`} className="block truncate text-[14px] font-semibold hover:underline">
                     {active.other?.name}
                   </Link>
-                  <p className="truncate text-[12px] text-muted">
+                  <p className="truncate text-[13px] text-muted">
                     Batch {active.other?.batch} · {campusName(active.other?.campusIds[0])}
                   </p>
                 </div>
               </div>
               <div className="min-h-0 flex-1 space-y-2 overflow-y-auto bg-surface-2/50 px-4 py-4">
-                {active.msgs.length === 0 && <p className="py-6 text-center text-[13px] text-muted">This is the start of your chat with {active.other?.name}.</p>}
+                {active.msgs.length === 0 && <p className="py-6 text-center text-[14px] text-muted">This is the start of your chat with {active.other?.name}.</p>}
                 {active.msgs.map((m) => {
                   const mine = m.senderId === me.id;
                   return (
                     <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                      <div className={cn("max-w-[80%] rounded-2xl px-3.5 py-2 text-[13.5px]", mine ? "rounded-br-md bg-primary text-primary-fg" : "rounded-bl-md bg-surface shadow-sm")}>
+                      <div className={cn("max-w-[80%] rounded-2xl px-3.5 py-2 text-[14.5px]", mine ? "rounded-br-md bg-primary text-primary-fg" : "rounded-bl-md bg-surface shadow-card")}>
                         <p className="whitespace-pre-wrap">{m.text}</p>
-                        <p className={cn("mt-0.5 text-[10.5px]", mine ? "text-primary-fg/70" : "text-muted")}>{formatDateTime(m.at)}</p>
+                        <p className={cn("mt-0.5 text-[11.5px]", mine ? "text-primary-fg/70" : "text-muted")}>{formatDateTime(m.at)}</p>
                       </div>
                     </div>
                   );
@@ -162,8 +162,8 @@ function Chats() {
             >
               <Avatar name={u.name} size={34} />
               <span className="min-w-0">
-                <span className="block truncate text-[13.5px] font-semibold">{u.name}</span>
-                <span className="block truncate text-[12px] text-muted">
+                <span className="block truncate text-[14.5px] font-semibold">{u.name}</span>
+                <span className="block truncate text-[13px] text-muted">
                   Batch {u.batch} · {campusName(u.campusIds[0])}
                 </span>
               </span>

@@ -66,7 +66,7 @@ function Invite() {
                     type="button"
                     key={id}
                     onClick={() => setChannel(id)}
-                    className={cn("flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border text-[13.5px] font-semibold", channel === id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2")}
+                    className={cn("flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border text-[14.5px] font-semibold", channel === id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2")}
                   >
                     <Icon className="h-4 w-4" /> {label}
                   </button>
@@ -80,7 +80,7 @@ function Invite() {
               </Button>
             </form>
             <div className="flex flex-col gap-2 border-t border-border p-5 sm:flex-row sm:items-center">
-              <p className="min-w-0 flex-1 truncate rounded-lg bg-surface-2 px-3 py-2 font-mono text-[13px]">{link}</p>
+              <p className="min-w-0 flex-1 truncate rounded-xl bg-surface-2 px-3 py-2 font-mono text-[14px]">{link}</p>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -97,14 +97,14 @@ function Invite() {
           <Card>
             <CardHeader title="Your invites" subtitle={`${mine.filter((i) => i.joined).length} of ${mine.length} joined`} />
             {mine.length === 0 ? (
-              <p className="p-5 text-[13.5px] text-muted">No invites yet.</p>
+              <p className="p-5 text-[14.5px] text-muted">No invites yet.</p>
             ) : (
               <div className="divide-y divide-border">
                 {mine.map((i) => (
-                  <div key={i.id} className="flex items-center gap-3 px-5 py-3 text-[13.5px]">
+                  <div key={i.id} className="flex items-center gap-3 px-5 py-3 text-[14.5px]">
                     {i.channel === "email" ? <Mail className="h-4 w-4 text-muted" /> : <MessageCircle className="h-4 w-4 text-muted" />}
                     <span className="min-w-0 flex-1 truncate">{i.to}</span>
-                    <span className="text-[12px] text-muted">{timeAgo(i.at)}</span>
+                    <span className="text-[13px] text-muted">{timeAgo(i.at)}</span>
                     {i.joined ? <Pill tone="success">Joined</Pill> : <Pill>Invited</Pill>}
                   </div>
                 ))}
@@ -118,15 +118,15 @@ function Invite() {
           <ol className="divide-y divide-border">
             {board.map((b, i) => (
               <li key={b.u!.id} className={cn("flex items-center gap-3 px-5 py-3", b.u!.id === me.id && "bg-primary-soft/40")}>
-                <span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12px] font-bold", i === 0 ? "bg-warning-soft text-warning" : "bg-surface-2 text-muted")}>{i + 1}</span>
+                <span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-full text-[13px] font-bold", i === 0 ? "bg-warning-soft text-warning" : "bg-surface-2 text-muted")}>{i + 1}</span>
                 <Avatar name={b.u!.name} size={32} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13.5px] font-semibold">{b.u!.id === me.id ? "You" : b.u!.name}</span>
-                  <span className="block truncate text-[12px] text-muted">
+                  <span className="block truncate text-[14.5px] font-semibold">{b.u!.id === me.id ? "You" : b.u!.name}</span>
+                  <span className="block truncate text-[13px] text-muted">
                     Batch {b.u!.batch} · {campusName(b.u!.campusIds[0])}
                   </span>
                 </span>
-                <span className="text-right text-[12px]">
+                <span className="text-right text-[13px]">
                   <span className="block text-[15px] font-bold tabular-nums">{b.joined}</span>
                   <span className="text-muted">joined</span>
                 </span>

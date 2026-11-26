@@ -86,14 +86,14 @@ function Events() {
             return (
               <Card key={e.id} className="flex flex-col overflow-hidden sm:flex-row">
                 <div className="flex shrink-0 flex-row items-center gap-3 bg-primary-soft px-5 py-3 text-primary sm:w-28 sm:flex-col sm:justify-center sm:gap-0 sm:py-5">
-                  <span className="text-[12px] font-bold uppercase tracking-wider">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                  <span className="text-[13px] font-bold uppercase tracking-wider">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
                   <span className="text-3xl font-bold leading-none">{d.getDate()}</span>
-                  <span className="text-[12px] font-medium">{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
+                  <span className="text-[13px] font-medium">{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
                 </div>
                 <div className="min-w-0 flex-1 p-5">
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone={kindTone[e.kind]}>{e.kind}</Pill>
-                    <span className="text-[12.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
+                    <span className="text-[13.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
                     {mine?.status === "going" && (
                       <Pill tone="success" icon={<Check className="h-3 w-3" />}>
                         You&apos;re going{mine.guests ? ` +${mine.guests}` : ""}
@@ -101,7 +101,7 @@ function Events() {
                     )}
                   </div>
                   <h3 className="mt-2 text-[17px] font-semibold leading-snug">{e.title}</h3>
-                  <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted">
+                  <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[14px] text-muted">
                     <span>
                       {d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}–{new Date(e.end).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })} IST
                     </span>
@@ -112,7 +112,7 @@ function Events() {
                       <Users className="h-3.5 w-3.5" /> {seats} / {e.capacity} going
                     </span>
                   </div>
-                  <p className="mt-3 text-[13.5px] leading-relaxed">{e.description}</p>
+                  <p className="mt-3 text-[14.5px] leading-relaxed">{e.description}</p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
                     <div className="flex overflow-hidden rounded-xl border border-border">
@@ -128,7 +128,7 @@ function Events() {
                           disabled={studentLocked || (s === "going" && full)}
                           onClick={() => rsvp(e.id, me.id, s, s === "going" ? mine?.guests : undefined)}
                           className={cn(
-                            "h-9 border-r border-border px-3.5 text-[13px] font-semibold last:border-r-0 disabled:opacity-40",
+                            "h-9 border-r border-border px-3.5 text-[14px] font-semibold last:border-r-0 disabled:opacity-40",
                             mine?.status === s ? (s === "going" ? "bg-success text-white" : s === "maybe" ? "bg-warning-soft text-warning" : "bg-surface-2") : "hover:bg-surface-2"
                           )}
                         >
@@ -137,19 +137,19 @@ function Events() {
                       ))}
                     </div>
                     {e.kind === "Reunion" && mine?.status === "going" && (
-                      <label className="flex items-center gap-2 text-[13px]">
+                      <label className="flex items-center gap-2 text-[14px]">
                         <input type="checkbox" checked={!!mine.guests} onChange={(ev) => rsvp(e.id, me.id, "going", ev.target.checked ? 1 : 0)} className="h-4 w-4 accent-[var(--primary)]" />
                         Bringing a +1
                       </label>
                     )}
-                    {full && <span className="text-[12.5px] font-medium text-danger">Full</span>}
+                    {full && <span className="text-[13.5px] font-medium text-danger">Full</span>}
                     <span className="flex-1" />
                     {mine?.status === "going" && (
                       <div className="flex gap-1">
-                        <button onClick={() => downloadIcs(e)} className="flex h-9 items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold text-primary hover:bg-primary-soft">
+                        <button onClick={() => downloadIcs(e)} className="flex h-9 items-center gap-1.5 rounded-xl px-3 text-[14px] font-semibold text-primary hover:bg-primary-soft">
                           <CalendarPlus className="h-4 w-4" /> Add to calendar (.ics)
                         </button>
-                        <a href={googleCalUrl(e)} target="_blank" rel="noreferrer" className="flex h-9 items-center rounded-xl px-3 text-[13px] font-semibold text-muted hover:bg-surface-2">
+                        <a href={googleCalUrl(e)} target="_blank" rel="noreferrer" className="flex h-9 items-center rounded-xl px-3 text-[14px] font-semibold text-muted hover:bg-surface-2">
                           Google
                         </a>
                       </div>

@@ -40,10 +40,10 @@ function Groups() {
               onClick={() => setGid(x.id)}
               className={cn("flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left", x.id === g.id ? "border-primary bg-primary-soft/50" : "border-border bg-surface hover:bg-surface-2")}
             >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">{x.kind === "batch" ? <UsersRound className="h-4 w-4" /> : <Users className="h-4 w-4" />}</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">{x.kind === "batch" ? <UsersRound className="h-4 w-4" /> : <Users className="h-4 w-4" />}</span>
               <span className="min-w-0">
-                <span className="block truncate text-[13.5px] font-semibold">{x.name}</span>
-                <span className="text-[12px] text-muted">{groupMembers(state, x).length} members here</span>
+                <span className="block truncate text-[14.5px] font-semibold">{x.name}</span>
+                <span className="text-[13px] text-muted">{groupMembers(state, x).length} members here</span>
               </span>
             </button>
           ))}
@@ -84,16 +84,16 @@ function Groups() {
                   <div className="flex items-center gap-3">
                     <Avatar name={a?.name ?? "?"} size={38} />
                     <div className="min-w-0 flex-1">
-                      <p className="flex items-center gap-2 text-[13.5px] font-semibold">
+                      <p className="flex items-center gap-2 text-[14.5px] font-semibold">
                         {a && !staff ? <Link href={`/portal/people/${a.id}`} className="hover:underline">{a.name}</Link> : a?.name}
                         {staff && <Pill tone="primary">{roleLabels[a!.role]}</Pill>}
                       </p>
-                      <p className="text-[12px] text-muted">{timeAgo(p.at)}</p>
+                      <p className="text-[13px] text-muted">{timeAgo(p.at)}</p>
                     </div>
                   </div>
                   <p className="mt-3 whitespace-pre-wrap text-[14px] leading-relaxed">{p.text}</p>
                   <div className="mt-3 flex items-center justify-between">
-                    <button onClick={() => toggleLike(p.id, me.id)} className={cn("flex items-center gap-1.5 text-[12.5px] font-medium", liked ? "text-danger" : "text-muted hover:text-text")}>
+                    <button onClick={() => toggleLike(p.id, me.id)} className={cn("flex items-center gap-1.5 text-[13.5px] font-medium", liked ? "text-danger" : "text-muted hover:text-text")}>
                       <Heart className={cn("h-4 w-4", liked && "fill-current")} /> {p.likes.length || ""} {p.likes.length === 1 ? "like" : "likes"}
                     </button>
                     {p.authorId !== me.id && !staff && <ReportButton kind="post" targetId={p.id} compact />}
@@ -105,19 +105,19 @@ function Groups() {
         </div>
 
         <Card className="h-fit p-4">
-          <p className="mb-3 text-[13px] font-semibold">Members</p>
+          <p className="mb-3 text-[14px] font-semibold">Members</p>
           <div className="space-y-2">
             {members.slice(0, 10).map((u) => (
-              <Link key={u.id} href={`/portal/people/${u.id}`} className="flex items-center gap-2.5 rounded-lg px-1 py-1 hover:bg-surface-2">
+              <Link key={u.id} href={`/portal/people/${u.id}`} className="flex items-center gap-2.5 rounded-xl px-1 py-1 hover:bg-surface-2">
                 <Avatar name={u.name} size={28} />
                 <span className="min-w-0">
-                  <span className="block truncate text-[13px] font-medium">{u.id === me.id ? `${u.name} (you)` : u.name}</span>
-                  <span className="block truncate text-[11.5px] text-muted">Batch {u.batch}</span>
+                  <span className="block truncate text-[14px] font-medium">{u.id === me.id ? `${u.name} (you)` : u.name}</span>
+                  <span className="block truncate text-[12.5px] text-muted">Batch {u.batch}</span>
                 </span>
               </Link>
             ))}
           </div>
-          {members.length > 10 && <p className="mt-2 text-[12px] text-muted">+{members.length - 10} more</p>}
+          {members.length > 10 && <p className="mt-2 text-[13px] text-muted">+{members.length - 10} more</p>}
         </Card>
       </div>
     </>

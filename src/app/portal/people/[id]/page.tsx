@@ -45,7 +45,7 @@ function Person() {
 
   return (
     <>
-      <button onClick={() => router.back()} className="mb-4 flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-text">
+      <button onClick={() => router.back()} className="mb-4 flex items-center gap-1.5 text-[14px] font-medium text-muted hover:text-text">
         <ArrowLeft className="h-4 w-4" /> Back
       </button>
       {staff && (
@@ -85,25 +85,25 @@ function StaffPanel({ ownerId }: { ownerId: string }) {
     <Card className="mt-5">
       <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
         <p className="text-[14px] font-semibold">Engagement history (staff only)</p>
-        <Link href="/portal/admin/engagement" className="text-[13px] font-semibold text-primary">
+        <Link href="/portal/admin/engagement" className="text-[14px] font-semibold text-primary">
           Log interaction
         </Link>
       </div>
       {items.length === 0 ? (
-        <p className="px-5 py-4 text-[13px] text-muted">No interactions logged with {owner.name.split(" ")[0]} yet.</p>
+        <p className="px-5 py-4 text-[14px] text-muted">No interactions logged with {owner.name.split(" ")[0]} yet.</p>
       ) : (
         <div className="divide-y divide-border">
           {items.map((e) => (
-            <div key={e.id} className="flex flex-wrap items-center gap-2 px-5 py-3 text-[13px]">
+            <div key={e.id} className="flex flex-wrap items-center gap-2 px-5 py-3 text-[14px]">
               <Pill tone="primary">{e.mode}</Pill>
               <Pill>{e.category}</Pill>
               <span className="min-w-0 flex-1">{e.note}</span>
-              <span className="text-[12px] text-muted">{formatDate(e.at)}</span>
+              <span className="text-[13px] text-muted">{formatDate(e.at)}</span>
             </div>
           ))}
         </div>
       )}
-      {owner.mergedFrom?.length ? <p className="border-t border-border px-5 py-3 text-[12px] text-muted">Merged from record {owner.mergedFrom.join(", ")} (L4)</p> : null}
+      {owner.mergedFrom?.length ? <p className="border-t border-border px-5 py-3 text-[13px] text-muted">Merged from record {owner.mergedFrom.join(", ")} (L4)</p> : null}
     </Card>
   );
 }

@@ -58,7 +58,7 @@ function Masters() {
       <Card className="mb-5">
         <CardHeader title="Values to standardise" subtitle="Spellings in alumni records that don't match the list" icon={<Wand2 className="h-5 w-5" />} />
         {todo.length === 0 ? (
-          <p className="flex items-center gap-2 px-5 py-4 text-[13.5px] text-success">
+          <p className="flex items-center gap-2 px-5 py-4 text-[14.5px] text-success">
             <CheckCircle2 className="h-4 w-4" /> Every {kind} in the records matches the list.
           </p>
         ) : (
@@ -97,10 +97,10 @@ function Masters() {
         <div className="divide-y divide-border">
           {items.map((m) => (
             <div key={m.id} className="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center">
-              <p className="min-w-0 flex-1 text-[13.5px] font-semibold">{m.name}</p>
+              <p className="min-w-0 flex-1 text-[14.5px] font-semibold">{m.name}</p>
               <div className="flex flex-wrap items-center gap-1.5">
                 {m.aliases.map((a) => (
-                  <span key={a} className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-0.5 pl-2.5 pr-1 text-[12px]">
+                  <span key={a} className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-0.5 pl-2.5 pr-1 text-[13px]">
                     {a}
                     {allowed && (
                       <button onClick={() => removeAlias(kind, m.id, a)} className="grid h-4 w-4 place-items-center rounded-full hover:bg-border" aria-label={`Remove alias ${a}`}>
@@ -109,7 +109,7 @@ function Masters() {
                     )}
                   </span>
                 ))}
-                <span className="ml-1 text-[12px] tabular-nums text-muted">
+                <span className="ml-1 text-[13px] tabular-nums text-muted">
                   {usage(m.name)} record{usage(m.name) === 1 ? "" : "s"}
                 </span>
               </div>
@@ -128,7 +128,7 @@ function MapRow({ u, disabled }: { u: Unmapped; disabled: boolean }) {
     <div className="flex flex-col gap-3 px-5 py-3.5 lg:flex-row lg:items-center">
       <div className="min-w-0 lg:w-64">
         <p className="truncate text-[14px] font-semibold">&quot;{u.value}&quot;</p>
-        <p className="text-[12px] text-muted">
+        <p className="text-[13px] text-muted">
           in {u.count} record{u.count === 1 ? "" : "s"}
           {u.why === "alias" && " · known alias"}
           {u.why === "similar" && " · looks similar"}

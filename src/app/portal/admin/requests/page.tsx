@@ -75,7 +75,7 @@ function Requests() {
             return (
               <Card key={r.id} className="p-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-soft text-primary">
+                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary-soft text-primary">
                     <FileLock2 className="h-4 w-4" />
                   </span>
                   <p className="text-[14.5px] font-semibold">{typeLabel[r.type]}</p>
@@ -87,8 +87,8 @@ function Requests() {
                     </Pill>
                   )}
                 </div>
-                <p className="mt-3 rounded-xl bg-surface-2 p-3 text-[13.5px]">&ldquo;{r.details}&rdquo;</p>
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">
+                <p className="mt-3 rounded-xl bg-surface-2 p-3 text-[14.5px]">&ldquo;{r.details}&rdquo;</p>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-muted">
                   <span className="flex items-center gap-1.5">
                     <Avatar name={subject?.name ?? "?"} size={22} /> About {subject?.name} ({subject && roleLabels[subject.role]})
                   </span>
@@ -97,7 +97,7 @@ function Requests() {
                   <span>{campusName(r.campusId)}</span>
                 </div>
                 {r.resolution && (
-                  <p className="mt-3 text-[13px]">
+                  <p className="mt-3 text-[14px]">
                     <b>Response:</b> {r.resolution}
                   </p>
                 )}

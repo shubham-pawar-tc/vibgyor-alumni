@@ -115,12 +115,12 @@ function Jobs() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[15px] font-semibold leading-snug">{j.title}</p>
-                    <p className="text-[13px] text-muted">{j.company}</p>
+                    <p className="text-[14px] text-muted">{j.company}</p>
                   </div>
                   {mine ? statusPill[j.status] : <Pill>{j.type}</Pill>}
                   {!mine && !student && <ReportButton kind="job" targetId={j.id} compact />}
                 </div>
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-muted">
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13.5px] text-muted">
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" /> {j.location}
                     {j.remote ? " · remote OK" : ""}
@@ -132,22 +132,22 @@ function Jobs() {
                     </span>
                   )}
                 </div>
-                <p className="mt-3 line-clamp-3 flex-1 text-[13.5px] leading-relaxed">
+                <p className="mt-3 line-clamp-3 flex-1 text-[14.5px] leading-relaxed">
                   <MaskedText text={j.description} />
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
                   {!student && poster && !mine && (
-                    <Link href={`/portal/people/${poster.id}`} className="flex min-w-0 flex-1 items-center gap-2 text-[12.5px] text-muted hover:text-text">
+                    <Link href={`/portal/people/${poster.id}`} className="flex min-w-0 flex-1 items-center gap-2 text-[13.5px] text-muted hover:text-text">
                       <Avatar name={poster.name} size={24} />
                       <span className="truncate">
                         {poster.name} · Batch {poster.batch}
                       </span>
                     </Link>
                   )}
-                  {student && <span className="flex-1 text-[12.5px] text-muted">Approved by {campusName(j.campusId)}</span>}
+                  {student && <span className="flex-1 text-[13.5px] text-muted">Approved by {campusName(j.campusId)}</span>}
                   {mine ? (
                     <>
-                      <span className="flex-1 text-[12.5px] text-muted">{j.interested.length} interested</span>
+                      <span className="flex-1 text-[13.5px] text-muted">{j.interested.length} interested</span>
                       {j.status === "approved" && (
                         <>
                           <Button size="sm" variant="secondary" onClick={() => setApplicants(j)}>
@@ -160,7 +160,7 @@ function Jobs() {
                       )}
                     </>
                   ) : done ? (
-                    <p className="flex items-center gap-1.5 text-[13px] font-semibold text-success">
+                    <p className="flex items-center gap-1.5 text-[14px] font-semibold text-success">
                       <CheckCircle2 className="h-4 w-4" /> {student ? "Sent to your counsellor" : "Interest sent"}
                     </p>
                   ) : (
@@ -233,8 +233,8 @@ function Jobs() {
                 <Link key={i.userId} href={`/portal/people/${i.userId}`} className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2.5 hover:bg-border/60">
                   <Avatar name={u?.name ?? "?"} size={34} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[13.5px] font-semibold">{u?.name}</span>
-                    <span className="block truncate text-[12px] text-muted">{i.note ?? `Batch ${u?.batch} · ${timeAgo(i.at)}`}</span>
+                    <span className="block text-[14.5px] font-semibold">{u?.name}</span>
+                    <span className="block truncate text-[13px] text-muted">{i.note ?? `Batch ${u?.batch} · ${timeAgo(i.at)}`}</span>
                   </span>
                 </Link>
               );
@@ -310,7 +310,7 @@ function PostJob({ onClose }: { onClose: () => void }) {
             description="Your campus checks these extra carefully. Students apply through their career counsellor, never directly."
           />
         </div>
-        <p className="flex items-center gap-1.5 text-[12.5px] text-muted sm:col-span-2">
+        <p className="flex items-center gap-1.5 text-[13.5px] text-muted sm:col-span-2">
           <ShieldCheck className="h-4 w-4" /> Reviewed by {campusName(me.campusIds[0])} alumni office before it goes live.
         </p>
       </div>

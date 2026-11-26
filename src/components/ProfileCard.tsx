@@ -33,7 +33,7 @@ export function ProfileCard({ owner, viewer, actions }: { owner: User; viewer: U
               {activeBadge(owner, "Mentor") && <Pill tone="primary">Mentor</Pill>}
             </div>
             <p className="mt-1 text-[14px] text-muted">{p?.headline ?? `${owner.title ?? ""}${see("company") && owner.company ? ` at ${owner.company}` : ""}`}</p>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px]">
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[14px]">
               <span className="flex items-center gap-1.5">
                 <GraduationCap className="h-4 w-4 text-muted" /> Batch {owner.batch} · {campusName(owner.campusIds[0])}
               </span>
@@ -44,7 +44,7 @@ export function ProfileCard({ owner, viewer, actions }: { owner: User; viewer: U
                 <Building2 className="h-4 w-4 text-muted" /> {see("company") ? (owner.company ?? "—") : <Hidden label="Company" />}
               </span>
             </div>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px]">
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-[14px]">
               <span className="flex items-center gap-1.5">
                 <Mail className="h-4 w-4 text-muted" /> {see("email") ? owner.email : <Hidden label="Email" />}
               </span>
@@ -70,21 +70,21 @@ export function ProfileCard({ owner, viewer, actions }: { owner: User; viewer: U
             <Briefcase className="h-4 w-4 text-primary" /> Work
           </p>
           {!see("work") ? (
-            <p className="text-[13px]"><Hidden label="Work history" /></p>
+            <p className="text-[14px]"><Hidden label="Work history" /></p>
           ) : p?.work.length ? (
             <ol className="relative space-y-4 border-l-2 border-border pl-4">
               {p.work.map((w) => (
                 <li key={w.id} className="relative">
                   <span className="absolute -left-[23px] top-1 h-3 w-3 rounded-full border-2 border-surface bg-primary" />
-                  <p className="text-[13.5px] font-semibold">{w.title}</p>
-                  <p className="text-[13px] text-muted">
+                  <p className="text-[14.5px] font-semibold">{w.title}</p>
+                  <p className="text-[14px] text-muted">
                     {w.to || see("company") ? w.company : "Company hidden"} · {w.from}–{w.to ?? "present"}
                   </p>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className="text-[13px] text-muted">Nothing added yet.</p>
+            <p className="text-[14px] text-muted">Nothing added yet.</p>
           )}
         </Card>
         <Card className="p-5">
@@ -96,19 +96,19 @@ export function ProfileCard({ owner, viewer, actions }: { owner: User; viewer: U
               p?.education.map((e) => (
                 <li key={e.id} className="relative">
                   <span className="absolute -left-[23px] top-1 h-3 w-3 rounded-full border-2 border-surface bg-primary" />
-                  <p className="text-[13.5px] font-semibold">{e.institution}</p>
-                  <p className="text-[13px] text-muted">
+                  <p className="text-[14.5px] font-semibold">{e.institution}</p>
+                  <p className="text-[14px] text-muted">
                     {e.degree} · {e.from}–{e.to}
                   </p>
                 </li>
               ))}
             <li className="relative">
               <span className="absolute -left-[23px] top-1 h-3 w-3 rounded-full border-2 border-surface bg-[oklch(0.62_0.19_25)]" />
-              <p className="text-[13.5px] font-semibold">VIBGYOR High, {campusName(owner.campusIds[0])}</p>
-              <p className="text-[13px] text-muted">School · passed out {owner.batch}</p>
+              <p className="text-[14.5px] font-semibold">VIBGYOR High, {campusName(owner.campusIds[0])}</p>
+              <p className="text-[14px] text-muted">School · passed out {owner.batch}</p>
             </li>
           </ol>
-          {!see("education") && <p className="mt-3 text-[13px]"><Hidden label="Higher education" /></p>}
+          {!see("education") && <p className="mt-3 text-[14px]"><Hidden label="Higher education" /></p>}
         </Card>
       </div>
 
@@ -119,7 +119,7 @@ export function ProfileCard({ owner, viewer, actions }: { owner: User; viewer: U
               <Award className="h-4 w-4 text-primary" /> Achievements
             </p>
             {p.achievements.length ? (
-              <ul className="space-y-1.5 text-[13px]">
+              <ul className="space-y-1.5 text-[14px]">
                 {p.achievements.map((a) => (
                   <li key={a} className="flex gap-2">
                     <span className="text-primary">★</span> {a}
@@ -127,7 +127,7 @@ export function ProfileCard({ owner, viewer, actions }: { owner: User; viewer: U
                 ))}
               </ul>
             ) : (
-              <p className="text-[13px] text-muted">—</p>
+              <p className="text-[14px] text-muted">—</p>
             )}
           </div>
           <div className="space-y-3">
@@ -142,12 +142,12 @@ export function ProfileCard({ owner, viewer, actions }: { owner: User; viewer: U
               </div>
             </div>
             {p.linkedin && (
-              <p className="flex items-center gap-2 text-[13px]">
+              <p className="flex items-center gap-2 text-[14px]">
                 <Linkedin className="h-4 w-4 text-muted" /> {p.linkedin}
               </p>
             )}
             {p.resumeName && (
-              <p className="flex items-center gap-2 text-[13px]">
+              <p className="flex items-center gap-2 text-[14px]">
                 <FileText className="h-4 w-4 text-muted" /> {p.resumeName}
               </p>
             )}

@@ -113,7 +113,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       {mounted && hydrated && tour && step && active && (
         <div
           className={cn(
-            "animate-in fixed inset-x-3 bottom-20 z-40 overflow-hidden rounded-2xl border-2 border-primary bg-surface shadow-2xl sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-[380px]",
+            "animate-in fixed inset-x-3 bottom-20 z-40 overflow-hidden rounded-2xl border-2 border-primary bg-surface shadow-lift sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-[380px]",
             pathname.startsWith("/portal") && "lg:left-[284px]"
           )}
           role="region"
@@ -122,10 +122,10 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           {/* header */}
           <div className="flex items-center gap-2 bg-primary px-4 py-2.5 text-primary-fg">
             <MapPin className="h-4 w-4 shrink-0" />
-            <p className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+            <p className="min-w-0 flex-1 truncate text-[14px] font-semibold">
               Tour {tour.id}: {tour.title}
             </p>
-            <span className="shrink-0 text-[12px] font-semibold opacity-90">
+            <span className="shrink-0 text-[13px] font-semibold opacity-90">
               {active.step + 1}/{total}
             </span>
             <button onClick={() => setMin(!min)} className="grid h-7 w-7 place-items-center rounded-md hover:bg-white/15" aria-label={min ? "Expand" : "Minimise"}>
@@ -148,8 +148,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
               {/* who */}
               <div className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2">
-                {who ? <Avatar name={who.name} size={28} /> : <span className="grid h-7 w-7 place-items-center rounded-full bg-border text-[11px] font-bold">?</span>}
-                <p className="text-[12.5px]">
+                {who ? <Avatar name={who.name} size={28} /> : <span className="grid h-7 w-7 place-items-center rounded-full bg-border text-[12px] font-bold">?</span>}
+                <p className="text-[13.5px]">
                   <span className="text-muted">You are: </span>
                   <span className="font-semibold">{who ? `${who.name} · ${roleLabels[who.role]}` : step.path.startsWith("/consent") ? "Neha Mehta · Parent (on her phone)" : "A visitor (not signed in)"}</span>
                 </p>
@@ -157,13 +157,13 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
               {/* do this */}
               <div>
-                <p className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-wider text-primary">
+                <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-semibold uppercase tracking-wider text-primary">
                   <MousePointerClick className="h-3.5 w-3.5" /> Do this
                 </p>
                 <ol className="space-y-1.5">
                   {step.doThis.map((d, i) => (
-                    <li key={i} className="flex gap-2 text-[13.5px] leading-snug">
-                      <span className="mt-px grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary">{i + 1}</span>
+                    <li key={i} className="flex gap-2 text-[14.5px] leading-snug">
+                      <span className="mt-px grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary-soft text-[12px] font-bold text-primary">{i + 1}</span>
                       {d}
                     </li>
                   ))}
@@ -171,7 +171,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
               </div>
 
               {/* notice */}
-              <div className="flex gap-2 rounded-xl border border-dashed border-border px-3 py-2 text-[12.5px] leading-snug text-muted">
+              <div className="flex gap-2 rounded-xl border border-dashed border-border px-3 py-2 text-[13.5px] leading-snug text-muted">
                 <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>
                   <b className="text-text">Why it matters: </b>
@@ -189,15 +189,15 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
-                <button onClick={() => goTo(step)} className="h-10 flex-1 rounded-xl border border-border px-3 text-[13px] font-semibold hover:bg-surface-2">
+                <button onClick={() => goTo(step)} className="h-10 flex-1 rounded-xl border border-border px-3 text-[14px] font-semibold hover:bg-surface-2">
                   Take me there
                 </button>
                 {isLast ? (
-                  <button onClick={() => Date.now() - lastMove.current > 700 && stop()} className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-success px-3 text-[13px] font-semibold text-white">
+                  <button onClick={() => Date.now() - lastMove.current > 700 && stop()} className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-success px-3 text-[14px] font-semibold text-white">
                     <Check className="h-4 w-4" /> Finish
                   </button>
                 ) : (
-                  <button onClick={() => move(1)} className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 text-[13px] font-semibold text-primary-fg hover:bg-primary-hover">
+                  <button onClick={() => move(1)} className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 text-[14px] font-semibold text-primary-fg hover:bg-primary-hover">
                     Next <ArrowRight className="h-4 w-4" />
                   </button>
                 )}

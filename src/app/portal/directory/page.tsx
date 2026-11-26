@@ -111,7 +111,7 @@ function Directory() {
             <button
               key={o.id}
               onClick={() => setOnly(only === o.id ? "" : (o.id as typeof only))}
-              className={`rounded-full border px-3 py-1 text-[12.5px] font-medium ${only === o.id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2"}`}
+              className={`rounded-full border px-3 py-1 text-[13.5px] font-medium ${only === o.id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2"}`}
             >
               {o.label}
             </button>
@@ -119,7 +119,7 @@ function Directory() {
         </div>
       </Card>
 
-      <p className="mb-3 text-[13px] text-muted">
+      <p className="mb-3 text-[14px] text-muted">
         {list.length} {list.length === 1 ? "person" : "people"} · prototype shows {alumni.length} sample profiles out of {fmt(4650)} alumni
       </p>
 
@@ -138,16 +138,16 @@ function Directory() {
                   <Avatar name={u.name} size={46} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-semibold">{u.name}</p>
-                    <p className="truncate text-[12.5px] text-muted">
+                    <p className="truncate text-[13.5px] text-muted">
                       {u.title}
                       {canSee(me, u, "company") && u.company ? ` · ${u.company}` : ""}
                     </p>
-                    <p className="mt-1 text-[12px] text-muted">
+                    <p className="mt-1 text-[13px] text-muted">
                       Batch {u.batch} · {campusName(u.campusIds[0])}
                     </p>
                   </div>
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[12px] text-muted">
+                <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[13px] text-muted">
                   {canSee(me, u, "city") && u.city && (
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3.5 w-3.5" /> {u.city}

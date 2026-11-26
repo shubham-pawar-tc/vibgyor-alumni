@@ -45,7 +45,7 @@ function AlumniProfileEditor({ me }: { me: User }) {
 
       <Card className="mb-5 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <div className="flex-1">
-          <div className="flex items-center justify-between text-[13px]">
+          <div className="flex items-center justify-between text-[14px]">
             <span className="font-semibold">Profile {pct}% complete</span>
             <span className="text-muted">{pct < 100 ? "Complete profiles appear higher in the directory" : "Looking great"}</span>
           </div>
@@ -135,8 +135,8 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
           {p.work.map((w) => (
             <div key={w.id} className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2.5">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] font-semibold">{w.title}</p>
-                <p className="truncate text-[12.5px] text-muted">
+                <p className="truncate text-[14.5px] font-semibold">{w.title}</p>
+                <p className="truncate text-[13.5px] text-muted">
                   {w.company} · {w.from}–{w.to ?? "present"}
                 </p>
               </div>
@@ -171,8 +171,8 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
           {p.education.map((ed) => (
             <div key={ed.id} className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2.5">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] font-semibold">{ed.institution}</p>
-                <p className="truncate text-[12.5px] text-muted">
+                <p className="truncate text-[14.5px] font-semibold">{ed.institution}</p>
+                <p className="truncate text-[13.5px] text-muted">
                   {ed.degree} · {ed.from}–{ed.to}
                 </p>
               </div>
@@ -228,7 +228,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
         <div className="space-y-4 p-5">
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 hover:bg-surface-2">
             <Upload className="h-5 w-5 text-muted" />
-            <span className="min-w-0 flex-1 text-[13px]">
+            <span className="min-w-0 flex-1 text-[14px]">
               <span className="block truncate font-semibold">{p.resumeName ?? "Upload your resume (PDF)"}</span>
               <span className="text-muted">Only shared with alumni whose job you mark interest in</span>
             </span>
@@ -239,7 +239,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
             <Switch checked={p.openTo.speaking} onChange={(v) => save({ openTo: { ...p.openTo, speaking: v } })} label="Happy to speak at school events" />
             <Switch checked={p.openTo.mentoring} onChange={(v) => save({ openTo: { ...p.openTo, mentoring: v } })} label="Open to mentoring alumni" />
           </div>
-          <p className="text-[12px] text-muted">Mentoring students needs the Mentor badge (safeguarding check). See &quot;Become a mentor&quot;.</p>
+          <p className="text-[13px] text-muted">Mentoring students needs the Mentor badge (safeguarding check). See &quot;Become a mentor&quot;.</p>
         </div>
       </Card>
     </div>
@@ -248,7 +248,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
 
 function Chip({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pl-3 pr-1.5 text-[12.5px] font-medium">
+    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pl-3 pr-1.5 text-[13.5px] font-medium">
       {children}
       <button onClick={onRemove} className="grid h-5 w-5 place-items-center rounded-full hover:bg-border" aria-label="Remove">
         <X className="h-3 w-3" />
@@ -301,7 +301,7 @@ function PrivacyTab({ p, save }: { p: AlumniProfile; save: (patch: Partial<Alumn
         <Callout tone="info" title="Your campus office">
           Alumni office staff can see your full record to keep it accurate. Every time they open it, it&apos;s written to the audit log.
         </Callout>
-        <p className="flex items-center gap-1.5 text-[12px] text-muted">
+        <p className="flex items-center gap-1.5 text-[13px] text-muted">
           <Lock className="h-3.5 w-3.5" /> DPDP Act 2023: you can download or delete your data at any time (Phase 3).
         </p>
       </div>
@@ -321,7 +321,7 @@ function PreviewTab({ me }: { me: User }) {
   return (
     <>
       <Card className="mb-5 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-        <p className="flex items-center gap-2 text-[13.5px] font-semibold">
+        <p className="flex items-center gap-2 text-[14.5px] font-semibold">
           <Eye className="h-4 w-4 text-primary" /> See your profile as…
         </p>
         <div className="flex flex-wrap gap-2">
@@ -333,7 +333,7 @@ function PreviewTab({ me }: { me: User }) {
             <button
               key={o.id}
               onClick={() => setAs(o.id as typeof as)}
-              className={`rounded-full border px-3 py-1.5 text-[13px] font-medium ${as === o.id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2"}`}
+              className={`rounded-full border px-3 py-1.5 text-[14px] font-medium ${as === o.id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2"}`}
             >
               {o.label}
             </button>
@@ -383,7 +383,7 @@ function StudentProfile({ me }: { me: User }) {
             <div className="space-y-3 p-5">
               {threeC.map((c, i) => (
                 <div key={i} className="grid grid-cols-1 gap-2 rounded-xl bg-surface-2 p-3 sm:grid-cols-[28px_1fr_1fr_1fr_32px] sm:items-center">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary-soft text-[12px] font-bold text-primary">{i + 1}</span>
+                  <span className="grid h-7 w-7 place-items-center rounded-xl bg-primary-soft text-[13px] font-bold text-primary">{i + 1}</span>
                   <Input placeholder="Country" value={c.country} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, country: e.target.value } : x)))} />
                   <Input placeholder="Course" value={c.course} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, course: e.target.value } : x)))} />
                   <Input placeholder="College" value={c.college} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, college: e.target.value } : x)))} />
@@ -416,18 +416,18 @@ function StudentProfile({ me }: { me: User }) {
         </div>
         <div className="min-w-0 space-y-5">
           <Card className="p-5">
-            <p className="text-[13px] font-semibold">From school records</p>
-            <dl className="mt-3 space-y-2 text-[13px]">
+            <p className="text-[14px] font-semibold">From school records</p>
+            <dl className="mt-3 space-y-2 text-[14px]">
               <div className="flex justify-between"><dt className="text-muted">Name</dt><dd className="font-medium">{me.name}</dd></div>
               <div className="flex justify-between"><dt className="text-muted">Class</dt><dd className="font-medium">{me.className}</dd></div>
               <div className="flex justify-between"><dt className="text-muted">Campus</dt><dd className="font-medium">{campusName(me.campusIds[0])}</dd></div>
             </dl>
-            <p className="mt-3 text-[12px] text-muted">Wrong? Ask your class teacher to update the school record.</p>
+            <p className="mt-3 text-[13px] text-muted">Wrong? Ask your class teacher to update the school record.</p>
           </Card>
           <Card className="p-5">
-            <p className="text-[13px] font-semibold">My parent / guardian</p>
+            <p className="text-[14px] font-semibold">My parent / guardian</p>
             {parents.map((pa) => (
-              <div key={pa.id} className="mt-3 rounded-xl bg-surface-2 px-3 py-2.5 text-[13px]">
+              <div key={pa.id} className="mt-3 rounded-xl bg-surface-2 px-3 py-2.5 text-[14px]">
                 <p className="font-semibold">{pa.name}</p>
                 <p className="text-muted">Gives consent and can see your activity</p>
               </div>

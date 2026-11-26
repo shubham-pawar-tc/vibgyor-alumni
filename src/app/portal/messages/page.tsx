@@ -94,7 +94,7 @@ function MessagesInner() {
       <Card className="grid h-[calc(100dvh-180px)] min-h-[520px] overflow-hidden lg:grid-cols-[320px_1fr]">
         {/* List */}
         <div className={cn("flex min-h-0 flex-col border-r border-border", active && "hidden lg:flex")}>
-          <div className="border-b border-border px-4 py-3 text-[12px] font-semibold uppercase tracking-wider text-muted">{convs.length} conversation{convs.length > 1 ? "s" : ""}</div>
+          <div className="border-b border-border px-4 py-3 text-[13px] font-semibold uppercase tracking-wider text-muted">{convs.length} conversation{convs.length > 1 ? "s" : ""}</div>
           <div className="flex-1 overflow-y-auto">
             {convs.map(({ c, last }) => {
               const o = state.users.find((u) => u.id === (me.id === c.studentId ? c.mentorId : c.studentId));
@@ -108,11 +108,11 @@ function MessagesInner() {
                   <Avatar name={o.name} size={40} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="truncate text-[13.5px] font-semibold">{o.name}</p>
-                      {last && <span className="shrink-0 text-[11px] text-muted">{timeAgo(last.at)}</span>}
+                      <p className="truncate text-[14.5px] font-semibold">{o.name}</p>
+                      {last && <span className="shrink-0 text-[12px] text-muted">{timeAgo(last.at)}</span>}
                     </div>
-                    <p className="truncate text-[12px] font-medium text-primary">{c.topic}</p>
-                    <p className="truncate text-[12.5px] text-muted">{last?.text}</p>
+                    <p className="truncate text-[13px] font-medium text-primary">{c.topic}</p>
+                    <p className="truncate text-[13.5px] text-muted">{last?.text}</p>
                   </div>
                 </button>
               );
@@ -124,13 +124,13 @@ function MessagesInner() {
         {active && other ? (
           <div className="flex min-h-0 flex-col">
             <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-              <button className="grid h-9 w-9 place-items-center rounded-lg hover:bg-surface-2 lg:hidden" onClick={() => router.replace("/portal/messages")} aria-label="Back">
+              <button className="grid h-9 w-9 place-items-center rounded-xl hover:bg-surface-2 lg:hidden" onClick={() => router.replace("/portal/messages")} aria-label="Back">
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <Avatar name={other.name} size={38} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[14px] font-semibold">{other.name}</p>
-                <p className="truncate text-[12px] text-muted">
+                <p className="truncate text-[13px] text-muted">
                   {other.role === "STU" ? `Student · Class ${other.className} · ${campusName(other.campusIds[0])}` : `Mentor · ${other.title}, ${other.company}`}
                 </p>
               </div>
@@ -141,13 +141,13 @@ function MessagesInner() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 bg-primary-soft/60 px-4 py-2 text-[12px] font-medium text-primary">
+            <div className="flex items-center gap-2 bg-primary-soft/60 px-4 py-2 text-[13px] font-medium text-primary">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
               <span>Recorded and visible to the {campusName(active.campusId).split(",")[0]} alumni office · messages can&apos;t be deleted · contact details are hidden</span>
             </div>
 
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
-              <p className="text-center text-[12px] text-muted">
+              <p className="text-center text-[13px] text-muted">
                 Conversation started {formatDateTime(active.createdAt)} · <span className="font-medium">{active.topic}</span>
               </p>
               {thread.map((m) => {
@@ -160,9 +160,9 @@ function MessagesInner() {
                       <div className={cn("inline-block rounded-2xl px-3.5 py-2.5 text-left text-[14px] leading-relaxed", mine ? "rounded-br-md bg-primary text-primary-fg" : "rounded-bl-md bg-surface-2")}>
                         <MaskedText text={m.text} />
                       </div>
-                      <div className={cn("mt-1 flex items-center gap-2 text-[11px] text-muted", mine && "justify-end")}>
+                      <div className={cn("mt-1 flex items-center gap-2 text-[12px] text-muted", mine && "justify-end")}>
                         <span>{formatDateTime(m.at)}</span>
-                        {m.maskedKinds.length > 0 && <Pill tone="warning" className="!py-0 !text-[10.5px]">masked · campus notified</Pill>}
+                        {m.maskedKinds.length > 0 && <Pill tone="warning" className="!py-0 !text-[11.5px]">masked · campus notified</Pill>}
                         {!mine &&
                           (reported.includes(m.id) ? (
                             <span className="font-semibold text-success">Reported</span>
@@ -214,7 +214,7 @@ function MessagesInner() {
                       <SendHorizontal className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="hidden text-[11.5px] text-muted sm:block">
+                  <p className="hidden text-[12.5px] text-muted sm:block">
                     Try: <button className="font-semibold text-primary" onClick={() => setDraft("Can I WhatsApp you? My number is 98200 12345 or insta @aarav.codes")}>a message with contact details</button>
                   </p>
                 </div>
@@ -252,19 +252,19 @@ function MessagesInner() {
         }
       >
         <div className="space-y-4">
-          <div className="rounded-xl bg-surface-2 p-3 text-[13.5px]">
+          <div className="rounded-xl bg-surface-2 p-3 text-[14.5px]">
             <MaskedText text={reportFor?.text ?? ""} />
           </div>
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-[13px] font-semibold">What&apos;s wrong?</legend>
+            <legend className="mb-2 text-[14px] font-semibold">What&apos;s wrong?</legend>
             {reasons.map((r) => (
-              <label key={r} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 text-[13.5px]", reason === r ? "border-primary bg-primary-soft/50" : "border-border")}>
+              <label key={r} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 text-[14.5px]", reason === r ? "border-primary bg-primary-soft/50" : "border-border")}>
                 <input type="radio" name="reason" checked={reason === r} onChange={() => setReason(r)} className="accent-[var(--primary)]" />
                 {r}
               </label>
             ))}
           </fieldset>
-          <p className="text-[12.5px] text-muted">Your campus alumni office will review this, usually within 24 hours. The other person won&apos;t see who reported it.</p>
+          <p className="text-[13.5px] text-muted">Your campus alumni office will review this, usually within 24 hours. The other person won&apos;t see who reported it.</p>
         </div>
       </Modal>
     </>

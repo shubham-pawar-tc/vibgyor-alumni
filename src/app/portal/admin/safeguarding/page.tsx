@@ -89,11 +89,11 @@ function Inner() {
                         <Pill tone="success">{r.resolution}</Pill>
                       )}
                     </div>
-                    <p className="mt-1 text-[12.5px] text-muted">
+                    <p className="mt-1 text-[13.5px] text-muted">
                       {reporter ? `Reported by ${reporter.name}` : "Raised automatically"} · {timeAgo(r.at)} · about {subject?.name} ({subject?.role === "STU" ? "student" : isMentor ? "mentor" : "alumnus"})
                     </p>
                     {msg && (
-                      <div className="mt-3 rounded-xl bg-surface-2 px-3.5 py-2.5 text-[13.5px] leading-relaxed">
+                      <div className="mt-3 rounded-xl bg-surface-2 px-3.5 py-2.5 text-[14.5px] leading-relaxed">
                         <MaskedText text={msg.text} />
                       </div>
                     )}
@@ -123,7 +123,7 @@ function Inner() {
             );
           })}
           {closed.length > 0 && (
-            <button onClick={() => setShowClosed(!showClosed)} className="text-[13px] font-semibold text-primary">
+            <button onClick={() => setShowClosed(!showClosed)} className="text-[14px] font-semibold text-primary">
               {showClosed ? "Hide" : "Show"} {closed.length} resolved report{closed.length > 1 ? "s" : ""}
             </button>
           )}
@@ -151,7 +151,7 @@ function Inner() {
                       <p className="truncate text-[14px] font-semibold">
                         {s.name} <span className="font-normal text-muted">(Class {s.className})</span> ↔ {m.name}
                       </p>
-                      <p className="truncate text-[12.5px] text-muted">
+                      <p className="truncate text-[13.5px] text-muted">
                         {c.topic} · {msgs.length} messages · last {timeAgo(msgs.at(-1)?.at ?? c.createdAt)}
                       </p>
                     </div>
@@ -180,7 +180,7 @@ function Inner() {
                     <Avatar name={m.name} size={40} />
                     <div className="min-w-0">
                       <p className="truncate text-[14px] font-semibold">{m.name}</p>
-                      <p className="truncate text-[12.5px] text-muted">
+                      <p className="truncate text-[13.5px] text-muted">
                         Batch {m.batch} · {campusName(m.campusIds[0]).split(",")[0]} · {m.title}, {m.company}
                       </p>
                     </div>
@@ -218,10 +218,10 @@ function Inner() {
                     <div key={m.id} className="flex gap-3">
                       <Avatar name={u?.name ?? "?"} size={30} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[12px] text-muted">
+                        <p className="text-[13px] text-muted">
                           <span className="font-semibold text-text">{u?.name}</span> · {u?.role === "STU" ? "student" : "mentor"} · {formatDateTime(m.at)}
                         </p>
-                        <div className={cn("mt-1 rounded-xl px-3.5 py-2.5 text-[13.5px] leading-relaxed", m.maskedKinds.length ? "bg-warning-soft/60 ring-1 ring-warning/30" : "bg-surface-2")}>
+                        <div className={cn("mt-1 rounded-xl px-3.5 py-2.5 text-[14.5px] leading-relaxed", m.maskedKinds.length ? "bg-warning-soft/60 ring-1 ring-warning/30" : "bg-surface-2")}>
                           <MaskedText text={m.text} />
                         </div>
                       </div>
@@ -229,7 +229,7 @@ function Inner() {
                   );
                 })}
             </div>
-            <p className="text-[12px] text-muted">Messages are kept for the retention period VIBGYOR sets and can&apos;t be deleted by either party.</p>
+            <p className="text-[13px] text-muted">Messages are kept for the retention period VIBGYOR sets and can&apos;t be deleted by either party.</p>
           </div>
         )}
       </Modal>

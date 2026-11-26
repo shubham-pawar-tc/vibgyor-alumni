@@ -5,16 +5,23 @@
    Light theme by default; dark via prefers-color-scheme or data-theme.
 ------------------------------------------------------------------- */
 :root {
-  --bg: #f6f6fb;
+  --bg: #f7f7fc;
   --surface: #ffffff;
-  --surface-2: #f0f0f7;
-  --border: #e3e3ee;
-  --text: #15152a;
-  --muted: #5c5c78;
-  --primary: #4b2bbf;
-  --primary-hover: #3d22a0;
+  --surface-2: #f1f1f8;
+  --border: #e4e4f0;
+  --text: #16173a;
+  --muted: #4a4c6c;
+  --avatar-bg-l: 93%;
+  --avatar-fg-l: 32%;
+  --primary: #2f3192;
+  --primary-hover: #24267a;
   --primary-fg: #ffffff;
-  --primary-soft: #ece8fb;
+  --primary-soft: #e9e9f8;
+  --brand-ink: #2b2d72;
+  /* Navy feature bands (hero, safety, auth). Own token so dark mode can lift it off the page background. */
+  --navy: #25276b;
+  --navy-2: #3b2f86;
+  --navy-line: rgb(255 255 255 / 0);
   --success: #17794d;
   --success-soft: #e3f5ec;
   --warning: #9a5600;
@@ -24,28 +31,36 @@
   --info: #1d5fbf;
   --info-soft: #e5effc;
   --shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 16px rgb(20 20 40 / 0.06);
+  --shadow-raised: 0 2px 4px rgb(20 20 50 / 0.05), 0 20px 44px -14px rgb(20 20 60 / 0.22);
 
-  --v: #8b2fc9;
-  --i: #4b2bbf;
-  --b: #1e6fd9;
-  --g: #1aa35a;
-  --y: #f2c21b;
-  --o: #f27a1a;
-  --r: #e0322b;
+  /* VIBGYOR brand tile colours (from the Group of Schools wordmark) */
+  --r: #d8392e;
+  --o: #ea7336;
+  --y: #f2a53a;
+  --g: #78bb4c;
+  --b: #3a8ed6;
+  --i: #2f3180;
+  --v: #7b3f9d;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0d0d17;
-    --surface: #161625;
+    --bg: #0c0d1c;
+    --surface: #15162b;
     --surface-2: #1e1e31;
     --border: #2b2b43;
     --text: #ececf6;
-    --muted: #a3a3bf;
-    --primary: #a08cf7;
-    --primary-hover: #b6a6fa;
-    --primary-fg: #0d0d17;
-    --primary-soft: #272046;
+    --muted: #b6b7d2;
+    --avatar-bg-l: 24%;
+    --avatar-fg-l: 82%;
+    --primary: #9fa3ff;
+    --primary-hover: #b8bbff;
+    --primary-fg: #0c0d1c;
+    --primary-soft: #22244a;
+    --brand-ink: #c9cbff;
+    --navy: #1a1c4d;
+    --navy-2: #2a2166;
+    --navy-line: rgb(255 255 255 / 0.08);
     --success: #4fd394;
     --success-soft: #12301f;
     --warning: #f2b45a;
@@ -55,20 +70,27 @@
     --info: #79aef5;
     --info-soft: #14253d;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
+    --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.35), 0 20px 44px -14px rgb(0 0 0 / 0.6);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0d0d17;
-  --surface: #161625;
+  --bg: #0c0d1c;
+  --surface: #15162b;
   --surface-2: #1e1e31;
   --border: #2b2b43;
   --text: #ececf6;
-  --muted: #a3a3bf;
-  --primary: #a08cf7;
-  --primary-hover: #b6a6fa;
-  --primary-fg: #0d0d17;
-  --primary-soft: #272046;
+  --muted: #b6b7d2;
+  --avatar-bg-l: 24%;
+  --avatar-fg-l: 82%;
+  --primary: #9fa3ff;
+  --primary-hover: #b8bbff;
+  --primary-fg: #0c0d1c;
+  --primary-soft: #22244a;
+  --brand-ink: #c9cbff;
+  --navy: #1a1c4d;
+  --navy-2: #2a2166;
+  --navy-line: rgb(255 255 255 / 0.08);
   --success: #4fd394;
   --success-soft: #12301f;
   --warning: #f2b45a;
@@ -78,6 +100,7 @@
   --info: #79aef5;
   --info-soft: #14253d;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
+  --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.35), 0 20px 44px -14px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
@@ -91,6 +114,14 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-fg: var(--primary-fg);
   --color-primary-soft: var(--primary-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-v: var(--v);
+  --color-i: var(--i);
+  --color-b: var(--b);
+  --color-g: var(--g);
+  --color-y: var(--y);
+  --color-o: var(--o);
+  --color-r: var(--r);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
@@ -101,6 +132,9 @@
   --color-info-soft: var(--info-soft);
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: var(--shadow);
+  --shadow-lift: var(--shadow-raised);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
 }
 
 html {
@@ -117,18 +151,18 @@ body {
 .spectrum {
   background: linear-gradient(
     90deg,
-    var(--v),
-    var(--i),
-    var(--b),
-    var(--g),
-    var(--y),
+    var(--r),
     var(--o),
-    var(--r)
+    var(--y),
+    var(--g),
+    var(--b),
+    var(--i),
+    var(--v)
   );
 }
 
 .spectrum-text {
-  background: linear-gradient(90deg, var(--v), var(--b), var(--g), var(--o), var(--r));
+  background: linear-gradient(90deg, var(--r), var(--o) 22%, var(--y) 38%, var(--g) 55%, var(--b) 72%, var(--v));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -152,3 +186,206 @@ body {
 .animate-in {
   animation: slide-in 0.2s ease-out;
 }
+
+/* ---------------- Brand flourishes ---------------- */
+
+/* Logo tile: flat brand colour with a faint top highlight so it reads crisply on any surface */
+.brand-tile {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 -1px 0 rgb(0 0 0 / 0.08);
+  letter-spacing: 0;
+}
+
+/* Soft spectrum glow used behind hero sections */
+.hero-glow {
+  background:
+    radial-gradient(40% 50% at 12% 20%, color-mix(in srgb, var(--r) 16%, transparent), transparent 70%),
+    radial-gradient(35% 45% at 88% 10%, color-mix(in srgb, var(--b) 18%, transparent), transparent 70%),
+    radial-gradient(40% 50% at 70% 80%, color-mix(in srgb, var(--v) 14%, transparent), transparent 70%),
+    radial-gradient(30% 40% at 30% 85%, color-mix(in srgb, var(--y) 14%, transparent), transparent 70%);
+}
+
+/* Subtle dot grid */
+.dot-grid {
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
+}
+
+/* Card that lifts gently on hover */
+.lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-raised);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.float { animation: float 6s ease-in-out infinite; }
+.float-delay { animation: float 7s ease-in-out 1.2s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .float, .float-delay, .animate-in { animation: none; }
+  .lift:hover { transform: none; }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.dot-grid-light {
+  background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Campus ticker */
+.marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 60s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* ================= Motion ================= */
+
+/* Scroll reveal (see components/motion.tsx) */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggered entrance on page load */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.enter { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.enter-1 { animation-delay: 0.05s; }
+.enter-2 { animation-delay: 0.15s; }
+.enter-3 { animation-delay: 0.25s; }
+.enter-4 { animation-delay: 0.35s; }
+.enter-5 { animation-delay: 0.45s; }
+
+/* Logo tiles drop in one by one */
+@keyframes tile-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.85); }
+  to { opacity: 1; transform: none; }
+}
+.tiles-animate .brand-tile { animation: tile-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.tiles-animate .brand-tile:nth-child(2) { animation-delay: 0.05s; }
+.tiles-animate .brand-tile:nth-child(3) { animation-delay: 0.1s; }
+.tiles-animate .brand-tile:nth-child(4) { animation-delay: 0.15s; }
+.tiles-animate .brand-tile:nth-child(5) { animation-delay: 0.2s; }
+.tiles-animate .brand-tile:nth-child(6) { animation-delay: 0.25s; }
+.tiles-animate .brand-tile:nth-child(7) { animation-delay: 0.3s; }
+/* …and hop when you hover the logo */
+.logo-link:hover .brand-tile { animation: tile-hop 0.5s ease both; }
+.logo-link:hover .brand-tile:nth-child(2) { animation-delay: 0.04s; }
+.logo-link:hover .brand-tile:nth-child(3) { animation-delay: 0.08s; }
+.logo-link:hover .brand-tile:nth-child(4) { animation-delay: 0.12s; }
+.logo-link:hover .brand-tile:nth-child(5) { animation-delay: 0.16s; }
+.logo-link:hover .brand-tile:nth-child(6) { animation-delay: 0.20s; }
+.logo-link:hover .brand-tile:nth-child(7) { animation-delay: 0.24s; }
+@keyframes tile-hop {
+  0%, 100% { transform: none; }
+  40% { transform: translateY(-3px); }
+}
+
+/* Moving rainbow bar */
+@keyframes spectrum-flow {
+  to { background-position: 200% 0; }
+}
+.spectrum-flow {
+  background: linear-gradient(90deg, var(--r), var(--o), var(--y), var(--g), var(--b), var(--i), var(--v));
+}
+
+/* Success badge pop + ring */
+@keyframes pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.pop { animation: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes ring {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 40%, transparent); }
+  to { box-shadow: 0 0 0 18px transparent; }
+}
+.ring-pulse { animation: ring 1.6s ease-out 0.4s 3; }
+
+/* Icon nudge on hover of the parent .group */
+.group:hover .icon-nudge { transform: translateX(3px); }
+.icon-nudge { transition: transform 0.2s ease; }
+.group:hover .icon-bounce { animation: tile-hop 0.5s ease; }
+
+/* Button shine */
+.shine { position: relative; overflow: hidden; }
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.28) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+.shine:hover::after { transform: translateX(120%); }
+
+/* Portal page transition */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.page-in { animation: page-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .enter, .tiles-animate .brand-tile, .pop, .ring-pulse, .page-in, .spectrum-flow,
+  .logo-link:hover .brand-tile { animation: none; }
+  .shine::after { display: none; }
+}
+
+/* Navy bands get a hairline edge in dark mode so they separate from the page */
+.bg-navy { box-shadow: inset 0 1px 0 var(--navy-line), inset 0 -1px 0 var(--navy-line); }
+
+/* Hero alumni columns: endless vertical scroll */
+@keyframes col-up { to { transform: translateY(-50%); } }
+@keyframes col-down { from { transform: translateY(-50%); } to { transform: translateY(0); } }
+.col-up { animation: col-up 38s linear infinite; }
+.col-down { animation: col-down 44s linear infinite; }
+.col-up.slow { animation-duration: 52s; }
+.hero-cols:hover .col-up, .hero-cols:hover .col-down { animation-play-state: paused; }
+.hero-cols { mask-image: linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent); }
+
+/* Big spectrum headline on navy: brightened tile colours so every letter reads on dark */
+.spectrum-text-bright {
+  background: linear-gradient(90deg, #ff6b5e, #ff9a52 20%, #ffc35c 40%, #9ee06d 58%, #5cb5ff 76%, #c38bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .col-up, .col-down { animation: none; }
+}
+
+/* Headline accent: thin rainbow underline under a phrase (rainbow kept to logo + accents only) */
+.accent-underline {
+  background-image: linear-gradient(90deg, var(--r), var(--o), var(--y), var(--g), var(--b), var(--i), var(--v));
+  background-repeat: no-repeat;
+  background-size: 100% 0.09em;
+  background-position: 0 92%;
+  padding-bottom: 0.06em;
+}
+

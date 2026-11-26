@@ -73,9 +73,9 @@ function Inner() {
       </Card>
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-[13px]">
+          <table className="w-full min-w-[820px] text-[14px]">
             <thead>
-              <tr className="border-b border-border text-left text-[12px] text-muted">
+              <tr className="border-b border-border text-left text-[13px] text-muted">
                 <th className="px-5 py-3 font-semibold">When</th>
                 <th className="px-3 py-3 font-semibold">Who</th>
                 <th className="px-3 py-3 font-semibold">Action</th>
@@ -86,17 +86,17 @@ function Inner() {
             <tbody className="divide-y divide-border">
               {rows.map((a) => (
                 <tr key={a.id} className="align-top hover:bg-surface-2/50">
-                  <td className="whitespace-nowrap px-5 py-3 font-mono text-[12px] text-muted">{formatDateTime(a.at)}</td>
+                  <td className="whitespace-nowrap px-5 py-3 font-mono text-[13px] text-muted">{formatDateTime(a.at)}</td>
                   <td className="px-3 py-3 font-medium">{actor(a.actorId)}</td>
                   <td className="px-3 py-3">
                     <div className="flex flex-col items-start gap-1">
                       <span className="font-medium">{a.action}</span>
-                      <Pill tone={catTone[a.category]} className="!text-[10.5px]">{a.category.replace("_", " ")}</Pill>
+                      <Pill tone={catTone[a.category]} className="!text-[11.5px]">{a.category.replace("_", " ")}</Pill>
                     </div>
                   </td>
                   <td className="px-3 py-3">
                     {a.target}
-                    {a.campusId && <p className="text-[12px] text-muted">{campusName(a.campusId).split(",")[0]}</p>}
+                    {a.campusId && <p className="text-[13px] text-muted">{campusName(a.campusId).split(",")[0]}</p>}
                   </td>
                   <td className="px-5 py-3 text-muted">{a.detail ?? "—"}</td>
                 </tr>
@@ -104,7 +104,7 @@ function Inner() {
             </tbody>
           </table>
         </div>
-        {rows.length === 0 && <p className="px-5 py-8 text-center text-[13px] text-muted">No entries match.</p>}
+        {rows.length === 0 && <p className="px-5 py-8 text-center text-[14px] text-muted">No entries match.</p>}
       </Card>
 
       <Modal

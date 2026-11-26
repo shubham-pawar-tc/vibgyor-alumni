@@ -1,25 +1,68 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { pageIconFor } from "@/lib/pageIcons";
 import { forwardRef, useEffect } from "react";
 import { AlertTriangle, CheckCircle2, Info, ShieldCheck, X, XCircle } from "lucide-react";
 import { avatarHue, cn, initials } from "@/lib/utils";
 
 /* ------------------------------ Logo ------------------------------ */
 
+/** Brand tiles, left to right, exactly as in the VIBGYOR Group of Schools wordmark. */
+const LOGO_TILES = [
+  { ch: "V", c: "var(--r)" },
+  { ch: "I", c: "var(--o)" },
+  { ch: "B", c: "var(--y)" },
+  { ch: "G", c: "var(--g)" },
+  { ch: "Y", c: "var(--b)" },
+  { ch: "O", c: "var(--i)" },
+  { ch: "R", c: "var(--v)" },
+];
+
+const logoSizes = {
+  sm: { tile: "h-6 w-5 text-[14px]", gap: "gap-[2px]", sub: "text-[10px] tracking-[0.18em]" },
+  md: { tile: "h-[30px] w-[26px] text-[17px]", gap: "gap-[2px]", sub: "text-[11px] tracking-[0.2em]" },
+  lg: { tile: "h-14 w-12 text-[32px]", gap: "gap-1", sub: "text-[17px] tracking-[0.24em]" },
+};
+
+/** The seven-tile VIBGYOR wordmark on its own. */
+export function LogoTiles({ size = "md", className }: { size?: keyof typeof logoSizes; className?: string }) {
+  const s = logoSizes[size];
+  return (
+    <span className={cn("flex", s.gap, className)} aria-hidden>
+      {LOGO_TILES.map((t, i) => (
+        <span
+          key={t.ch}
+          className={cn(
+            "brand-tile grid place-items-center font-bold leading-none text-white",
+            s.tile,
+            i === 0 ? "rounded-l-[5px] rounded-r-[2px]" : i === LOGO_TILES.length - 1 ? "rounded-r-[5px] rounded-l-[2px]" : "rounded-[2px]"
+          )}
+          style={{ background: t.c }}
+        >
+          {t.ch}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Full lockup: coloured tiles with "ALUMNI ASSOCIATION" set underneath, like "GROUP OF SCHOOLS". */
+export function BrandLockup({ size = "md", sub = "Alumni Association" }: { size?: keyof typeof logoSizes; sub?: string }) {
+  const s = logoSizes[size];
+  return (
+    <span className="inline-flex flex-col items-stretch">
+      <LogoTiles size={size} />
+      <span className={cn("mt-1 whitespace-nowrap text-center font-bold uppercase leading-none text-brand-ink", s.sub)}>{sub}</span>
+    </span>
+  );
+}
+
 export function Logo({ compact = false, href = "/" }: { compact?: boolean; href?: string }) {
   return (
-    <Link href={href} className="flex items-center gap-2.5 shrink-0" aria-label="VIBGYOR Alumni Association home">
-      <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-xl bg-primary text-primary-fg shadow-card">
-        <span className="spectrum absolute inset-x-0 bottom-0 h-1" />
-        <span className="text-[15px] font-extrabold tracking-tight">V</span>
-      </span>
-      {!compact && (
-        <span className="leading-tight">
-          <span className="block text-[15px] font-bold tracking-tight">VIBGYOR Alumni</span>
-          <span className="block text-[11px] font-medium text-muted">VAA · 39 campuses</span>
-        </span>
-      )}
+    <Link href={href} className="logo-link tiles-animate flex shrink-0 items-center" aria-label="VIBGYOR Alumni Association home">
+      {compact ? <LogoTiles size="sm" /> : <BrandLockup size="md" />}
     </Link>
   );
 }
@@ -30,14 +73,14 @@ type Variant = "primary" | "secondary" | "ghost" | "danger" | "soft";
 type Size = "sm" | "md" | "lg";
 
 const variantCls: Record<Variant, string> = {
-  primary: "bg-primary text-primary-fg hover:bg-primary-hover shadow-sm",
+  primary: "shine bg-primary text-primary-fg hover:bg-primary-hover shadow-card hover:shadow-lift hover:-translate-y-px",
   secondary: "bg-surface text-text border border-border hover:bg-surface-2",
   ghost: "text-text hover:bg-surface-2",
   danger: "bg-danger text-white hover:opacity-90",
   soft: "bg-primary-soft text-primary hover:brightness-95",
 };
 const sizeCls: Record<Size, string> = {
-  sm: "h-8 px-3 text-[13px] gap-1.5 rounded-lg",
+  sm: "h-8 px-3 text-[14px] gap-1.5 rounded-xl",
   md: "h-10 px-4 text-sm gap-2 rounded-xl",
   lg: "h-12 px-5 text-[15px] gap-2 rounded-xl",
 };
@@ -53,7 +96,7 @@ export const Button = forwardRef<HTMLButtonElement, BtnProps>(function Button(
   ref
 ) {
   const cls = cn(
-    "inline-flex items-center justify-center font-semibold whitespace-nowrap transition-colors disabled:opacity-50 disabled:pointer-events-none select-none",
+    "inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none select-none",
     variantCls[variant],
     sizeCls[size],
     className
@@ -98,7 +141,7 @@ export function CardHeader({
         {icon && <span className="mt-0.5 text-primary">{icon}</span>}
         <div className="min-w-0">
           <h3 className="text-[15px] font-semibold">{title}</h3>
-          {subtitle && <p className="mt-0.5 text-[13px] text-muted">{subtitle}</p>}
+          {subtitle && <p className="mt-0.5 text-[14px] text-muted">{subtitle}</p>}
         </div>
       </div>
       {action}
@@ -120,7 +163,7 @@ const toneCls: Record<Tone, string> = {
 
 export function Pill({ tone = "neutral", children, className, icon }: { tone?: Tone; children: React.ReactNode; className?: string; icon?: React.ReactNode }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-semibold whitespace-nowrap", toneCls[tone], className)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[13px] font-semibold whitespace-nowrap", toneCls[tone], className)}>
       {icon}
       {children}
     </span>
@@ -133,12 +176,13 @@ export function Avatar({ name, size = 40, className }: { name: string; size?: nu
   const h = avatarHue(name);
   return (
     <span
-      className={cn("inline-grid shrink-0 place-items-center rounded-full font-semibold text-white", className)}
+      className={cn("inline-grid shrink-0 place-items-center rounded-full font-bold", className)}
       style={{
         width: size,
         height: size,
-        fontSize: size * 0.38,
-        background: `linear-gradient(135deg, hsl(${h} 62% 52%), hsl(${(h + 40) % 360} 62% 42%))`,
+        fontSize: size * 0.36,
+        background: `hsl(${h} 55% var(--avatar-bg-l))`,
+        color: `hsl(${h} 50% var(--avatar-fg-l))`,
       }}
       aria-hidden
     >
@@ -152,11 +196,11 @@ export function Avatar({ name, size = 40, className }: { name: string; size?: nu
 export function Field({ label, hint, children, htmlFor }: { label: string; hint?: React.ReactNode; children: React.ReactNode; htmlFor?: string }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-[13px] font-semibold">
+      <label htmlFor={htmlFor} className="block text-[14px] font-semibold">
         {label}
       </label>
       {children}
-      {hint && <p className="text-[12px] text-muted">{hint}</p>}
+      {hint && <p className="text-[13px] text-muted">{hint}</p>}
     </div>
   );
 }
@@ -164,8 +208,18 @@ export function Field({ label, hint, children, htmlFor }: { label: string; hint?
 const inputBase =
   "w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-text placeholder:text-muted/70 transition-colors focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15";
 
-export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...rest }, ref) {
-  return <input ref={ref} className={cn(inputBase, "h-11", className)} {...rest} />;
+type InputProps = React.InputHTMLAttributes<HTMLInputElement> & { icon?: React.ReactNode };
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ className, icon, ...rest }, ref) {
+  if (!icon) return <input ref={ref} className={cn(inputBase, "h-11", className)} {...rest} />;
+  return (
+    <div className="group/input relative">
+      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors group-focus-within/input:text-primary [&>svg]:h-[18px] [&>svg]:w-[18px]">
+        {icon}
+      </span>
+      <input ref={ref} className={cn(inputBase, "h-11 pl-11", className)} {...rest} />
+    </div>
+  );
 });
 
 export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, ...rest }, ref) {
@@ -186,7 +240,7 @@ export function Checkbox({ checked, onChange, label, description, disabled }: { 
       <input type="checkbox" className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[var(--primary)]" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span>
         <span className="block text-sm font-medium">{label}</span>
-        {description && <span className="mt-0.5 block text-[13px] text-muted">{description}</span>}
+        {description && <span className="mt-0.5 block text-[14px] text-muted">{description}</span>}
       </span>
     </label>
   );
@@ -233,7 +287,7 @@ export function Callout({ tone = "info", title, children, className }: { tone?: 
   return (
     <div className={cn("flex gap-3 rounded-xl px-4 py-3", calloutCls[tone], className)}>
       <Icon className="mt-0.5 h-[18px] w-[18px] shrink-0" />
-      <div className="min-w-0 text-[13px] leading-relaxed">
+      <div className="min-w-0 text-[14px] leading-relaxed">
         {title && <p className="font-semibold">{title}</p>}
         {children && <div className="text-text/80">{children}</div>}
       </div>
@@ -245,26 +299,52 @@ export function Callout({ tone = "info", title, children, className }: { tone?: 
 
 export function Stat({ label, value, sub, icon, tone = "primary" }: { label: string; value: React.ReactNode; sub?: React.ReactNode; icon?: React.ReactNode; tone?: Tone }) {
   return (
-    <Card className="p-4 sm:p-5">
+    <Card className="lift p-4 sm:p-5">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-[13px] font-medium text-muted">{label}</p>
-        {icon && <span className={cn("grid h-8 w-8 place-items-center rounded-lg", toneCls[tone])}>{icon}</span>}
+        <p className="text-[14px] font-medium text-muted">{label}</p>
+        {icon && <span className={cn("grid h-8 w-8 place-items-center rounded-xl", toneCls[tone])}>{icon}</span>}
       </div>
       <p className="mt-2 text-2xl font-bold tracking-tight tabular-nums">{value}</p>
-      {sub && <p className="mt-1 text-[12px] text-muted">{sub}</p>}
+      {sub && <p className="mt-1 text-[13px] text-muted">{sub}</p>}
     </Card>
   );
 }
 
 /* ------------------------------ Page header ------------------------------ */
 
-export function PageHeader({ title, description, actions, eyebrow }: { title: React.ReactNode; description?: React.ReactNode; actions?: React.ReactNode; eyebrow?: React.ReactNode }) {
+export function PageHeader({
+  title,
+  description,
+  actions,
+  eyebrow,
+  icon,
+}: {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  actions?: React.ReactNode;
+  eyebrow?: React.ReactNode;
+  /** Override the icon picked automatically from the current route. Pass `false` to hide it. */
+  icon?: React.ReactNode | false;
+}) {
+  const pathname = usePathname();
+  const auto = pageIconFor(pathname);
+  const AutoIcon = auto?.icon;
+  const glyph = icon === false ? null : icon ?? (AutoIcon ? <AutoIcon className="h-[22px] w-[22px]" /> : null);
   return (
-    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        {eyebrow && <div className="mb-2">{eyebrow}</div>}
-        <h1 className="text-2xl font-bold tracking-tight sm:text-[28px]">{title}</h1>
-        {description && <p className="mt-1.5 max-w-2xl text-sm text-muted">{description}</p>}
+    <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex min-w-0 items-start gap-4">
+        {glyph && (
+          <span
+            className="pop hidden h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary sm:grid"
+          >
+            {glyph}
+          </span>
+        )}
+        <div className="min-w-0">
+          {eyebrow && <div className="mb-2">{eyebrow}</div>}
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-[28px]">{title}</h1>
+          {description && <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">{description}</p>}
+        </div>
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
@@ -284,13 +364,13 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
             aria-selected={value === t.id}
             onClick={() => onChange(t.id)}
             className={cn(
-              "inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-lg px-3.5 text-[13px] font-semibold transition-colors",
-              value === t.id ? "bg-surface text-text shadow-sm" : "text-muted hover:text-text"
+              "inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-xl px-3.5 text-[14px] font-semibold transition-colors",
+              value === t.id ? "bg-surface text-text shadow-card" : "text-muted hover:text-text"
             )}
           >
             {t.label}
             {t.count !== undefined && (
-              <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums", value === t.id ? "bg-primary-soft text-primary" : "bg-border/70")}>{t.count}</span>
+              <span className={cn("rounded-full px-1.5 text-[12px] tabular-nums", value === t.id ? "bg-primary-soft text-primary" : "bg-border/70")}>{t.count}</span>
             )}
           </button>
         ))}
@@ -318,12 +398,12 @@ export function Modal({ open, onClose, title, children, footer, wide }: { open: 
       <div
         role="dialog"
         aria-modal
-        className={cn("animate-in flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-surface shadow-2xl sm:rounded-2xl", wide ? "sm:max-w-3xl" : "sm:max-w-lg")}
+        className={cn("animate-in flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-surface shadow-lift sm:rounded-2xl", wide ? "sm:max-w-3xl" : "sm:max-w-lg")}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
           <h2 className="text-base font-semibold">{title}</h2>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-surface-2" aria-label="Close">
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-xl text-muted hover:bg-surface-2" aria-label="Close">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -339,9 +419,9 @@ export function Modal({ open, onClose, title, children, footer, wide }: { open: 
 export function Empty({ icon, title, children }: { icon?: React.ReactNode; title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
-      {icon && <span className="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-surface-2 text-muted">{icon}</span>}
+      {icon && <span className="float mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary">{icon}</span>}
       <p className="font-semibold">{title}</p>
-      {children && <div className="mt-1 max-w-sm text-[13px] text-muted">{children}</div>}
+      {children && <div className="mt-1 max-w-sm text-[14px] text-muted">{children}</div>}
     </div>
   );
 }
@@ -350,7 +430,7 @@ export function Empty({ icon, title, children }: { icon?: React.ReactNode; title
 /** Small reference to the RFQ requirement a screen demonstrates. */
 export function Req({ ids }: { ids: string }) {
   return (
-    <span className="inline-flex items-center rounded-md border border-dashed border-border px-1.5 py-0.5 font-mono text-[10.5px] font-medium text-muted" title="RFQ requirement reference">
+    <span className="inline-flex items-center rounded-md border border-dashed border-border px-1.5 py-0.5 font-mono text-[11.5px] font-medium text-muted" title="RFQ requirement reference">
       {ids}
     </span>
   );
