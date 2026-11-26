@@ -19,6 +19,18 @@ export interface BadgeHolding {
   type: BadgeType;
   status: "active" | "suspended";
   since: string;
+  /** Chapter Lead: the group they lead (e.g. "batch:c01:2006"). */
+  group?: string;
+  /** Who appointed / approved it. */
+  by?: string;
+}
+
+/** Service Provider listing in the Business Directory (C9). */
+export interface BusinessListing {
+  business: string;
+  category: string;
+  city: string;
+  description: string;
 }
 
 export interface Campus {
@@ -71,6 +83,14 @@ export interface User {
   loginInviteAt?: string;
   loginInviteCount?: number;
   mergedFrom?: string[];
+  /** §5.4 multiple roles: the same person's other account (e.g. teacher + alumnus). Rights stay separate. */
+  linkedUserId?: string;
+  /** Service Provider listing (shown once the badge is active). */
+  listing?: BusinessListing;
+  /** Alumni opted in to be a MyCareerZ guide (MCZ condition 4). */
+  mczGuide?: boolean;
+  /** Donor wall opt-in (H9). */
+  donorWall?: boolean;
 }
 
 /* ---------------------------- Phase 2 types ---------------------------- */
@@ -149,6 +169,8 @@ export interface VaaEvent {
   createdBy: string;
   createdAt: string;
   rsvps: { userId: string; status: RsvpStatus; at: string; guests?: number }[];
+  /** Group event created by a Chapter Lead. */
+  groupId?: string;
   /** Online events: the webinar room link, shown to registered attendees only. */
   joinUrl?: string;
   /** Who pressed "Join now" (online attendance). */
@@ -162,6 +184,8 @@ export interface GroupPost {
   text: string;
   at: string;
   likes: string[];
+  /** Chapter Lead announcement (counts against the monthly limit). */
+  announcement?: boolean;
 }
 
 export interface DmThread {
@@ -342,6 +366,12 @@ export interface State {
   invites: Invite[];
   // Phase 3
   engagements: EngagementEntry[];
+  // Annex B: commerce, documents, MyCareerZ
+  payments: Payment[];
+  docRequests: DocRequest[];
+  bookings: Booking[];
+  /** Chapter Lead announcements per group per month (set by GAO). */
+  chapterMonthlyLimit: number;
   dataRequests: DataRequest[];
   masters: Record<MasterKind, MasterItem[]>;
   permissions: Record<Capability, Role[]>;
@@ -402,4 +432,59 @@ export type Capability =
   | "duplicates.merge"
   | "masters.edit"
   | "requests.handle"
-  | "engagement.log";
+  | "engagement.log"
+  | "finance.view"
+  | "finance.refund"
+  | "mcz.students";
+
+export type PaymentKind = "donation" | "doc_fee" | "mcz_session";
+
+export interface Payment {
+  id: string;
+  kind: PaymentKind;
+  payerId: string;
+  /** Student the purchase is for (MyCareerZ session bought by a parent). */
+  forUserId?: string;
+  campusId: string;
+  amount: number;
+  at: string;
+  ref: string;
+  status: "paid" | "refunded";
+  reconciled: boolean;
+  fund?: string;
+  docRequestId?: string;
+  bookingId?: string;
+  refund?: { by: string; at: string; reason: string };
+}
+
+export type DocType = "Transfer certificate" | "Bonafide certificate" | "Mark sheet copy" | "Migration certificate";
+
+export interface DocRequest {
+  id: string;
+  userId: string;
+  campusId: string;
+  doc: DocType;
+  copies: number;
+  fee: number;
+  delivery: "Collect at campus" | "Courier" | "Email (scanned)";
+  at: string;
+  status: "awaiting_payment" | "paid" | "processing" | "ready" | "dispatched";
+  paymentId?: string;
+  handledBy?: string;
+  note?: string;
+}
+
+export interface Booking {
+  id: string;
+  studentId: string;
+  /** Who made it: the student, a parent, or a teacher referring. */
+  bookedBy: string;
+  campusId: string;
+  topic: string;
+  slot: string;
+  status: "referred" | "requested" | "confirmed" | "done" | "cancelled";
+  counsellorId?: string;
+  paymentId?: string;
+  note?: string;
+  at: string;
+}

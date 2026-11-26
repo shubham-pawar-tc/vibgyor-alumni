@@ -8,7 +8,7 @@ import { ReportButton } from "@/components/ReportButton";
 import { MaskedText, MaskPreview } from "@/components/MaskPreview";
 import { Avatar, Button, Callout, Card, Checkbox, Empty, Field, Input, Modal, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
 import { campusName } from "@/lib/data";
-import { useStore } from "@/lib/store";
+import { activeBadge, useStore } from "@/lib/store";
 import type { Job, JobType } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
 
@@ -55,11 +55,16 @@ function Jobs() {
         title={student ? "Internships" : "Jobs"}
         description={student ? "Internships and job-shadowing that your campus has approved for students." : "Jobs and referrals posted by VIBGYOR alumni. Every post is checked by a campus alumni office first."}
         actions={
-          !student && (
+          !student &&
+          (activeBadge(me, "Recruiter") ? (
             <Button onClick={() => setPosting(true)}>
               <Plus className="h-4 w-4" /> Post a job
             </Button>
-          )
+          ) : (
+            <Button variant="secondary" href="/portal/badges">
+              <Plus className="h-4 w-4" /> Become a Recruiter to post
+            </Button>
+          ))
         }
       />
 

@@ -4,7 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+  Award,
   BadgeCheck,
+  Compass,
+  FileText,
+  HandCoins,
+  IndianRupee,
+  Repeat,
+  Store,
   Copy,
   Database,
   FileLock2,
@@ -56,7 +63,7 @@ interface NavItem {
   section?: string;
 }
 
-function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number; jobs: number; dms: number; moderation: number; requests: number; dupes: number; unmapped: number }): NavItem[] {
+function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number; jobs: number; dms: number; moderation: number; requests: number; dupes: number; unmapped: number; docs: number }): NavItem[] {
   const home: NavItem = { href: "/portal", label: "Home", icon: Home };
   switch (me.role) {
     case "STU":
@@ -65,6 +72,7 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { href: "/portal/mentors", label: "Find a mentor", icon: Search },
         { href: "/portal/messages", label: "Messages", icon: MessagesSquare },
         { href: "/portal/jobs", label: "Internships", icon: Briefcase },
+        { href: "/portal/careers", label: "MyCareerZ", icon: Compass },
         { href: "/portal/events", label: "Events", icon: CalendarDays },
         { href: "/portal/profile", label: "My profile", icon: UserRound },
       ];
@@ -73,10 +81,17 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         home,
         { href: "/portal/consent", label: "Consent centre", icon: ShieldCheck },
         { href: "/portal/child-chats", label: "Mentor chats", icon: MessagesSquare },
+        { href: "/portal/careers", label: "MyCareerZ", icon: Compass },
         { href: "/portal/events", label: "Events", icon: CalendarDays },
       ];
     case "ALP":
-      return [home, { href: "/portal/profile", label: "My profile", icon: UserRound }, { href: "/portal/directory", label: "Alumni directory", icon: Lock }];
+      return [
+        home,
+        { href: "/portal/profile", label: "My profile", icon: UserRound },
+        { href: "/portal/directory", label: "Alumni directory", icon: Lock },
+        { href: "/portal/documents", label: "School documents", icon: FileText },
+        { href: "/portal/give", label: "Give", icon: HandCoins },
+      ];
     case "ALU":
       return [
         home,
@@ -86,10 +101,14 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { href: "/portal/chats", label: "Chats", icon: MessageCircle, count: counts.dms },
         { href: "/portal/jobs", label: "Jobs", icon: Briefcase },
         { href: "/portal/events", label: "Events", icon: CalendarDays },
+        { href: "/portal/business", label: "Business directory", icon: Store },
         { href: "/portal/invite", label: "Invite friends", icon: Send },
         ...(me.badges?.some((b) => b.type === "Mentor") ? [{ href: "/portal/messages", label: "Mentor inbox", icon: MessagesSquare }] : []),
         { href: "/portal/vouch", label: "Vouch for batchmates", icon: HeartHandshake, count: counts.vouch },
         { href: "/portal/mentor", label: activeBadge(me, "Mentor") ? "Mentor badge" : "Become a mentor", icon: GraduationCap },
+        { href: "/portal/badges", label: "My badges", icon: Award },
+        { href: "/portal/documents", label: "School documents", icon: FileText },
+        { href: "/portal/give", label: "Give", icon: HandCoins },
       ];
     case "CAD":
     case "GAO":
@@ -102,9 +121,11 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { href: "/portal/admin/moderation", label: "Moderation", icon: Flag, count: counts.moderation },
         { href: "/portal/admin/requests", label: "Data requests", icon: FileLock2, count: counts.requests },
         { href: "/portal/admin/content", label: "Jobs & events", icon: CalendarCheck, count: counts.jobs },
+        { href: "/portal/admin/documents", label: "Document requests", icon: FileText, count: counts.docs },
         { section: "People & data", href: "/portal/admin/records", label: "Alumni records", icon: Database },
         { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen },
         { href: "/portal/admin/consents", label: "Student consents", icon: ClipboardCheck, count: counts.consent },
+        { href: "/portal/admin/badges", label: "Badges", icon: Award },
         ...(group
           ? [
               { href: "/portal/admin/duplicates", label: "Duplicates", icon: Copy, count: counts.dupes },
@@ -113,9 +134,10 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
           : []),
         { section: "Communication", href: "/portal/admin/broadcast", label: "Broadcasts", icon: Megaphone },
         { section: "Governance", href: "/portal/admin/audit", label: "Audit log", icon: FileClock },
+        { href: "/portal/admin/staff", label: me.role === "SAD" ? "Staff & scopes" : me.role === "GAO" ? "Campus staff" : "Teachers", icon: UsersRound },
         ...(me.role === "SAD"
           ? [
-              { href: "/portal/admin/staff", label: "Staff & scopes", icon: UsersRound },
+              { href: "/portal/finance", label: "Finance", icon: IndianRupee },
               { href: "/portal/admin/permissions", label: "Permissions", icon: KeyRound },
               { href: "/portal/admin/settings", label: "Settings", icon: Settings },
             ]
@@ -128,6 +150,10 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { href: "/portal/teacher/interest", label: "Student interest", icon: Briefcase },
         { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen },
       ];
+    case "FIN":
+      return [home, { href: "/portal/finance", label: "Finance", icon: IndianRupee }];
+    case "MCZ":
+      return [home, { href: "/portal/mcz", label: "MyCareerZ", icon: Compass }];
     default:
       return [home];
   }
@@ -165,6 +191,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     consent: state.users.filter((u) => u.role === "STU" && u.studentStatus === "awaiting_consent" && inScope(u.campusIds[0])).length,
     vouch: state.verifications.filter((v) => v.status === "pending" && v.campusId === me.campusIds[0] && v.passYear === me.batch && !v.vouches.some((x) => x.by === me.id)).length,
     jobs: state.jobs.filter((j) => j.status === "pending" && inScope(j.campusId)).length,
+    docs: state.docRequests.filter((r) => r.status === "paid" && inScope(r.campusId)).length,
     dms: state.dmThreads.filter((t) => {
       if (!t.members.includes(me.id)) return false;
       const last = state.dms.filter((m) => m.threadId === t.id).at(-1);
@@ -348,6 +375,9 @@ export function RoleSwitcher() {
 }
 
 function UserMenu({ me, onLogout }: { me: User; onLogout: () => void }) {
+  const { state, switchContext } = useStore();
+  const router = useRouter();
+  const linked = me.linkedUserId ? state.users.find((u) => u.id === me.linkedUserId && !u.deactivated) : undefined;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useClickOutside(ref, () => setOpen(false));
@@ -375,6 +405,18 @@ function UserMenu({ me, onLogout }: { me: User; onLogout: () => void }) {
               ))}
             </div>
           </div>
+          {linked && (
+            <button
+              onClick={() => {
+                setOpen(false);
+                switchContext(linked.id);
+                router.push("/portal");
+              }}
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[14px] font-medium hover:bg-surface-2"
+            >
+              <Repeat className="h-4 w-4" /> Switch to {roleLabels[linked.role]}
+            </button>
+          )}
           <button onClick={onLogout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-medium hover:bg-surface-2">
             <LogOut className="h-4 w-4" /> Sign out
           </button>

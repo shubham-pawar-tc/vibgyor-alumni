@@ -744,20 +744,35 @@ function QueueRow({ href, icon: Icon, title, sub, count, danger }: { href: strin
 
 /* ================================ Others ================================ */
 
-const roleFeatures: Record<string, { summary: string; items: string[]; limits: string[] }> = {
+const roleFeatures: Record<string, { summary: string; items: { label: string; href?: string }[]; limits: string[] }> = {
   TCH: {
-    summary: "Teachers and counsellors guide students and see mentor matches for their campus.",
-    items: ["Student 3C preferences and interests", "Mentor match suggestions", "Career talk requests", "Campus events"],
+    summary: "Teachers and counsellors guide students and log alumni contact for their campus.",
+    items: [
+      { label: "Student internship interest", href: "/portal/teacher/interest" },
+      { label: "Refer students to MyCareerZ", href: "/portal/teacher/interest" },
+      { label: "Engagement log", href: "/portal/admin/engagement" },
+      { label: "3C view and mentor match suggestions" },
+    ],
     limits: ["Own campus only", "Can't broadcast or export", "2-factor login"],
   },
   FIN: {
-    summary: "Finance & Commerce handles payments, donations, refunds and reconciliation (Release 3).",
-    items: ["Payments dashboard", "80G receipts & Form 10BD export", "Refunds with credit notes", "Settlement reconciliation"],
+    summary: "Finance & Commerce handles payments, donations, document fees, refunds and reconciliation.",
+    items: [
+      { label: "Payments dashboard", href: "/portal/finance" },
+      { label: "Refunds (Finance and Super Admin only)", href: "/portal/finance" },
+      { label: "Reconciliation with the bank statement", href: "/portal/finance" },
+      { label: "Exports with a recorded reason", href: "/portal/finance" },
+    ],
     limits: ["Only campuses assigned by the Super Admin", "No directory or student data", "2-factor login"],
   },
   MCZ: {
-    summary: "MyCareerZ counsellors see consented student preferences and enquiries for assigned campuses.",
-    items: ["Consented leads in real time", "Opted-in alumni guides", "Funnel reports by campus", "Counselling bookings (R3)"],
+    summary: "MyCareerZ counsellors work with consented students and opted-in alumni for assigned campuses.",
+    items: [
+      { label: "Bookings and teacher referrals", href: "/portal/mcz" },
+      { label: "Consented students (every view logged)", href: "/portal/mcz" },
+      { label: "Opted-in alumni guides", href: "/portal/mcz" },
+      { label: "Webinars and own funnel report", href: "/portal/mcz" },
+    ],
     limits: ["Consented records and agreed fields only", "Sharing stops when consent is withdrawn", "2-factor login"],
   },
 };
@@ -769,14 +784,25 @@ export function RoleOverview({ me }: { me: User }) {
       <PageHeader eyebrow={<Pill tone="primary">{roleLabels[me.role]}</Pill>} title={`Hello, ${firstName(me.name)}`} description={f?.summary} />
       <div className="grid gap-5 md:grid-cols-2">
         <Card>
-          <CardHeader title="Your workspace" subtitle="Arrives in a later prototype phase" />
-          <ul className="space-y-3 p-5">
+          <CardHeader title="Your workspace" />
+          <ul className="space-y-1 p-3">
             {f?.items.map((i) => (
-              <li key={i} className="flex items-center gap-3 text-[14px]">
-                <span className="grid h-7 w-7 place-items-center rounded-xl bg-surface-2 text-muted">
-                  <Clock className="h-3.5 w-3.5" />
-                </span>
-                {i}
+              <li key={i.label}>
+                {i.href ? (
+                  <Link href={i.href} className="group flex items-center gap-3 rounded-xl px-2 py-2 text-[14px] hover:bg-surface-2">
+                    <span className="grid h-7 w-7 place-items-center rounded-xl bg-primary-soft text-primary">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                    {i.label}
+                  </Link>
+                ) : (
+                  <span className="flex items-center gap-3 px-2 py-2 text-[14px] text-muted">
+                    <span className="grid h-7 w-7 place-items-center rounded-xl bg-surface-2">
+                      <Clock className="h-3.5 w-3.5" />
+                    </span>
+                    {i.label} · later phase
+                  </span>
+                )}
               </li>
             ))}
           </ul>

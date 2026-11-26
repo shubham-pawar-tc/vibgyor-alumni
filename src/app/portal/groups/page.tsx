@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Heart, Send, Users, UsersRound } from "lucide-react";
+import { CalendarPlus, Heart, Megaphone, Send, Trash2, Users, UsersRound } from "lucide-react";
 import { Gate } from "@/components/Gate";
 import { ReportButton } from "@/components/ReportButton";
-import { Avatar, Button, Card, Empty, PageHeader, Pill, Req, Textarea } from "@/components/ui";
+import { Avatar, Button, Card, Checkbox, Empty, Input, Modal, PageHeader, Pill, Req, Textarea } from "@/components/ui";
 import { roleLabels } from "@/lib/data";
 import { groupMembers, groupsFor } from "@/lib/community";
 import { useStore } from "@/lib/store";
@@ -20,14 +20,20 @@ export default function GroupsPage() {
 }
 
 function Groups() {
-  const { me, state, addPost, toggleLike } = useStore();
+  const { me, state, addPost, toggleLike, announce, removePost, createEvent } = useStore();
+  const [asAnn, setAsAnn] = useState(false);
+  const [err, setErr] = useState("");
+  const [ev, setEv] = useState<{ title: string; start: string; venue: string } | null>(null);
   const groups = me ? groupsFor(me) : [];
   const [gid, setGid] = useState(groups[0]?.id ?? "");
   const [text, setText] = useState("");
   if (!me) return null;
   const g = groups.find((x) => x.id === gid) ?? groups[0];
   const members = groupMembers(state, g);
-  const posts = state.posts.filter((p) => p.groupId === g.id).sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  const posts = state.posts.filter((p) => p.groupId === g.id).sort((a, b) => Number(!!b.announcement) - Number(!!a.announcement) || Date.parse(b.at) - Date.parse(a.at));
+  const cl = me.badges?.find((b) => b.type === "ChapterLead" && b.status === "active" && b.group === g.id);
+  const month = new Date().toISOString().slice(0, 7);
+  const used = state.posts.filter((p) => p.groupId === g.id && p.announcement && p.at.slice(0, 7) === month).length;
 
   return (
     <>
@@ -55,7 +61,12 @@ function Groups() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!text.trim()) return;
-                addPost(g.id, me.id, text.trim());
+                setErr("");
+                if (asAnn && cl) {
+                  const r = announce(g.id, me.id, text.trim());
+                  if (!r.ok) return setErr(r.error ?? "");
+                  setAsAnn(false);
+                } else addPost(g.id, me.id, text.trim());
                 setText("");
               }}
             >
@@ -63,6 +74,15 @@ function Groups() {
                 <Avatar name={me.name} size={38} />
                 <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={`Share something with ${g.name}`} />
               </div>
+              {cl && (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-primary-soft/40 px-3 py-2">
+                  <Checkbox checked={asAnn} onChange={setAsAnn} label={`Post as announcement (${used} of ${state.chapterMonthlyLimit} this month)`} />
+                  <Button type="button" size="sm" variant="secondary" onClick={() => setEv({ title: "", start: "", venue: "" })}>
+                    <CalendarPlus className="h-3.5 w-3.5" /> Group event
+                  </Button>
+                </div>
+              )}
+              {err && <p className="mt-2 text-[13.5px] font-semibold text-danger">{err}</p>}
               <div className="mt-2 flex justify-end">
                 <Button type="submit" size="sm" disabled={!text.trim()}>
                   <Send className="h-3.5 w-3.5" /> Post
@@ -80,13 +100,18 @@ function Groups() {
               const liked = p.likes.includes(me.id);
               const staff = a && ["CAD", "GAO", "SAD"].includes(a.role);
               return (
-                <Card key={p.id} className="p-4">
+                <Card key={p.id} className={cn("p-4", p.announcement && "border-primary")}>
                   <div className="flex items-center gap-3">
                     <Avatar name={a?.name ?? "?"} size={38} />
                     <div className="min-w-0 flex-1">
                       <p className="flex items-center gap-2 text-[14.5px] font-semibold">
                         {a && !staff ? <Link href={`/portal/people/${a.id}`} className="hover:underline">{a.name}</Link> : a?.name}
                         {staff && <Pill tone="primary">{roleLabels[a!.role]}</Pill>}
+                        {p.announcement && (
+                          <Pill tone="primary" icon={<Megaphone className="h-3 w-3" />}>
+                            Announcement
+                          </Pill>
+                        )}
                       </p>
                       <p className="text-[13px] text-muted">{timeAgo(p.at)}</p>
                     </div>
@@ -96,7 +121,14 @@ function Groups() {
                     <button onClick={() => toggleLike(p.id, me.id)} className={cn("flex items-center gap-1.5 text-[13.5px] font-medium", liked ? "text-danger" : "text-muted hover:text-text")}>
                       <Heart className={cn("h-4 w-4", liked && "fill-current")} /> {p.likes.length || ""} {p.likes.length === 1 ? "like" : "likes"}
                     </button>
-                    {p.authorId !== me.id && !staff && <ReportButton kind="post" targetId={p.id} compact />}
+                    <span className="flex items-center gap-2">
+                      {cl && p.authorId !== me.id && !staff && (
+                        <button onClick={() => removePost(p.id, me.id)} className="flex items-center gap-1 text-[13px] font-medium text-muted hover:text-danger" title="Remove (Chapter Lead)">
+                          <Trash2 className="h-3.5 w-3.5" /> Remove
+                        </button>
+                      )}
+                      {p.authorId !== me.id && !staff && <ReportButton kind="post" targetId={p.id} compact />}
+                    </span>
                   </div>
                 </Card>
               );
@@ -120,6 +152,51 @@ function Groups() {
           {members.length > 10 && <p className="mt-2 text-[13px] text-muted">+{members.length - 10} more</p>}
         </Card>
       </div>
+      <Modal
+        open={!!ev}
+        onClose={() => setEv(null)}
+        title={`New event for ${g.name}`}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEv(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!ev?.title.trim() || !ev?.start || !ev?.venue.trim()}
+              onClick={() => {
+                if (!ev) return;
+                const start = new Date(ev.start);
+                createEvent({
+                  title: ev.title.trim(),
+                  kind: "Meetup",
+                  description: `Organised by ${me.name}, Chapter Lead for ${g.name}.`,
+                  campusIds: [g.campusId],
+                  audience: ["ALU"],
+                  start: start.toISOString(),
+                  end: new Date(start.getTime() + 3 * 3600_000).toISOString(),
+                  venue: ev.venue.trim(),
+                  online: false,
+                  capacity: 80,
+                  createdBy: me.id,
+                  groupId: g.id,
+                });
+                setEv(null);
+              }}
+            >
+              Create
+            </Button>
+          </>
+        }
+      >
+        {ev && (
+          <div className="space-y-3">
+            <Input placeholder="Title" value={ev.title} onChange={(e) => setEv({ ...ev, title: e.target.value })} aria-label="Title" />
+            <Input type="datetime-local" value={ev.start} onChange={(e) => setEv({ ...ev, start: e.target.value })} aria-label="Start" />
+            <Input placeholder="Venue" value={ev.venue} onChange={(e) => setEv({ ...ev, venue: e.target.value })} aria-label="Venue" />
+            <p className="text-[13px] text-muted">Shown in Events to verified alumni of this group.</p>
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

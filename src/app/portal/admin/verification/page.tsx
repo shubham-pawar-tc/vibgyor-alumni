@@ -183,12 +183,17 @@ function Inner() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-semibold">{u.name}</p>
-                          <Pill tone="primary">{b.badge}</Pill>
+                          <Pill tone="primary">{b.badge === "ServiceProvider" ? "Service provider" : b.badge}</Pill>
                           {b.status !== "pending" && <Pill tone={b.status === "approved" ? "success" : "danger"}>{b.status}</Pill>}
                         </div>
                         <p className="text-[13.5px] text-muted">
                           Batch {u.batch} · {u.title ? `${u.title}, ${u.company}` : campusName(u.campusIds[0])}
                         </p>
+                        {b.badge === "ServiceProvider" && u.listing && (
+                          <p className="mt-1 text-[13.5px]">
+                            <b>{u.listing.business}</b> · {u.listing.category} · {u.listing.city}: {u.listing.description}
+                          </p>
+                        )}
                         {b.motivation && <p className="mt-1.5 text-[14px]">&ldquo;{b.motivation}&rdquo;</p>}
                         <p className="mt-1.5 flex items-center gap-1 text-[13px] text-success">
                           <CheckCircle2 className="h-3.5 w-3.5" /> Safeguarding code accepted {formatDateTime(b.codeAcceptedAt)}

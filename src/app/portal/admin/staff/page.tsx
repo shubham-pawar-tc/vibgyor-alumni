@@ -5,15 +5,14 @@ import { Pencil, Plus, ShieldCheck, UserX } from "lucide-react";
 import { Gate } from "@/components/Gate";
 import { Avatar, Button, Callout, Card, Input, Modal, PageHeader, Pill, Req, Select } from "@/components/ui";
 import { campuses, campusName, roleLabels } from "@/lib/data";
-import { useStore } from "@/lib/store";
+import { manageableRoles, useStore } from "@/lib/store";
 import type { Role, User } from "@/lib/types";
 
-const STAFF: Role[] = ["TCH", "CAD", "GAO", "FIN", "MCZ", "SAD"];
 type Draft = { id?: string; name: string; email: string; mobile: string; role: Role; campusIds: string[] };
 
 export default function StaffPage() {
   return (
-    <Gate roles={["SAD"]} why="Only the Super Admin manages staff accounts and campus scopes.">
+    <Gate roles={["CAD", "GAO", "SAD"]} why="Staff accounts are managed by the Campus Admin (teachers), Group Alumni Office (campus staff) and Super Admin.">
       <Staff />
     </Gate>
   );
@@ -31,11 +30,12 @@ function Staff() {
   const [err, setErr] = useState("");
   const [role, setRole] = useState<"all" | Role>("all");
   if (!me) return null;
-  const staff = state.users.filter((u) => STAFF.includes(u.role) && (role === "all" || u.role === role));
+  const STAFF = manageableRoles(me.role);
+  const staff = state.users.filter((u) => STAFF.includes(u.role) && (me.role !== "CAD" || me.campusIds.includes(u.campusIds[0])) && (role === "all" || u.role === role));
 
   const open = (u?: User) => {
     setErr("");
-    setDraft(u ? { id: u.id, name: u.name, email: u.email, mobile: u.mobile, role: u.role, campusIds: [...u.campusIds] } : { name: "", email: "", mobile: "", role: "CAD", campusIds: [campuses[0].id] });
+    setDraft(u ? { id: u.id, name: u.name, email: u.email, mobile: u.mobile, role: u.role, campusIds: [...u.campusIds] } : { name: "", email: "", mobile: "", role: STAFF[0], campusIds: [me.role === "CAD" ? me.campusIds[0] : campuses[0].id] });
   };
   const multi = draft && (draft.role === "FIN" || draft.role === "MCZ");
   const all = draft && (draft.role === "GAO" || draft.role === "SAD");
@@ -45,7 +45,7 @@ function Staff() {
       <PageHeader
         eyebrow={<Req ids="A6 · CS-16" />}
         title="Staff & scopes"
-        description="Create staff accounts and decide which campuses each person can see. Changes take effect at their next page load and are recorded in the audit log."
+        description={me.role === "CAD" ? `Teacher and counsellor accounts at ${campusName(me.campusIds[0])}.` : me.role === "GAO" ? "Campus Admin and teacher accounts across all campuses." : "Create staff accounts and decide which campuses each person can see. Every change is recorded in the audit log."}
         actions={
           <Button onClick={() => open()}>
             <Plus className="h-4 w-4" /> Add staff
@@ -184,7 +184,7 @@ function Staff() {
                 </div>
               </div>
             ) : (
-              <Select value={draft.campusIds[0]} onChange={(e) => setDraft({ ...draft, campusIds: [e.target.value] })} aria-label="Campus">
+              <Select value={draft.campusIds[0]} onChange={(e) => setDraft({ ...draft, campusIds: [e.target.value] })} aria-label="Campus" disabled={me.role === "CAD"}>
                 {campuses.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} · {c.city}

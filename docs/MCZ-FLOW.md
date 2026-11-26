@@ -1,8 +1,6 @@
 # VIBGYOR Alumni Platform: MyCareerZ Counsellor Flow
 
-> Role code **MCZ**. Built from the prototype source (`src/components/Homes.tsx` → `RoleOverview` / `roleFeatures.MCZ`, `lib/data.ts` → `consentPurposes.mcz` / `seedPermissions`, `app/portal/consent/page.tsx`). Demo persona: **Aditya Bhatt (`mcz1`)**, MyCareerZ · Malad, Goregaon West, Goregaon East. See also [PARENT-FLOW.md](PARENT-FLOW.md).
-
-> ⚠️ **Prototype status:** the MyCareerZ counsellor sees a **role overview** only. Parent consent for MyCareerZ sharing **is** built. This file shows what is built today and the planned flow.
+> Role code **MCZ**. Built from the prototype source (`src/app/portal/mcz/page.tsx`, `app/portal/careers/page.tsx`, `app/portal/teacher/interest/page.tsx`, `lib/store.tsx` → `bookMcz`, `referToMcz`, `updateBooking`, `logView`). Demo persona: **Aditya Bhatt (`mcz1`)**, MyCareerZ · Malad, Goregaon West, Goregaon East. See also [PARENT-FLOW.md](PARENT-FLOW.md).
 
 ---
 
@@ -10,85 +8,60 @@
 
 | Item | Detail |
 |---|---|
-| Who | Counsellor from **MyCareerZ**, VIBGYOR's career-counselling service |
-| Login | OTP + **2-factor** |
-| Scope | **Campuses assigned by the Super Admin** (demo: 3) |
-| Data | **Consented records and agreed fields only** |
-| Menu (today) | **Home** only (role overview) |
-| Capabilities (default matrix) | None of the admin capabilities |
+| Who | Counsellor from MyCareerZ, created by the Super Admin under the data-sharing agreement |
+| Scope | **Assigned campuses only** (set in *Staff & scopes*) |
+| Menu | **Home** · **MyCareerZ** |
+| Capability | `mcz.students` (guard rail: no other role can ever have it) |
 
-### Built today
-
-| # | What | Where |
-|---|---|---|
-| 1 | Sign in with OTP + 2-factor | `/login` |
-| 2 | Role overview: planned workspace, limits, scope | `/portal` |
-| 3 | Parent gives or withdraws **MyCareerZ sharing** per child | Parent consent page / Consent centre |
-
-What the parent agrees to: *"Send your child's course, country and college preferences and any enquiry to MyCareerZ, VIBGYOR's career-counselling service, so a counsellor can contact you (the parent). No advertising is shown to your child."*
-
-On withdrawal: *"We stop sharing with MyCareerZ straight away and tell MyCareerZ to stop using the data already shared."*
-
-### Planned workspace
-
-| Feature | Purpose |
+| Annex B condition | How the prototype enforces it |
 |---|---|
-| Consented leads in real time | Students whose parent allowed MyCareerZ sharing |
-| Opted-in alumni guides | Alumni who agreed to help MyCareerZ |
-| Funnel reports by campus | Leads → contacted → counselled |
-| Counselling bookings (R3) | Book sessions with parents |
-
-### Access limits
-
-- ✅ Consented records and agreed fields only (3C preferences, enquiry, parent contact)
-- ✅ Sharing stops the moment consent is withdrawn
-- ✅ Contact goes to the **parent**, never the student
-- ❌ No alumni directory, no student–mentor chats, no other student data
-- ✅ 2-factor login
+| 4 · opted-in alumni guides | *Alumni guides* lists only alumni who ticked *Be a MyCareerZ alumni guide* (My badges) |
+| 7 · consented students only | *Consented students* lists only active students on own campuses with MyCareerZ consent |
+| 12 · webinars | *New webinar*: own campuses only, audience students + parents; the store refuses anything else |
+| 19 · manages bookings | Confirm a time (parents get WhatsApp) · Mark done |
+| 26 · own funnel only | *My funnel* counts only own campuses and own webinars |
+| CS-16 · every view logged | Opening a student writes a `data_access` audit entry |
 
 ---
 
-## 2. Flow 1: How a lead reaches MyCareerZ
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor N as Parent
-    participant P as Platform
-    actor S as Student
-    actor C as MyCareerZ counsellor
-
-    N->>P: Consent: ☑ Share career preferences with MyCareerZ
-    S->>P: Sets 3C choices (country · course · college)
-    P->>C: Lead: student first name, class, campus,<br/>3C choices, parent contact (agreed fields)
-    C->>N: Contacts the parent (not the student)
-    N->>P: Later: withdraws MyCareerZ sharing
-    P->>C: Lead removed · "stop using shared data"
-    P->>P: Audit log entry
-```
-
----
-
-## 3. Flow 2: Planned counsellor workspace
+## 2. How a student reaches MyCareerZ
 
 ```mermaid
 flowchart TD
-    A([MyCareerZ home<br/>assigned campuses]) --> B[Leads: consented only]
-    B --> B1[Lead card: class · campus · 3C choices]
-    B1 --> B2[Contact parent → log outcome]
-    B2 --> B3[Book counselling session R3]
-    A --> C[Alumni guides: opted-in alumni<br/>by country / course]
-    A --> D[Funnel report by campus]
-    B -. consent withdrawn .-> X[Lead disappears instantly]
+    P([Parent: Consent centre → MyCareerZ ON]) --> S{Route in}
+    S -->|Parent| B1[MyCareerZ → Book and pay ₹2,500]
+    S -->|Student| B2[MyCareerZ → Request a session<br/>needs consent · cond. 17]
+    S -->|Teacher| B3[Student interest → Refer to MyCareerZ<br/>needs consent · cond. 18]
+    B1 & B2 --> R[Booking: Requested<br/>MCZ emailed]
+    B3 --> RF[Booking: Referred by teacher]
+    R & RF --> C[MCZ: Confirm a time → parent WhatsApp]
+    C --> D[Mark done]
+    X([Parent withdraws MyCareerZ consent]) -.-> H[Student disappears from Consented students<br/>new bookings refused]
 ```
 
 ---
 
-## 4. Gaps and open questions
+## 3. Counsellor workspace
 
-| # | Item |
+| Tab | What's there |
 |---|---|
-| 1 | Workspace not built; consent side is built |
-| 2 | Agree the exact fields shared (e.g. parent mobile or email only?) |
-| 3 | How MyCareerZ confirms it deleted data after withdrawal |
-| 4 | How alumni opt in as MyCareerZ guides (profile setting?) |
+| Bookings | Referred and requested sessions, who booked or referred, paid or not, teacher's note |
+| Consented students | Name, class, campus → *Open* shows 3C choices and interests (logged). No contact details |
+| Alumni guides | Opted-in alumni with course · college · country |
+| Webinars | Create a webinar with a meeting link; appears in students' and parents' Events with *Join now* |
+| My funnel | Consented → referred → requested → confirmed/done, own data only |
+
+## 4. Demo script
+
+1. **Aditya Bhatt** → MyCareerZ → Bookings: Ishita (paid by parent, confirmed) and Zara (referred by Mrs. Fernandes).
+2. Confirm Zara's time → WhatsApp to Zara's parent (Farhan Sheikh) appears in the device simulator.
+3. Consented students → *Open* Ishita → Audit log shows the view.
+4. As **Mrs. Fernandes** (teacher): *Refer to MyCareerZ* a student without consent → refused with the reason.
+5. As **Lakshmi Iyer** (parent, `par2`): MyCareerZ → switched off → Consent centre → switch on → book.
+
+## 5. Open questions
+
+| # | Question |
+|---|---|
+| 1 | Which student fields MyCareerZ may see (agreed field list in the data-sharing agreement) |
+| 2 | Session fee and whether students can book free sessions |

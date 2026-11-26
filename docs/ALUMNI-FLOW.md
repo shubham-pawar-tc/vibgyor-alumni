@@ -302,6 +302,30 @@ sequenceDiagram
 
 ---
 
+## 10a. Flow 9: Other badges, giving and documents
+
+```mermaid
+flowchart TD
+    A([My badges]) --> R[Recruiter: request → Campus Admin approves → Post a job]
+    A --> S[Service provider: listing → approval → Business directory]
+    A --> C[Chapter Lead: appointed by CAD / GAO<br/>announcements within monthly limit · group events · remove posts]
+    A --> D[Donor: automatic after Give]
+    A --> G[Tick 'Be a MyCareerZ alumni guide']
+    J([Jobs]) -->|no Recruiter badge| JB[Become a Recruiter to post]
+    GV([Give]) --> GV1[Amount + fund + donor wall opt-in → 80G receipt email]
+    DOC([School documents]) --> DOC1[Pick certificate → Pay fee → campus prepares → sent]
+```
+
+| Page | Pending (ALP) | Verified (ALU) |
+|---|---|---|
+| Give | ✅ | ✅ |
+| School documents | ✅ | ✅ |
+| My badges, Business directory | 🔒 | ✅ |
+
+**Multiple roles (§5.4).** Mrs. Sheryl Fernandes has a teacher account and an alumna account. The account menu shows **Switch to Alumni – Verified** (and back). Each account keeps its own rights; the switch is audit-logged.
+
+---
+
 ## 11. Status lifecycle
 
 ```mermaid

@@ -26,6 +26,10 @@
 
 ### Staff & scopes
 
+Who can create whom (Annex B): **Campus Admin → teachers at own campus** (menu *Teachers*), **GAO → Campus Admins and teachers** (menu *Campus staff*), **Super Admin → everyone** including GAO, Finance and MyCareerZ.
+
+Guard rails (§7): on the Permissions page, cells marked 🔒 can never be ticked, e.g. only Finance and Super Admin can refund, only MyCareerZ sees consented students, Finance/MyCareerZ/teachers never read chats. The store refuses them too.
+
 ```mermaid
 flowchart LR
     A([Staff & scopes]) --> B{Add or edit}

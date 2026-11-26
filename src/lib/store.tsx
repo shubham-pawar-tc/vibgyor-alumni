@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { campusName as campusNameFor, campuses as allCampuses, consentPurposes, createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
+import { campusName as campusNameFor, campuses as allCampuses, consentPurposes, COURIER_FEE, DOC_FEES, HARD_LIMITS, MCZ_SESSION_FEE, createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
 import { maskContacts } from "./mask";
 import type {
   Capability,
@@ -15,6 +15,11 @@ import type {
   VaaEvent,
   AuditEntry,
   BadgeType,
+  Booking,
+  BusinessListing,
+  DocRequest,
+  DocType,
+  Payment,
   Broadcast,
   ConsentPurpose,
   InterestStatus,
@@ -72,6 +77,14 @@ export function loginInviteBody(template: string, u: User) {
 
 /** Age gate (Settings): a student below their campus's minimum class can't be activated. Already-active accounts are not affected. */
 const campusIdsAll = () => allCampuses.map((c) => c.id);
+
+/** Which staff roles a person may create or edit (Annex B "How access is given"). */
+export function manageableRoles(r?: Role): Role[] {
+  if (r === "SAD") return ["TCH", "CAD", "GAO", "FIN", "MCZ", "SAD"];
+  if (r === "GAO") return ["TCH", "CAD"];
+  if (r === "CAD") return ["TCH"];
+  return [];
+}
 
 export function belowAgeGate(s: State, u: User | undefined) {
   if (!u || u.role !== "STU" || u.studentStatus === "active") return false;
@@ -167,7 +180,27 @@ interface Ctx {
   decideVerification: (id: string, decision: "approved" | "rejected" | "info_requested", actorId: string, note?: string) => void;
   vouch: (id: string, voucherId: string) => void;
   answerInfoRequest: (id: string, userId: string, reply: string) => void;
-  applyBadge: (userId: string, badge: BadgeType, motivation: string) => void;
+  applyBadge: (userId: string, badge: BadgeType, motivation: string, listing?: BusinessListing) => void;
+  // Annex B: badges
+  appointChapterLead: (userId: string, groupId: string, actorId: string) => { ok: boolean; error?: string };
+  revokeBadge: (userId: string, type: BadgeType, actorId: string) => void;
+  setChapterLimit: (n: number, actorId: string) => void;
+  announce: (groupId: string, authorId: string, text: string) => { ok: boolean; error?: string };
+  removePost: (postId: string, actorId: string) => void;
+  sendEnquiry: (providerId: string, fromId: string, text: string) => void;
+  setUserFlags: (userId: string, flags: { mczGuide?: boolean; donorWall?: boolean }) => void;
+  switchContext: (toUserId: string) => void;
+  // Annex B: commerce and documents
+  donate: (userId: string, amount: number, fund: string, wall: boolean) => { ok: boolean; error?: string };
+  requestDocument: (userId: string, doc: DocType, copies: number, delivery: DocRequest["delivery"]) => string | undefined;
+  payDocument: (reqId: string, userId: string) => void;
+  advanceDocument: (reqId: string, status: DocRequest["status"], actorId: string, note?: string) => void;
+  refundPayment: (paymentId: string, reason: string, actorId: string) => { ok: boolean; error?: string };
+  reconcilePayments: (ids: string[], actorId: string) => void;
+  // Annex B: MyCareerZ
+  bookMcz: (b: { studentId: string; bookedBy: string; topic: string; slot: string }) => { ok: boolean; error?: string };
+  referToMcz: (studentId: string, teacherId: string, topic: string, note: string) => { ok: boolean; error?: string };
+  updateBooking: (id: string, status: Booking["status"], actorId: string, slot?: string) => void;
   decideBadge: (id: string, approve: boolean, actorId: string) => void;
   // broadcast
   createBroadcast: (b: Omit<Broadcast, "id" | "createdAt" | "status" | "stats">) => void;
@@ -833,9 +866,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             body: `Good news ${firstName(req.name)}: two batchmates vouched for you, so your VIBGYOR alumni profile is now verified.`,
           });
       },
-      applyBadge: (userId, badge, motivation) => {
+      applyBadge: (userId, badge, motivation, listing) => {
         const u = getUser(userId);
         if (!u || u.role !== "ALU" || u.deactivated) return;
+        // Chapter Lead is appointed and Donor is automatic: neither can be requested
+        if (badge === "ChapterLead" || badge === "Donor") return;
+        if (stateRef.current.badgeRequests.some((b) => b.userId === userId && b.badge === badge && b.status === "pending")) return;
+        if (listing) setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, listing } : x)) }));
         const at = now();
         setState((s) => ({
           ...s,
@@ -1115,6 +1152,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         log({ actorId, action: `Data request ${status.replace("_", " ")}`, target: `${r.type} · ${getUser(r.subjectId)?.name ?? "member"}`, campusId: r.campusId, category: "consent", detail: anonymise ? "Personal data anonymised (A11)" : resolution });
       },
       setPermission: (cap, role, on, actorId) => {
+        if (on && HARD_LIMITS[cap] && !HARD_LIMITS[cap]!.includes(role)) return; // §7 guard rail: cannot be loosened
         setState((s) => ({ ...s, permissions: { ...s.permissions, [cap]: on ? [...new Set([...s.permissions[cap], role])] : s.permissions[cap].filter((r) => r !== role) } }));
         log({ actorId, action: "Permission changed", target: `${role} · ${cap}`, category: "admin", detail: on ? "granted" : "removed" });
       },
@@ -1128,6 +1166,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       postJob: (j) => {
         const u = getUser(j.postedBy);
+        if (!u || (u.role === "ALU" && !activeBadge(u, "Recruiter")) || !["ALU", "CAD", "GAO", "SAD"].includes(u.role)) return; // cond. 9
         const masked = maskContacts(j.description).text; // CS-6: replies go through VAA, not personal numbers
         setState((s) => ({ ...s, jobs: [{ ...j, description: masked, id: uid("job"), at: now(), status: "pending", interested: [] }, ...s.jobs] }));
         log({ actorId: j.postedBy, action: "Job posted for approval", target: `${j.title} · ${j.company}`, campusId: j.campusId, category: "community", detail: j.forStudents ? "Requested for students too" : undefined });
@@ -1188,9 +1227,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       saveStaff: (input, actorId) => {
         const actor = getUser(actorId);
-        if (actor?.role !== "SAD") return { ok: false, error: "Only the Super Admin can manage staff." };
         const STAFF: Role[] = ["TCH", "CAD", "GAO", "FIN", "MCZ", "SAD"];
         if (!STAFF.includes(input.role)) return { ok: false, error: "Pick a staff role." };
+        // Annex B: CAD creates teachers (own campus), GAO creates campus staff, SAD creates everyone
+        const may = manageableRoles(actor?.role);
+        const target = input.id ? getUser(input.id) : undefined;
+        if (!may.includes(input.role) || (target && !may.includes(target.role))) return { ok: false, error: "Your role can't manage that kind of staff account." };
+        if (actor?.role === "CAD" && (input.campusIds.length !== 1 || !actor.campusIds.includes(input.campusIds[0]) || (target && !actor.campusIds.includes(target.campusIds[0]))))
+          return { ok: false, error: "Campus Admins manage teachers at their own campus only." };
         if (input.name.trim().length < 3 || !/\S+@\S+\.\S+/.test(input.email)) return { ok: false, error: "Enter a name and a valid email." };
         const all = campusIdsAll();
         const campusIds = input.role === "GAO" || input.role === "SAD" ? all : input.campusIds;
@@ -1227,9 +1271,205 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       resetTwoFactor: (userId, actorId) => {
         const u = getUser(userId);
-        if (!u || getUser(actorId)?.role !== "SAD") return;
+        const a = getUser(actorId);
+        if (!u || !a || !manageableRoles(a.role).includes(u.role) || (a.role === "CAD" && !a.campusIds.includes(u.campusIds[0]))) return;
         pushOutbox({ channel: "email", to: `${u.name} · ${u.email}`, toUserId: u.id, body: "Subject: 2-factor sign-in reset\n\nYour 2-factor sign-in was reset by the Super Admin. You'll be asked to set it up again next time you sign in. If you didn't ask for this, contact the alumni office." });
         log({ actorId, action: "2-factor reset", target: u.name, category: "admin" });
+      },
+      /* ---------------- Annex B: badges ---------------- */
+      appointChapterLead: (userId, groupId, actorId) => {
+        const u = getUser(userId);
+        const actor = getUser(actorId);
+        if (!u || !actor || u.role !== "ALU" || u.deactivated) return { ok: false, error: "Only verified alumni can lead a group." };
+        if (actor.role === "CAD" && !actor.campusIds.includes(u.campusIds[0])) return { ok: false, error: "That alumnus is not at your campus." };
+        if (!["CAD", "GAO", "SAD"].includes(actor.role)) return { ok: false, error: "Only the Campus Admin or Group Alumni Office can appoint." };
+        const [, campusId, batch] = groupId.split(":");
+        if (campusId !== u.campusIds[0] || (groupId.startsWith("batch:") && Number(batch) !== u.batch)) return { ok: false, error: "They can only lead their own batch or campus group." };
+        setState((s) => ({
+          ...s,
+          users: s.users.map((x) =>
+            x.id === userId ? { ...x, badges: [...(x.badges ?? []).filter((b) => b.type !== "ChapterLead"), { type: "ChapterLead", status: "active", since: now(), group: groupId, by: actorId }] } : x
+          ),
+        }));
+        pushOutbox({ channel: "email", to: `${u.name} · ${u.email}`, toUserId: u.id, body: `Subject: You're now a Chapter Lead\n\nHi ${firstName(u.name)}, you've been appointed Chapter Lead for your group. You can post announcements, create group events and remove posts that break the community rules.`, link: { label: "Open batch groups", href: "/portal/groups" } });
+        log({ actorId, action: "Chapter Lead appointed", target: u.name, campusId: u.campusIds[0], category: "admin", detail: groupId });
+        return { ok: true };
+      },
+      revokeBadge: (userId, type, actorId) => {
+        const u = getUser(userId);
+        if (!u) return;
+        setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, badges: (x.badges ?? []).filter((b) => b.type !== type) } : x)) }));
+        log({ actorId, action: `${type} badge removed`, target: u.name, campusId: u.campusIds[0], category: "admin", detail: "Reversible: can be re-granted" });
+      },
+      setChapterLimit: (n, actorId) => {
+        if (!["GAO", "SAD"].includes(getUser(actorId)?.role ?? "")) return;
+        setState((s) => ({ ...s, chapterMonthlyLimit: Math.max(0, Math.min(30, Math.round(n))) }));
+        log({ actorId, action: "Chapter Lead announcement limit changed", target: `${n} per month`, category: "admin" });
+      },
+      announce: (groupId, authorId, text) => {
+        const u = getUser(authorId);
+        const cl = u?.badges?.find((b) => b.type === "ChapterLead");
+        if (!u || !cl || cl.status !== "active" || cl.group !== groupId) return { ok: false, error: "Only this group's Chapter Lead can post announcements." };
+        const month = new Date().toISOString().slice(0, 7);
+        const used = stateRef.current.posts.filter((p) => p.groupId === groupId && p.announcement && p.at.slice(0, 7) === month).length;
+        if (used >= stateRef.current.chapterMonthlyLimit) return { ok: false, error: `Monthly limit reached (${stateRef.current.chapterMonthlyLimit}). It resets on the 1st.` };
+        setState((s) => ({ ...s, posts: [{ id: uid("gp"), groupId, authorId, text, at: now(), likes: [], announcement: true }, ...s.posts] }));
+        log({ actorId: authorId, action: "Group announcement", target: groupId, campusId: u.campusIds[0], category: "community", detail: `${used + 1} of ${stateRef.current.chapterMonthlyLimit} this month` });
+        return { ok: true };
+      },
+      removePost: (postId, actorId) => {
+        const p = stateRef.current.posts.find((x) => x.id === postId);
+        const a = getUser(actorId);
+        if (!p || !a) return;
+        const cl = a.badges?.find((b) => b.type === "ChapterLead" && b.status === "active");
+        const staff = ["CAD", "GAO", "SAD"].includes(a.role);
+        if (!staff && cl?.group !== p.groupId) return;
+        setState((s) => ({ ...s, posts: s.posts.filter((x) => x.id !== postId) }));
+        log({ actorId, action: "Post removed", target: getUser(p.authorId)?.name ?? "", campusId: p.groupId.split(":")[1], category: "community", detail: staff ? "By staff" : "By Chapter Lead" });
+      },
+      sendEnquiry: (providerId, fromId, text) => {
+        const pr = getUser(providerId);
+        const from = getUser(fromId);
+        if (!pr || !from || !activeBadge(pr, "ServiceProvider") || from.role !== "ALU") return;
+        const masked = maskContacts(text).text;
+        pushOutbox({ channel: "email", to: `${pr.name} · ${pr.email}`, toUserId: pr.id, body: `Subject: Business Directory enquiry\n\n${from.name} (Batch ${from.batch}) writes: ${masked}\n\nReply from your VAA Chats.`, link: { label: "Open chats", href: "/portal/chats" } });
+        log({ actorId: fromId, action: "Business enquiry sent", target: pr.listing?.business ?? pr.name, campusId: pr.campusIds[0], category: "community" });
+      },
+      setUserFlags: (userId, flags) => {
+        setState((s) => ({ ...s, users: s.users.map((u) => (u.id === userId ? { ...u, ...flags } : u)) }));
+        if (flags.mczGuide !== undefined) log({ actorId: userId, action: flags.mczGuide ? "Opted in as MyCareerZ guide" : "Opted out as MyCareerZ guide", target: getUser(userId)?.name ?? "", category: "consent" });
+      },
+      switchContext: (toUserId) => {
+        const cur = stateRef.current.currentUserId ? getUser(stateRef.current.currentUserId) : undefined;
+        if (!cur || cur.linkedUserId !== toUserId) return;
+        setState((s) => ({ ...s, currentUserId: toUserId }));
+        log({ actorId: cur.id, action: "Switched role context", target: `${cur.role} → ${getUser(toUserId)?.role}`, category: "auth" });
+      },
+
+      /* ---------------- Annex B: commerce and documents ---------------- */
+      donate: (userId, amount, fund, wall) => {
+        const u = getUser(userId);
+        if (!u || !["ALU", "ALP"].includes(u.role)) return { ok: false, error: u?.role === "PAR" ? "Parents can buy services but can't donate (cond. 15)." : "Only alumni can donate." };
+        if (!(amount >= 100)) return { ok: false, error: "Minimum donation is ₹100." };
+        const id = uid("pay");
+        const ref = `RZP-${80000 + Math.floor(Math.random() * 19999)}`;
+        const at = now();
+        setState((s) => ({
+          ...s,
+          payments: [{ id, kind: "donation", payerId: userId, campusId: u.campusIds[0], amount, at, ref, status: "paid", reconciled: false, fund }, ...s.payments],
+          users: s.users.map((x) =>
+            x.id === userId
+              ? { ...x, donorWall: wall, badges: activeBadge(x, "Donor") ? x.badges : [...(x.badges ?? []).filter((b) => b.type !== "Donor"), { type: "Donor", status: "active", since: at }] }
+              : x
+          ),
+        }));
+        pushOutbox({ channel: "email", to: `${u.name} · ${u.email}`, toUserId: u.id, body: `Subject: Thank you – receipt ${ref}\n\nWe received ₹${amount.toLocaleString("en-IN")} for the ${fund}. Your 80G receipt is attached. You can see all your gifts under Give → Giving history.` });
+        log({ actorId: userId, action: "Donation received", target: `₹${amount.toLocaleString("en-IN")} · ${fund}`, campusId: u.campusIds[0], category: "admin", detail: ref });
+        return { ok: true };
+      },
+      requestDocument: (userId, doc, copies, delivery) => {
+        const u = getUser(userId);
+        if (!u || !["ALU", "ALP"].includes(u.role) || copies < 1 || copies > 5) return undefined;
+        const id = uid("doc");
+        const fee = DOC_FEES[doc] * copies + (delivery === "Courier" ? COURIER_FEE : 0);
+        setState((s) => ({ ...s, docRequests: [{ id, userId, campusId: u.campusIds[0], doc, copies, fee, delivery, at: now(), status: "awaiting_payment" }, ...s.docRequests] }));
+        log({ actorId: userId, action: "Document requested", target: `${doc} × ${copies}`, campusId: u.campusIds[0], category: "admin" });
+        return id;
+      },
+      payDocument: (reqId, userId) => {
+        const r = stateRef.current.docRequests.find((x) => x.id === reqId);
+        if (!r || r.userId !== userId || r.status !== "awaiting_payment") return;
+        const id = uid("pay");
+        const ref = `RZP-${80000 + Math.floor(Math.random() * 19999)}`;
+        setState((s) => ({
+          ...s,
+          payments: [{ id, kind: "doc_fee", payerId: userId, campusId: r.campusId, amount: r.fee, at: now(), ref, status: "paid", reconciled: false, docRequestId: reqId }, ...s.payments],
+          docRequests: s.docRequests.map((x) => (x.id === reqId ? { ...x, status: "paid", paymentId: id } : x)),
+        }));
+        log({ actorId: userId, action: "Document fee paid", target: `${r.doc} · ₹${r.fee}`, campusId: r.campusId, category: "admin", detail: ref });
+      },
+      advanceDocument: (reqId, status, actorId, note) => {
+        const r = stateRef.current.docRequests.find((x) => x.id === reqId);
+        const a = getUser(actorId);
+        if (!r || !a || !["CAD", "GAO", "SAD"].includes(a.role) || (a.role === "CAD" && !a.campusIds.includes(r.campusId))) return;
+        if (r.status === "awaiting_payment") return; // fee first (cond. 14)
+        setState((s) => ({ ...s, docRequests: s.docRequests.map((x) => (x.id === reqId ? { ...x, status, handledBy: actorId, note: note ?? x.note } : x)) }));
+        const u = getUser(r.userId);
+        const msg: Record<string, string> = { processing: "is being prepared", ready: r.delivery === "Collect at campus" ? "is ready to collect from the campus office" : "is ready", dispatched: r.delivery === "Courier" ? "has been sent by courier" : "has been emailed to you" };
+        if (u && msg[status]) pushOutbox({ channel: "email", to: `${u.name} · ${u.email}`, toUserId: u.id, body: `Subject: Your ${r.doc}\n\nYour ${r.doc} ${msg[status]}.${note ? ` ${note}` : ""}` });
+        log({ actorId, action: "Document request updated", target: `${u?.name} · ${r.doc}`, campusId: r.campusId, category: "admin", detail: status });
+      },
+      refundPayment: (paymentId, reason, actorId) => {
+        const p = stateRef.current.payments.find((x) => x.id === paymentId);
+        const a = getUser(actorId);
+        if (!p || !a) return { ok: false, error: "Not found." };
+        if (!can(stateRef.current, a, "finance.refund") || (a.role === "FIN" && !a.campusIds.includes(p.campusId))) return { ok: false, error: "Only Finance (for their campuses) or the Super Admin can refund." };
+        if (p.status === "refunded") return { ok: false, error: "Already refunded." };
+        if (reason.trim().length < 5) return { ok: false, error: "Give a reason." };
+        setState((s) => ({
+          ...s,
+          payments: s.payments.map((x) => (x.id === paymentId ? { ...x, status: "refunded", reconciled: false, refund: { by: actorId, at: now(), reason: reason.trim() } } : x)),
+          docRequests: p.docRequestId ? s.docRequests.map((d) => (d.id === p.docRequestId ? { ...d, status: "awaiting_payment", paymentId: undefined } : d)) : s.docRequests,
+          bookings: p.bookingId ? s.bookings.map((b) => (b.id === p.bookingId ? { ...b, status: "cancelled" } : b)) : s.bookings,
+        }));
+        const payer = getUser(p.payerId);
+        if (payer) pushOutbox({ channel: "email", to: `${payer.name} · ${payer.email}`, toUserId: payer.id, body: `Subject: Refund of ₹${p.amount.toLocaleString("en-IN")}\n\nWe've refunded ${p.ref}. It reaches your account in 5–7 working days. Reason: ${reason.trim()}` });
+        log({ actorId, action: "Payment refunded", target: `${p.ref} · ₹${p.amount}`, campusId: p.campusId, category: "admin", detail: reason.trim() });
+        return { ok: true };
+      },
+      reconcilePayments: (ids, actorId) => {
+        const a = getUser(actorId);
+        if (!a || !can(stateRef.current, a, "finance.refund")) return;
+        const okIds = new Set(stateRef.current.payments.filter((p) => ids.includes(p.id) && (a.role !== "FIN" || a.campusIds.includes(p.campusId))).map((p) => p.id));
+        setState((s) => ({ ...s, payments: s.payments.map((p) => (okIds.has(p.id) ? { ...p, reconciled: true } : p)) }));
+        log({ actorId, action: "Payments reconciled", target: `${okIds.size} payment${okIds.size === 1 ? "" : "s"}`, category: "admin" });
+      },
+
+      /* ---------------- Annex B: MyCareerZ ---------------- */
+      bookMcz: ({ studentId, bookedBy, topic, slot }) => {
+        const st = stateRef.current;
+        const stu = getUser(studentId);
+        const by = getUser(bookedBy);
+        if (!stu || !by) return { ok: false, error: "Not found." };
+        if (!hasConsent(st, studentId, "mcz")) return { ok: false, error: "A parent must switch on MyCareerZ sharing first (cond. 17)." };
+        const isParent = by.role === "PAR" && (stu.parentIds ?? []).includes(by.id);
+        if (!(isParent || by.id === studentId)) return { ok: false, error: "Only the student or their parent can book." };
+        if (!topic.trim() || !slot) return { ok: false, error: "Pick a topic and a time." };
+        const id = uid("bk");
+        const payId = isParent ? uid("pay") : undefined;
+        const ref = `RZP-${80000 + Math.floor(Math.random() * 19999)}`;
+        setState((s) => ({
+          ...s,
+          bookings: [{ id, studentId, bookedBy, campusId: stu.campusIds[0], topic: topic.trim(), slot, status: "requested", paymentId: payId, at: now() }, ...s.bookings],
+          payments: payId ? [{ id: payId, kind: "mcz_session", payerId: bookedBy, forUserId: studentId, campusId: stu.campusIds[0], amount: MCZ_SESSION_FEE, at: now(), ref, status: "paid", reconciled: false, bookingId: id }, ...s.payments] : s.payments,
+        }));
+        st.users
+          .filter((u) => u.role === "MCZ" && !u.deactivated && u.campusIds.includes(stu.campusIds[0]))
+          .forEach((m) => pushOutbox({ channel: "email", to: `${m.name} · ${m.email}`, toUserId: m.id, body: `Subject: New session request\n\n${firstName(stu.name)} (Class ${stu.className}, ${campusNameFor(stu.campusIds[0])}) asked for a session on "${topic.trim()}".`, link: { label: "Open MyCareerZ", href: "/portal/mcz" } }));
+        log({ actorId: bookedBy, action: isParent ? "MyCareerZ session booked and paid" : "MyCareerZ session requested", target: stu.name, campusId: stu.campusIds[0], category: "consent", detail: isParent ? `₹${MCZ_SESSION_FEE} · ${ref}` : undefined });
+        return { ok: true };
+      },
+      referToMcz: (studentId, teacherId, topic, note) => {
+        const stu = getUser(studentId);
+        const t = getUser(teacherId);
+        if (!stu || !t || t.role !== "TCH" || !t.campusIds.includes(stu.campusIds[0])) return { ok: false, error: "You can only refer students at your campus." };
+        if (!hasConsent(stateRef.current, studentId, "mcz")) return { ok: false, error: "The parent hasn't switched on MyCareerZ sharing. Ask them first." };
+        if (stateRef.current.bookings.some((b) => b.studentId === studentId && ["referred", "requested", "confirmed"].includes(b.status))) return { ok: false, error: "This student already has an open MyCareerZ referral or booking." };
+        setState((s) => ({ ...s, bookings: [{ id: uid("bk"), studentId, bookedBy: teacherId, campusId: stu.campusIds[0], topic: topic.trim() || "Career guidance", slot: "", status: "referred", note: note.trim() || undefined, at: now() }, ...s.bookings] }));
+        log({ actorId: teacherId, action: "Referred to MyCareerZ", target: stu.name, campusId: stu.campusIds[0], category: "consent" });
+        return { ok: true };
+      },
+      updateBooking: (id, status, actorId, slot) => {
+        const b = stateRef.current.bookings.find((x) => x.id === id);
+        const a = getUser(actorId);
+        if (!b || !a || a.role !== "MCZ" || !a.campusIds.includes(b.campusId)) return;
+        setState((s) => ({ ...s, bookings: s.bookings.map((x) => (x.id === id ? { ...x, status, counsellorId: actorId, slot: slot ?? x.slot } : x)) }));
+        const stu = getUser(b.studentId);
+        if (stu && status === "confirmed")
+          (stu.parentIds ?? []).map((pid) => getUser(pid)).forEach((p) => {
+            if (p) pushOutbox({ channel: "whatsapp", to: `${p.name} · ${maskMobile(p.mobile)}`, toUserId: p.id, body: `${childTag(stu)} MyCareerZ session on "${b.topic}" confirmed for ${new Date(slot ?? b.slot).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.` });
+          });
+        log({ actorId, action: "MyCareerZ booking updated", target: stu?.name ?? "", campusId: b.campusId, category: "consent", detail: status });
       },
       markInterest: (jobId, userId, note) => {
         const j = stateRef.current.jobs.find((x) => x.id === jobId);
@@ -1257,6 +1497,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
       },
       createEvent: (e) => {
+        const by = getUser(e.createdBy);
+        if (!by) return;
+        if (by.role === "ALU") {
+          const cl = by.badges?.find((b) => b.type === "ChapterLead" && b.status === "active");
+          if (!cl || !e.groupId || cl.group !== e.groupId) return; // cond. 11
+        } else if (by.role === "MCZ") {
+          if (e.campusIds === "all" || e.campusIds.some((c) => !by.campusIds.includes(c)) || e.kind !== "Webinar") return; // cond. 12
+        } else if (!["CAD", "GAO", "SAD"].includes(by.role)) return;
         setState((s) => ({ ...s, events: [{ ...e, id: uid("ev"), createdAt: now(), rsvps: [] }, ...s.events] }));
         log({ actorId: e.createdBy, action: "Event created", target: e.title, campusId: e.campusIds === "all" ? undefined : e.campusIds[0], category: "community", detail: `${e.kind} · for ${e.audience.join(", ")}` });
       },

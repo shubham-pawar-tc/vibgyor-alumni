@@ -64,7 +64,13 @@ function Events() {
   const kids = me.role === "PAR" ? (me.childIds ?? []).map((id) => state.users.find((u) => u.id === id)).filter((u): u is NonNullable<typeof u> => !!u) : [];
   const myCampuses = me.role === "PAR" ? Array.from(new Set([...kids.flatMap((k) => k.campusIds), ...me.campusIds])) : [me.campusIds[0]];
   const forKids = (e: VaaEvent) => (e.campusIds === "all" ? [] : kids.filter((k) => k.campusIds.some((c) => (e.campusIds as string[]).includes(c))));
-  const mineList = state.events.filter((e) => e.audience.includes(role) && (e.campusIds === "all" || e.campusIds.some((c) => myCampuses.includes(c))));
+  const mineList = state.events.filter(
+    (e) =>
+      e.audience.includes(role) &&
+      (e.campusIds === "all" || e.campusIds.some((c) => myCampuses.includes(c))) &&
+      // Chapter Lead batch events: only that batch
+      (!e.groupId?.startsWith("batch:") || Number(e.groupId.split(":")[2]) === me.batch)
+  );
   const list = mineList
     .filter((e) => tab === "upcoming" || e.rsvps.some((r) => r.userId === me.id && r.status !== "no"))
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));

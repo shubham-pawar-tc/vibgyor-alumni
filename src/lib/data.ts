@@ -1,5 +1,9 @@
 import type {
+  Booking,
   Capability,
+  DocRequest,
+  DocType,
+  Payment,
   DataRequest,
   EngagementEntry,
   MasterItem,
@@ -380,7 +384,10 @@ export const seedUsers: User[] = [
     company: "Flipkart",
     title: "Director, Product",
     city: "Bengaluru",
-    badges: [],
+    badges: [
+      { type: "Recruiter", status: "active", since: "2025-07-01T00:00:00.000Z", by: "cad1" },
+      { type: "ChapterLead", status: "active", since: "2025-09-01T00:00:00.000Z", group: "batch:c01:2006", by: "cad1" },
+    ],
   },
   // Alumni – Pending
   {
@@ -502,6 +509,62 @@ seedUsers.push({
   parentIds: [],
 });
 
+/* §5.4 one person, two roles: Sheryl is the Malad counsellor and a 2004 Malad alumna */
+seedUsers.push({
+  id: "aluT1",
+  name: "Sheryl Fernandes",
+  role: "ALU",
+  campusIds: ["c01"],
+  email: "sheryl.f.alumni@example.com",
+  mobile: "+91 98200 00012",
+  batch: 2004,
+  title: "Career Counsellor",
+  company: "VIBGYOR High, Malad",
+  city: "Mumbai",
+  badges: [{ type: "Donor", status: "active", since: "2026-03-01T00:00:00.000Z" }],
+  donorWall: true,
+  linkedUserId: "tch1",
+});
+{
+  const t = seedUsers.find((u) => u.id === "tch1");
+  if (t) t.linkedUserId = "aluT1";
+  // Seed job posters hold the Recruiter badge (cond. 9)
+  for (const id of ["alu4", "alu5"]) {
+    const u = seedUsers.find((x) => x.id === id);
+    if (u) u.badges = [...(u.badges ?? []), { type: "Recruiter", status: "active", since: "2025-05-01T00:00:00.000Z", by: "cad1" }];
+  }
+  // A Service Provider (C9) and a Donor
+  const sp = seedUsers.find((u) => u.id === "alu2");
+  if (sp) {
+    sp.badges = [...(sp.badges ?? []), { type: "ServiceProvider", status: "active", since: "2025-11-10T00:00:00.000Z", by: "cad1" }];
+    sp.listing = { business: "Rao & Associates", category: "Finance & tax", city: "Pune", description: "Tax filing and NRI tax advice for individuals and small firms. 10% off for VIBGYOR alumni." };
+  }
+  const dn = seedUsers.find((u) => u.id === "alu1");
+  if (dn) {
+    dn.badges = [...(dn.badges ?? []), { type: "Donor", status: "active", since: "2026-01-12T00:00:00.000Z" }];
+    dn.donorWall = true;
+    dn.mczGuide = true;
+  }
+}
+
+export const seedPayments: Payment[] = [
+  { id: "pay1", kind: "donation", payerId: "alu1", campusId: "c01", amount: 25000, at: "2026-01-12T10:00:00.000Z", ref: "RZP-81231", status: "paid", reconciled: true, fund: "Scholarship fund" },
+  { id: "pay2", kind: "donation", payerId: "aluT1", campusId: "c01", amount: 5000, at: "2026-03-01T09:30:00.000Z", ref: "RZP-81702", status: "paid", reconciled: false, fund: "Campus library" },
+  { id: "pay3", kind: "doc_fee", payerId: "alu5", campusId: "c01", amount: 650, at: ago(30), ref: "RZP-82011", status: "paid", reconciled: false, docRequestId: "doc1" },
+  { id: "pay4", kind: "mcz_session", payerId: "parR1", forUserId: "stuR1", campusId: "c01", amount: 2500, at: ago(52), ref: "RZP-82044", status: "paid", reconciled: false, bookingId: "bk1" },
+  { id: "pay5", kind: "doc_fee", payerId: "alu2", campusId: "c02", amount: 300, at: ago(300), ref: "RZP-79110", status: "refunded", reconciled: true, refund: { by: "fin1", at: ago(250), reason: "Duplicate payment" } },
+];
+
+export const seedDocRequests: DocRequest[] = [
+  { id: "doc1", userId: "alu5", campusId: "c01", doc: "Transfer certificate", copies: 1, fee: 650, delivery: "Courier", at: ago(31), status: "paid", paymentId: "pay3" },
+  { id: "doc2", userId: "alu7", campusId: "c01", doc: "Mark sheet copy", copies: 2, fee: 600, delivery: "Email (scanned)", at: ago(8), status: "awaiting_payment" },
+];
+
+export const seedBookings: Booking[] = [
+  { id: "bk1", studentId: "stuR1", bookedBy: "parR1", campusId: "c01", topic: "UK university shortlist", slot: "2026-12-04T11:00:00.000Z", status: "confirmed", counsellorId: "mcz1", paymentId: "pay4", at: ago(52) },
+  { id: "bk2", studentId: "stuR3", bookedBy: "tch1", campusId: "c01", topic: "Design colleges in India", slot: "", status: "referred", note: "Strong portfolio; parents keen on NID / Srishti.", at: ago(20) },
+];
+
 /* Personas shown in the role switcher and login page */
 export const personas: { userId: string; blurb: string }[] = [
   { userId: "stu1", blurb: "Class 11 · waiting for parent consent" },
@@ -511,7 +574,7 @@ export const personas: { userId: string; blurb: string }[] = [
   { userId: "alu1", blurb: "Mentor · Imperial College London" },
   { userId: "alu7", blurb: "Verified alumnus · not yet a mentor" },
   { userId: "alp1", blurb: "Signed up · awaiting verification" },
-  { userId: "tch1", blurb: "Teacher · Malad" },
+  { userId: "tch1", blurb: "Teacher · Malad (also an alumna)" },
   { userId: "cad1", blurb: "Campus Admin · Malad (pilot)" },
   { userId: "gao1", blurb: "Group office · all 39 campuses" },
   { userId: "fin1", blurb: "Finance · 2 campuses" },
@@ -688,6 +751,20 @@ export const waTemplates = [
 /* ------------------------------ Seed state ------------------------------ */
 
 const seedConsents: Consent[] = [
+  // MyCareerZ consent (MCZ condition 7): two Malad students
+  ...[0, 2].map(
+    (i): Consent => ({
+      id: `conRz${i}`,
+      studentId: `stuR${i + 1}`,
+      givenBy: `parR${i + 1}`,
+      purpose: "mcz",
+      status: "granted",
+      noticeVersion: NOTICE_VERSION,
+      channel: "SMS OTP",
+      otpRef: `OTP-${42000 + i}`,
+      at: ago(200 + i * 10),
+    })
+  ),
   {
     id: "con1",
     studentId: "stu2",
@@ -1430,7 +1507,35 @@ export const capabilityLabels: Record<Capability, string> = {
   "masters.edit": "Edit master lists",
   "requests.handle": "Handle data & privacy requests",
   "engagement.log": "Log alumni interactions",
+  "finance.view": "See payments and finance dashboards",
+  "finance.refund": "Refund and reconcile payments",
+  "mcz.students": "See consented students (MyCareerZ)",
 };
+
+/**
+ * §7 guard rails: the most any role can ever be given, whatever the Super Admin ticks.
+ * A capability not listed here can go to any staff role.
+ */
+export const HARD_LIMITS: Partial<Record<Capability, Role[]>> = {
+  "chats.read": ["CAD", "GAO", "SAD"],
+  "records.export": ["CAD", "GAO", "SAD", "FIN"],
+  "broadcast.send": ["CAD", "GAO", "SAD"],
+  "finance.refund": ["FIN", "SAD"],
+  "finance.view": ["FIN", "SAD", "GAO"],
+  "mcz.students": ["MCZ"],
+  "duplicates.merge": ["GAO", "SAD"],
+};
+
+export const DOC_FEES: Record<DocType, number> = {
+  "Transfer certificate": 500,
+  "Bonafide certificate": 200,
+  "Mark sheet copy": 300,
+  "Migration certificate": 750,
+};
+export const COURIER_FEE = 150;
+export const MCZ_SESSION_FEE = 2500;
+export const DONATION_FUNDS = ["Scholarship fund", "Campus library", "Sports facilities", "Where most needed"];
+export const SERVICE_CATEGORIES = ["Legal", "Finance & tax", "Health", "Design & media", "Education & coaching", "Technology", "Real estate", "Food & events", "Other"];
 
 export const seedPermissions: Record<Capability, Role[]> = {
   "records.view": ["CAD", "GAO", "SAD"],
@@ -1444,9 +1549,12 @@ export const seedPermissions: Record<Capability, Role[]> = {
   "masters.edit": ["GAO", "SAD"],
   "requests.handle": ["CAD", "GAO", "SAD"],
   "engagement.log": ["TCH", "CAD", "GAO"],
+  "finance.view": ["FIN", "SAD"],
+  "finance.refund": ["FIN", "SAD"],
+  "mcz.students": ["MCZ"],
 };
 
-export const STATE_VERSION = 7;
+export const STATE_VERSION = 8;
 
 export function createSeedState(): State {
   return {
@@ -1497,6 +1605,10 @@ export function createSeedState(): State {
     dataRequests: structuredClone(seedDataRequests),
     masters: structuredClone(seedMasters),
     permissions: structuredClone(seedPermissions),
+    payments: structuredClone(seedPayments),
+    docRequests: structuredClone(seedDocRequests),
+    bookings: structuredClone(seedBookings),
+    chapterMonthlyLimit: 4,
   };
 }
 

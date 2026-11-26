@@ -3,12 +3,12 @@
 import { Lock, ShieldCheck } from "lucide-react";
 import { AdminOnly } from "@/components/admin";
 import { Callout, Card, CardHeader, Empty, PageHeader, Pill, Req } from "@/components/ui";
-import { capabilityLabels, roleLabels } from "@/lib/data";
+import { capabilityLabels, HARD_LIMITS, roleLabels } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import type { Capability, Role } from "@/lib/types";
 
 const ROLES: Role[] = ["TCH", "CAD", "GAO", "FIN", "MCZ", "SAD"];
-const LIVE: Capability[] = ["records.export", "records.edit", "duplicates.merge", "masters.edit", "requests.handle", "content.moderate", "engagement.log"];
+const LIVE: Capability[] = ["records.view", "records.export", "records.edit", "verify", "chats.read", "broadcast.send", "duplicates.merge", "masters.edit", "requests.handle", "content.moderate", "engagement.log", "finance.view", "finance.refund", "mcz.students"];
 const FIXED = [
   "Students see and contact only Mentor-badged alumni (CS-4)",
   "Contact details are masked in student chats (CS-6)",
@@ -16,6 +16,7 @@ const FIXED = [
   "Every staff view or export of student data is logged (CS-16)",
   "Staff accounts always use 2-factor login (A13)",
   "Campus Admins only see their own campus (A6)",
+  "🔒 cells are §7 guard rails: e.g. only Finance and the Super Admin refund; only MyCareerZ sees consented students; Finance and MyCareerZ never read chats",
 ];
 
 export default function PermissionsPage() {
@@ -66,7 +67,14 @@ function Permissions() {
                 </td>
                 {ROLES.map((r) => {
                   const on = state.permissions[cap].includes(r);
-                  const locked = r === "SAD" && cap === "requests.handle";
+                  const guard = !!HARD_LIMITS[cap] && !HARD_LIMITS[cap]!.includes(r);
+                  const locked = (r === "SAD" && cap === "requests.handle") || guard;
+                  if (guard)
+                    return (
+                      <td key={r} className="px-2 py-2.5 text-center" title="Guard rail (§7): this role can never have this">
+                        <Lock className="mx-auto h-3.5 w-3.5 text-muted" aria-label={`${roleLabels[r]}: never allowed`} />
+                      </td>
+                    );
                   return (
                     <td key={r} className="px-2 py-2.5 text-center">
                       <input

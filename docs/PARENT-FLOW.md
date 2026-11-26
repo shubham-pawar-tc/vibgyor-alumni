@@ -284,6 +284,12 @@ Demo: log in as **Lakshmi Iyer** (`9819377421`, Diya's mother) → **Mentor chat
 
 ---
 
+## 8b. Flow 8: MyCareerZ sessions
+
+Menu **MyCareerZ** (tab per child). With MyCareerZ consent ON the parent can **Book and pay ₹2,500** (demo payment); the MyCareerZ counsellor confirms a time and the parent gets a WhatsApp starting `[Child · Class N]`. With consent OFF the page links to the Consent centre. Parents **cannot donate** (Give is closed to them, cond. 15) but can buy services like this.
+
+---
+
 ## 9. Student status lifecycle (driven by the parent)
 
 ```mermaid
