@@ -69,7 +69,12 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { href: "/portal/profile", label: "My profile", icon: UserRound },
       ];
     case "PAR":
-      return [home, { href: "/portal/consent", label: "Consent centre", icon: ShieldCheck }, { href: "/portal/events", label: "Events", icon: CalendarDays }];
+      return [
+        home,
+        { href: "/portal/consent", label: "Consent centre", icon: ShieldCheck },
+        { href: "/portal/child-chats", label: "Mentor chats", icon: MessagesSquare },
+        { href: "/portal/events", label: "Events", icon: CalendarDays },
+      ];
     case "ALP":
       return [home, { href: "/portal/profile", label: "My profile", icon: UserRound }, { href: "/portal/directory", label: "Alumni directory", icon: Lock }];
     case "ALU":

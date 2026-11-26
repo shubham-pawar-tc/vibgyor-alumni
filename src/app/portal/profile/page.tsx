@@ -429,7 +429,7 @@ function StudentProfile({ me }: { me: User }) {
             {parents.map((pa) => (
               <div key={pa.id} className="mt-3 rounded-xl bg-surface-2 px-3 py-2.5 text-[14px]">
                 <p className="font-semibold">{pa.name}</p>
-                <p className="text-muted">Gives consent and can see your activity</p>
+                <p className="text-muted">Gives consent, can read your mentor conversations and can join them</p>
               </div>
             ))}
           </Card>

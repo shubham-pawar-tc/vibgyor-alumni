@@ -143,7 +143,7 @@ function MessagesInner() {
 
             <div className="flex items-center gap-2 bg-primary-soft/60 px-4 py-2 text-[13px] font-medium text-primary">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-              <span>Recorded and visible to the {campusName(active.campusId).split(",")[0]} alumni office · messages can&apos;t be deleted · contact details are hidden</span>
+              <span>Recorded and visible to the {campusName(active.campusId).split(",")[0]} alumni office and {me.role === "STU" ? "your parent" : "the student's parent"} · messages can&apos;t be deleted · contact details are hidden</span>
             </div>
 
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
@@ -157,6 +157,11 @@ function MessagesInner() {
                   <div key={m.id} className={cn("group flex gap-2.5", mine && "flex-row-reverse")}>
                     {!mine && <Avatar name={sender?.name ?? "?"} size={30} className="mt-1" />}
                     <div className={cn("max-w-[78%]", mine && "items-end text-right")}>
+                      {!mine && sender?.role === "PAR" && (
+                        <p className="mb-0.5 text-[12px] font-semibold text-muted">
+                          {sender.name} · {me.role === "STU" ? "your parent" : `${student ? firstName(student.name) + "'s " : ""}parent`}
+                        </p>
+                      )}
                       <div className={cn("inline-block rounded-2xl px-3.5 py-2.5 text-left text-[14px] leading-relaxed", mine ? "rounded-br-md bg-primary text-primary-fg" : "rounded-bl-md bg-surface-2")}>
                         <MaskedText text={m.text} />
                       </div>

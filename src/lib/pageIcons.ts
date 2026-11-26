@@ -52,6 +52,7 @@ const map: [string, LucideIcon, string][] = [
   ["/portal/groups", UsersRound, G],
   ["/portal/chats", MessageCircle, B],
   ["/portal/messages", MessagesSquare, V],
+  ["/portal/child-chats", MessagesSquare, V],
   ["/portal/jobs", Briefcase, O],
   ["/portal/events", CalendarDays, Y],
   ["/portal/invite", Send, G],

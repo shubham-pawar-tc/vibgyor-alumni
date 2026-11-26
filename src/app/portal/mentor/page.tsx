@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/utils";
 
 const code = [
   "I will keep every conversation with students on the VIBGYOR platform and never ask for or share phone numbers, emails or social media.",
-  "I understand all messages with students are recorded and can be reviewed by the campus alumni office.",
+  "I understand all messages with students are recorded and can be read by the campus alumni office and the student's parent, who may also join the conversation.",
   "I will not meet a student in person or by video outside sessions booked through the platform.",
   "I will give honest guidance and never sell or promote paid services to students.",
   "I will report anything that worries me about a student's safety to the campus alumni office straight away.",

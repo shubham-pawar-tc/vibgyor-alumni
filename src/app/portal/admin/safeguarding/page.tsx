@@ -219,7 +219,7 @@ function Inner() {
                       <Avatar name={u?.name ?? "?"} size={30} />
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] text-muted">
-                          <span className="font-semibold text-text">{u?.name}</span> · {u?.role === "STU" ? "student" : "mentor"} · {formatDateTime(m.at)}
+                          <span className="font-semibold text-text">{u?.name}</span> · {u?.role === "STU" ? "student" : u?.role === "PAR" ? "parent" : "mentor"} · {formatDateTime(m.at)}
                         </p>
                         <div className={cn("mt-1 rounded-xl px-3.5 py-2.5 text-[14.5px] leading-relaxed", m.maskedKinds.length ? "bg-warning-soft/60 ring-1 ring-warning/30" : "bg-surface-2")}>
                           <MaskedText text={m.text} />

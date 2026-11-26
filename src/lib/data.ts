@@ -113,7 +113,7 @@ export const consentPurposes = {
     title: "Talk to approved alumni mentors",
     short: "Mentor contact",
     required: false,
-    body: "Let your child message alumni who hold the Mentor badge and have signed VIBGYOR's safeguarding code. Every message is recorded, visible to the campus alumni office, and phone numbers or emails are hidden automatically.",
+    body: "Let your child message alumni who hold the Mentor badge and have signed VIBGYOR's safeguarding code. Every message is recorded and visible to the campus alumni office and to you: you can read your child's mentor conversations and join them to message the mentor yourself, from your Parent portal. Phone numbers or emails are hidden automatically.",
   },
   mcz: {
     title: "Share career preferences with MyCareerZ",

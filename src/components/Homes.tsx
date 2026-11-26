@@ -267,9 +267,14 @@ export function ParentHome({ me }: { me: User }) {
                   Review consent request{kids.length > 1 ? ` for ${firstName(k.name)}` : ""}
                 </Button>
               ) : (
-                <Button href={`/portal/consent?child=${k.id}`} variant="secondary" className="mt-5 w-full">
-                  Manage {kids.length > 1 ? `${firstName(k.name)}'s ` : ""}permissions
-                </Button>
+                <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                  <Button href={`/portal/consent?child=${k.id}`} variant="secondary" className="w-full">
+                    Manage {kids.length > 1 ? `${firstName(k.name)}'s ` : ""}permissions
+                  </Button>
+                  <Button href={`/portal/child-chats?child=${k.id}`} variant="secondary" className="w-full">
+                    Mentor chats ({state.conversations.filter((c) => c.studentId === k.id).length})
+                  </Button>
+                </div>
               )}
             </Card>
           );
@@ -280,6 +285,7 @@ export function ParentHome({ me }: { me: User }) {
           <ul className="mt-3 space-y-2.5 text-[14.5px] text-muted">
             <li>• Only approved alumni mentors can be contacted</li>
             <li>• All messages are recorded and reviewed by the campus</li>
+            <li>• You can read your child&apos;s mentor conversations and message the mentor yourself</li>
             <li>• Phone numbers, emails and links are hidden automatically</li>
             <li>• No advertising or tracking for under-18s</li>
           </ul>

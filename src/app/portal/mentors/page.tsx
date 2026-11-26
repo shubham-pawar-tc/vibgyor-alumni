@@ -97,7 +97,7 @@ export default function MentorsPage() {
       />
 
       <Callout tone="safe" className="mb-5" title="You'll only ever see approved mentors">
-        Every mentor is a verified VIBGYOR alumnus who has signed the safeguarding code. Conversations stay on the platform and are visible to your campus alumni office.
+        Every mentor is a verified VIBGYOR alumnus who has signed the safeguarding code. Conversations stay on the platform and are visible to your campus alumni office and your parent.
       </Callout>
 
       <Card className="mb-5 p-4">

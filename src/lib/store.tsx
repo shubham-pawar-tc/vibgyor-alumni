@@ -460,16 +460,36 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
         // Notify the other party (in-app/push simulation)
         if (conv) {
-          const otherId = senderId === conv.studentId ? conv.mentorId : conv.studentId;
-          const other = getUser(otherId);
-          if (other && other.role !== "STU") {
-            pushOutbox({
-              channel: "push",
-              to: other.name,
-              toUserId: other.id,
-              body: `New message from ${getUser(senderId)?.name} (student) · open the VAA app to reply`,
-              link: { label: "Open messages", href: `/portal/messages?c=${convId}` },
-            });
+          const sender = getUser(senderId);
+          const stu = getUser(conv.studentId);
+          if (senderId !== conv.mentorId) {
+            // student or parent wrote → tell the mentor
+            const mentor = getUser(conv.mentorId);
+            const who = sender?.role === "PAR" ? `${sender.name} (${stu ? firstName(stu.name) + "'s " : ""}parent)` : `${sender?.name} (student)`;
+            if (mentor)
+              pushOutbox({
+                channel: "push",
+                to: mentor.name,
+                toUserId: mentor.id,
+                body: `New message from ${who} · open the VAA app to reply`,
+                link: { label: "Open messages", href: `/portal/messages?c=${convId}` },
+              });
+          } else {
+            // mentor wrote → tell any parent who has joined this conversation
+            const joined = new Set(stateRef.current.messages.filter((m) => m.convId === convId).map((m) => m.senderId));
+            (stu?.parentIds ?? [])
+              .filter((pid) => joined.has(pid))
+              .map((pid) => getUser(pid))
+              .forEach((p) => {
+                if (!p || !stu) return;
+                pushOutbox({
+                  channel: "push",
+                  to: p.name,
+                  toUserId: p.id,
+                  body: `${childTag(stu)} ${sender?.name} (mentor) replied in ${firstName(stu.name)}'s conversation`,
+                  link: { label: "Open mentor chats", href: `/portal/child-chats?child=${stu.id}` },
+                });
+              });
           }
         }
       },
