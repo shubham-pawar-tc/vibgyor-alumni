@@ -157,7 +157,7 @@ function Content() {
                   <div className="mt-3">
                     <div className="flex justify-between text-[13.5px]">
                       <span className="text-muted">
-                        {seats} going · {e.rsvps.filter((r) => r.status === "maybe").length} maybe
+                        {seats} going · {e.rsvps.filter((r) => r.status === "maybe").length} maybe{e.online ? ` · ${e.attended?.length ?? 0} joined online` : ""}
                       </span>
                       <span className="font-semibold tabular-nums">{Math.round((seats / e.capacity) * 100)}% full</span>
                     </div>

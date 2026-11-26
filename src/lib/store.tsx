@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { consentPurposes, createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
+import { campusName as campusNameFor, consentPurposes, createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
 import { maskContacts } from "./mask";
 import type {
   Capability,
@@ -42,6 +42,33 @@ export function latestConsent(s: State, studentId: string, purpose: ConsentPurpo
 }
 
 /** A6: does this user's role hold a capability in the (editable) permissions matrix? */
+/** Default onboarding message. Placeholders: {{first_name}}, {{login_id}}, {{login_link}}, {{campus}}, {{batch}}. */
+export const LOGIN_INVITE_TEMPLATE = `Hi {{first_name}},
+
+Your VIBGYOR Alumni Association profile ({{campus}}, Batch {{batch}}) is ready. Sign in here: {{login_link}}
+
+How to sign in (no password needed):
+1. Open the link above, or go to vaa.vibgyor.in/login
+2. Your login ID is {{login_id}} (already filled in if you use the link)
+3. Tap "Send code" and enter the 6-digit code we send you
+4. Check your details, set your privacy, and say hello to your batch
+
+We'll never ask for a password or the code over phone or email.
+
+VIBGYOR Alumni Office`;
+
+export function loginInviteBody(template: string, u: User) {
+  const link = `https://vaa.vibgyor.in/login?id=${encodeURIComponent(u.email)}`;
+  let body = template
+    .replace(/{{first_name}}/g, firstName(u.name))
+    .replace(/{{login_id}}/g, u.email)
+    .replace(/{{login_link}}/g, link)
+    .replace(/{{campus}}/g, campusNameFor(u.campusIds[0]))
+    .replace(/{{batch}}/g, String(u.batch ?? ""));
+  if (u.role === "ALP") body += "\n\nNote: your campus is still verifying you. You can complete your profile meanwhile; the rest opens once you're verified.";
+  return body;
+}
+
 export function can(s: State, u: User | undefined, cap: Capability) {
   return !!u && (s.permissions?.[cap] ?? []).includes(u.role);
 }
@@ -140,6 +167,7 @@ interface Ctx {
   markInterest: (jobId: string, userId: string, note?: string) => void;
   createEvent: (e: Omit<VaaEvent, "id" | "createdAt" | "rsvps">) => void;
   rsvp: (eventId: string, userId: string, status: RsvpStatus, guests?: number) => void;
+  joinEvent: (eventId: string, userId: string) => void;
   addPost: (groupId: string, authorId: string, text: string) => void;
   toggleLike: (postId: string, userId: string) => void;
   openDm: (a: string, b: string) => string;
@@ -148,6 +176,7 @@ interface Ctx {
   // Phase 3 – administration
   editUser: (userId: string, fields: Partial<User>, actorId: string) => void;
   setDeactivated: (userId: string, off: boolean, actorId: string) => void;
+  sendLoginInvites: (userIds: string[], channels: ("email" | "whatsapp" | "sms")[], template: string, actorId: string) => { sent: number; skipped: number };
   logExport: (actorId: string, target: string, reason: string, campusId?: string) => void;
   addEngagements: (entries: Omit<EngagementEntry, "id">[], actorId: string) => void;
   mergeUsers: (keepId: string, dropId: string, chosen: Partial<User>, actorId: string) => void;
@@ -841,6 +870,54 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, ...fields } : x)) }));
         log({ actorId, action: "Alumni record edited", target: u?.name ?? userId, campusId: u?.campusIds[0], category: "admin", detail: Object.keys(fields).join(", ") });
       },
+      sendLoginInvites: (userIds, channels, template, actorId) => {
+        const at = now();
+        const actor = getUser(actorId);
+        let sent = 0;
+        let skipped = 0;
+        const done: string[] = [];
+        userIds.forEach((id) => {
+          const u = getUser(id);
+          if (!u || u.deactivated) {
+            skipped++;
+            return;
+          }
+          const body = loginInviteBody(template, u);
+          const href = `/login?id=${encodeURIComponent(u.email)}`;
+          let any = false;
+          channels.forEach((ch) => {
+            const hasMobile = /\d{6,}/.test(u.mobile.replace(/\D/g, ""));
+            if (ch !== "email" && !hasMobile) return;
+            any = true;
+            pushOutbox({
+              channel: ch,
+              to: ch === "email" ? `${u.name} · ${u.email}` : `${u.name} · ${maskMobile(u.mobile)}`,
+              toUserId: u.id,
+              body: ch === "email" ? `Subject: Your VIBGYOR Alumni login link\n\n${body}` : ch === "sms" ? body.split("\n\n")[0] + ` Sign in: vaa.vibgyor.in/login` : body,
+              link: { label: "Open login link", href },
+            });
+          });
+          if (any) {
+            sent++;
+            done.push(id);
+          } else skipped++;
+        });
+        if (done.length)
+          setState((s) => ({
+            ...s,
+            users: s.users.map((u) => (done.includes(u.id) ? { ...u, loginInviteAt: at, loginInviteCount: (u.loginInviteCount ?? 0) + 1 } : u)),
+          }));
+        const first = done.length ? getUser(done[0]) : undefined;
+        log({
+          actorId,
+          action: "Login link sent",
+          target: done.length === 1 ? first?.name ?? "1 alumnus" : `${done.length} alumni`,
+          campusId: actor?.campusIds.length === 1 ? actor.campusIds[0] : undefined,
+          category: "broadcast",
+          detail: `${channels.join(", ")}${skipped ? ` · ${skipped} skipped` : ""}`,
+        });
+        return { sent, skipped };
+      },
       setDeactivated: (userId, off, actorId) => {
         const u = getUser(userId);
         setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, deactivated: off } : x)) }));
@@ -1032,6 +1109,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       createEvent: (e) => {
         setState((s) => ({ ...s, events: [{ ...e, id: uid("ev"), createdAt: now(), rsvps: [] }, ...s.events] }));
         log({ actorId: e.createdBy, action: "Event created", target: e.title, campusId: e.campusIds === "all" ? undefined : e.campusIds[0], category: "community", detail: `${e.kind} · for ${e.audience.join(", ")}` });
+      },
+      joinEvent: (eventId, userId) => {
+        const ev = stateRef.current.events.find((x) => x.id === eventId);
+        const u = getUser(userId);
+        if (!ev || !u) return;
+        setState((s) => ({
+          ...s,
+          events: s.events.map((x) =>
+            x.id === eventId ? { ...x, attended: [...(x.attended ?? []).filter((a) => a.userId !== userId), { userId, at: now() }] } : x
+          ),
+        }));
+        log({ actorId: userId, action: "Joined online event", target: ev.title, campusId: ev.campusIds === "all" ? undefined : ev.campusIds[0], category: "community" });
       },
       rsvp: (eventId, userId, status, guests) => {
         const ev = stateRef.current.events.find((x) => x.id === eventId);

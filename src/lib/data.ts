@@ -1177,6 +1177,32 @@ export const seedJobs: Job[] = [
   },
 ];
 
+/** A webinar that started 5 minutes ago, so "Join now" can be tried. Built fresh on every demo reset. */
+export function liveDemoEvent(): VaaEvent {
+  const start = Date.now() - 5 * 60_000;
+  return {
+    id: "evLive",
+    title: "Live now: Ask an engineer working abroad",
+    kind: "Webinar",
+    description: "Demo event that is live right now. Kabir (Goregaon West, 2014) answers questions about engineering degrees and jobs outside India. Students and parents welcome; the campus moderates questions.",
+    campusIds: "all",
+    audience: ["ALU", "STU", "PAR"],
+    start: new Date(start).toISOString(),
+    end: new Date(start + 60 * 60_000).toISOString(),
+    venue: "Online – link sent to registered attendees",
+    online: true,
+    joinUrl: "https://meet.vibgyor.in/ask-an-engineer",
+    capacity: 300,
+    createdBy: "gao1",
+    createdAt: new Date(start - 7 * 86400_000).toISOString(),
+    rsvps: [
+      { userId: "stu2", status: "going", at: new Date(start - 86400_000).toISOString() },
+      { userId: "par2", status: "going", at: new Date(start - 86400_000).toISOString() },
+    ],
+    attended: [],
+  };
+}
+
 export const seedEvents: VaaEvent[] = [
   {
     id: "ev1",
@@ -1210,6 +1236,7 @@ export const seedEvents: VaaEvent[] = [
     end: ahead(9, 19),
     venue: "Online – link sent to registered attendees",
     online: true,
+    joinUrl: "https://meet.vibgyor.in/uk-alumni-panel",
     capacity: 500,
     createdBy: "gao1",
     createdAt: ago(150),
@@ -1419,7 +1446,7 @@ export const seedPermissions: Record<Capability, Role[]> = {
   "engagement.log": ["TCH", "CAD", "GAO"],
 };
 
-export const STATE_VERSION = 6;
+export const STATE_VERSION = 7;
 
 export function createSeedState(): State {
   return {
@@ -1461,7 +1488,7 @@ export function createSeedState(): State {
     campusMinClass: Object.fromEntries(campuses.map((c) => [c.id, 8])),
     pendingOtps: {},
     jobs: structuredClone(seedJobs),
-    events: structuredClone(seedEvents),
+    events: [liveDemoEvent(), ...structuredClone(seedEvents)],
     posts: structuredClone(seedPosts),
     dmThreads: structuredClone(seedDmThreads),
     dms: structuredClone(seedDms),

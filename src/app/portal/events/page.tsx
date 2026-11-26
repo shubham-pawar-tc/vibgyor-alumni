@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarDays, CalendarPlus, Check, Globe2, MapPin, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CalendarDays, CalendarPlus, Check, Clock, ExternalLink, Globe2, MapPin, Users, Video } from "lucide-react";
 import { Gate } from "@/components/Gate";
-import { Callout, Card, Empty, PageHeader, Pill, Req, Tabs } from "@/components/ui";
+import { Button, Callout, Card, Empty, Modal, PageHeader, Pill, Req, Tabs } from "@/components/ui";
 import { campusName } from "@/lib/data";
 import { googleCalUrl, icsFor } from "@/lib/community";
 import { useStore } from "@/lib/store";
@@ -34,9 +34,28 @@ function downloadIcs(e: VaaEvent) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+/** "Join now" opens this many minutes before an online event starts. */
+const JOIN_OPENS_MIN = 15;
+
+function untilText(ms: number) {
+  const m = Math.ceil(ms / 60_000);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} h ${m % 60} min`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d > 1 ? "s" : ""} ${h % 24} h`;
+}
+
 function Events() {
-  const { me, state, rsvp } = useStore();
+  const { me, state, rsvp, joinEvent } = useStore();
   const [tab, setTab] = useState<"upcoming" | "mine">("upcoming");
+  const [joining, setJoining] = useState<VaaEvent | null>(null);
+  // Re-render every 20 s so "Join now" switches on (and off) by itself.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 20_000);
+    return () => clearInterval(t);
+  }, []);
   if (!me) return null;
   const role = me.role as "ALU" | "STU" | "PAR";
   const studentLocked = me.role === "STU" && me.studentStatus !== "active";
@@ -97,6 +116,11 @@ function Events() {
                 <div className="min-w-0 flex-1 p-5">
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone={kindTone[e.kind]}>{e.kind}</Pill>
+                    {e.online && nowMs >= Date.parse(e.start) && nowMs < Date.parse(e.end) && (
+                      <Pill tone="danger" icon={<span className="h-2 w-2 animate-pulse rounded-full bg-current" />}>
+                        Live now
+                      </Pill>
+                    )}
                     <span className="text-[13.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
                     {kids.length > 1 && forKids(e).length > 0 && <Pill tone="info">For {forKids(e).map((k) => firstName(k.name)).join(" & ")}&apos;s campus</Pill>}
                     {mine?.status === "going" && (
@@ -149,6 +173,18 @@ function Events() {
                     )}
                     {full && <span className="text-[13.5px] font-medium text-danger">Full</span>}
                     <span className="flex-1" />
+                    {e.online && (
+                      <JoinButton
+                        e={e}
+                        nowMs={nowMs}
+                        going={mine?.status === "going"}
+                        locked={studentLocked}
+                        onJoin={() => {
+                          joinEvent(e.id, me.id);
+                          setJoining(e);
+                        }}
+                      />
+                    )}
                     {mine?.status === "going" && (
                       <div className="flex gap-1">
                         <button onClick={() => downloadIcs(e)} className="flex h-9 items-center gap-1.5 rounded-xl px-3 text-[14px] font-semibold text-primary hover:bg-primary-soft">
@@ -166,6 +202,76 @@ function Events() {
           })}
         </div>
       )}
+
+      <Modal
+        open={!!joining}
+        onClose={() => setJoining(null)}
+        title="Joining the webinar"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setJoining(null)}>
+              Close
+            </Button>
+            {joining?.joinUrl && (
+              <a
+                href={joining.joinUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-[14px] font-semibold text-primary-fg hover:brightness-110"
+              >
+                <ExternalLink className="h-4 w-4" /> Open webinar room
+              </a>
+            )}
+          </>
+        }
+      >
+        {joining && (
+          <div className="space-y-3 text-[14.5px]">
+            <p className="font-semibold">{joining.title}</p>
+            <p className="text-muted">Your attendance is recorded. In the live platform this opens the webinar room (for example Zoom, Teams or YouTube Live) in a new tab.</p>
+            <p className="break-all rounded-xl bg-surface-2 px-3 py-2 font-mono text-[13px]">{joining.joinUrl ?? "Link to be added by the campus"}</p>
+            {me.role === "STU" && <Callout tone="safe">Your camera and microphone stay off for students. Questions go through the chat and are moderated by the campus.</Callout>}
+          </div>
+        )}
+      </Modal>
     </>
+  );
+}
+
+/** Online events only: disabled with a countdown until JOIN_OPENS_MIN before start, live until the end, then "Ended". */
+function JoinButton({ e, nowMs, going, locked, onJoin }: { e: VaaEvent; nowMs: number; going: boolean; locked: boolean; onJoin: () => void }) {
+  const start = Date.parse(e.start);
+  const end = Date.parse(e.end);
+  const opens = start - JOIN_OPENS_MIN * 60_000;
+  const base = "flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-[14px] font-semibold";
+
+  if (nowMs >= end)
+    return (
+      <span className={`${base} bg-surface-2 text-muted`}>
+        <Video className="h-4 w-4" /> Ended
+      </span>
+    );
+  if (nowMs < opens)
+    return (
+      <span className={`${base} cursor-not-allowed bg-surface-2 text-muted`} title={`Join opens ${JOIN_OPENS_MIN} minutes before the start`}>
+        <Clock className="h-4 w-4" /> Join opens in {untilText(opens - nowMs)}
+      </span>
+    );
+  if (locked)
+    return (
+      <span className={`${base} cursor-not-allowed bg-surface-2 text-muted`} title="Needs parent consent">
+        <Video className="h-4 w-4" /> Join now
+      </span>
+    );
+  if (!going)
+    return (
+      <span className={`${base} bg-warning-soft text-warning`} title="The link goes to registered attendees">
+        <Video className="h-4 w-4" /> Tap &quot;Going&quot; to join
+      </span>
+    );
+  return (
+    <button onClick={onJoin} className={`${base} bg-success text-white shadow-card hover:brightness-110`}>
+      <Video className="h-4 w-4" /> {nowMs >= start ? "Join now" : `Join now · starts in ${untilText(start - nowMs)}`}
+    </button>
   );
 }

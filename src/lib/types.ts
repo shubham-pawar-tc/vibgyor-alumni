@@ -67,6 +67,9 @@ export interface User {
   profile?: AlumniProfile;
   // Phase 3
   deactivated?: boolean;
+  /** Last time staff sent this person an onboarding / login-link message, and how many times. */
+  loginInviteAt?: string;
+  loginInviteCount?: number;
   mergedFrom?: string[];
 }
 
@@ -140,6 +143,10 @@ export interface VaaEvent {
   createdBy: string;
   createdAt: string;
   rsvps: { userId: string; status: RsvpStatus; at: string; guests?: number }[];
+  /** Online events: the webinar room link, shown to registered attendees only. */
+  joinUrl?: string;
+  /** Who pressed "Join now" (online attendance). */
+  attended?: { userId: string; at: string }[];
 }
 
 export interface GroupPost {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, AtSign, Briefcase, ChevronRight, GraduationCap, Hash, KeyRound, Lock, LogIn, MailCheck, ShieldCheck, Smartphone, Sparkles, UserPlus, Users, type LucideIcon } from "lucide-react";
 import { AuthBand, PublicFooter, PublicHeader } from "@/components/Public";
@@ -24,6 +24,11 @@ export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"otp" | "password">("otp");
   const [id, setId] = useState("");
+  // Onboarding links from the alumni office carry ?id=<login id>, so the field is pre-filled.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("id");
+    if (q) setId(q);
+  }, []);
   const [step, setStep] = useState<"id" | "code">("id");
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
