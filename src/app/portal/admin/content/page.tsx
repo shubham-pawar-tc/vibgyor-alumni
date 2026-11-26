@@ -153,6 +153,11 @@ function Content() {
                   <p className="text-[14px] text-muted">
                     {formatDateTime(e.start)} · {e.venue}
                   </p>
+                  {e.online && e.joinUrl && (
+                    <a href={e.joinUrl} target="_blank" rel="noreferrer" className="mt-0.5 block truncate text-[13px] font-medium text-primary hover:underline">
+                      {e.joinUrl}
+                    </a>
+                  )}
                   <p className="mt-1 text-[13.5px] text-muted">For: {e.audience.map((a) => ({ ALU: "Alumni", STU: "Students", PAR: "Parents" })[a]).join(", ")}</p>
                   <div className="mt-3">
                     <div className="flex justify-between text-[13.5px]">
@@ -189,12 +194,14 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
     hours: 2,
     venue: "",
     online: false,
+    joinUrl: "",
     capacity: 100,
     audience: { ALU: true, STU: false, PAR: false },
   });
   if (!me) return null;
   const aud = (Object.keys(f.audience) as ("ALU" | "STU" | "PAR")[]).filter((k) => f.audience[k]);
-  const ok = f.title && f.venue && aud.length > 0;
+  const linkOk = /^https:\/\/[^\s.]+\.[^\s]+$/i.test(f.joinUrl.trim());
+  const ok = f.title && (f.online ? linkOk : f.venue.trim()) && aud.length > 0;
   const studentsInvited = f.audience.STU;
 
   return (
@@ -220,8 +227,9 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
                 audience: aud,
                 start: start.toISOString(),
                 end: new Date(start.getTime() + f.hours * 3600_000).toISOString(),
-                venue: f.venue,
+                venue: f.online ? f.venue.trim() || "Online – link sent to registered attendees" : f.venue,
                 online: f.online,
+                joinUrl: f.online ? f.joinUrl.trim() : undefined,
                 capacity: f.capacity,
                 createdBy: me.id,
               });
@@ -267,9 +275,28 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
             <Input id="eh" type="number" min={1} max={12} value={f.hours} onChange={(e) => setF({ ...f, hours: +e.target.value || 1 })} />
           </Field>
         </div>
-        <Field label="Venue or link" htmlFor="ev">
-          <Input id="ev" value={f.venue} onChange={(e) => setF({ ...f, venue: e.target.value })} />
-        </Field>
+        <div className="space-y-3 sm:col-span-2">
+          <Checkbox checked={f.online} onChange={(v) => setF({ ...f, online: v })} label="Online event" description="Webinar or video call. Attendees get a Join now button." />
+          {f.online ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field
+                label="Meeting link"
+                htmlFor="ejl"
+                hint="Zoom, Google Meet, Teams or YouTube Live (https://…). Shown only to people who tapped Going, from 15 minutes before the start."
+              >
+                <Input id="ejl" type="url" value={f.joinUrl} onChange={(e) => setF({ ...f, joinUrl: e.target.value })} placeholder="https://zoom.us/j/123456789" />
+              </Field>
+              <Field label="Venue text (optional)" htmlFor="ev" hint='Shown on the card. Default: "Online – link sent to registered attendees".'>
+                <Input id="ev" value={f.venue} onChange={(e) => setF({ ...f, venue: e.target.value })} placeholder="Online – link sent to registered attendees" />
+              </Field>
+              {f.joinUrl.trim() && !linkOk && <p className="text-[13px] font-medium text-danger sm:col-span-2">Enter a full link starting with https://</p>}
+            </div>
+          ) : (
+            <Field label="Venue" htmlFor="ev">
+              <Input id="ev" value={f.venue} onChange={(e) => setF({ ...f, venue: e.target.value })} placeholder="e.g. VIBGYOR High, Malad – auditorium" />
+            </Field>
+          )}
+        </div>
         <Field label="Capacity" htmlFor="ecap">
           <Input id="ecap" type="number" min={1} value={f.capacity} onChange={(e) => setF({ ...f, capacity: +e.target.value || 1 })} />
         </Field>
@@ -285,7 +312,6 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
             <Checkbox checked={f.audience.STU} onChange={(v) => setF({ ...f, audience: { ...f.audience, STU: v } })} label="Students" />
             <Checkbox checked={f.audience.PAR} onChange={(v) => setF({ ...f, audience: { ...f.audience, PAR: v } })} label="Parents" />
           </div>
-          <Checkbox checked={f.online} onChange={(v) => setF({ ...f, online: v })} label="Online event" />
           {studentsInvited && (
             <Callout tone="warning" className="mt-2">
               Student events must be in school or online with staff present. Only students with parent consent can sign up.
