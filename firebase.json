@@ -1,0 +1,21 @@
+{
+  "hosting": {
+    "public": "build",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "trailingSlash": true,
+    "rewrites": [
+      { "source": "/portal/people/**", "destination": "/portal/people/_/index.html" },
+      { "source": "/consent/**", "destination": "/consent/_/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "/_next/static/**",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      },
+      {
+        "source": "**/*.html",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      }
+    ]
+  }
+}
