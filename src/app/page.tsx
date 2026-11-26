@@ -160,12 +160,12 @@ export default function HomePage() {
             <p className="enter enter-1 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-[13px] font-semibold text-muted shadow-card">
               <span className="h-2 w-2 rounded-full bg-success" /> VIBGYOR Alumni Association
             </p>
-            <h1 className="enter enter-2 mt-6 text-[38px] font-extrabold leading-[1.08] tracking-tight text-text sm:text-5xl lg:text-[56px]">
-              One VIBGYOR.
-              <br />
-              Every Generation.
-              <br />
-              <span className="accent-underline">A Lifetime of Connections.</span>
+            <h1 className="enter enter-2 mt-6 font-extrabold tracking-tight text-text">
+              <span className="block text-[44px] leading-[1.05] sm:text-[56px]">One VIBGYOR.</span>
+              <span className="block text-[44px] leading-[1.05] sm:text-[56px]">Every Generation.</span>
+              <span className="mt-4 block text-[24px] leading-tight text-primary sm:whitespace-nowrap sm:text-[34px] lg:text-[36px]">
+                <span className="accent-underline box-decoration-clone">A Lifetime of Connections.</span>
+              </span>
             </h1>
             <p className="enter enter-3 mt-7 max-w-lg text-[18px] leading-relaxed text-muted">
               Reconnect with your batch, mentor the students who follow you, and stay close to your school, from any campus and any country.
@@ -182,7 +182,7 @@ export default function HomePage() {
             <div className="enter enter-5 mt-10 flex items-center gap-4">
               <div className="flex">
                 {["Priya Sharma", "Rohan Gupta", "Farah Ansari", "Kabir Rao", "Meera Joshi"].map((n, i) => (
-                  <span key={n} className={i ? "-ml-2.5" : ""}>
+                  <span key={n} className={i ? "relative -ml-1.5" : "relative"} style={{ zIndex: 5 - i }}>
                     <Avatar name={n} size={38} className="ring-[3px] ring-surface" />
                   </span>
                 ))}
