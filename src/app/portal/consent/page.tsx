@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { FileText, History } from "lucide-react";
 import { Avatar, Button, Callout, Card, CardHeader, Modal, PageHeader, Pill, Req, Switch } from "@/components/ui";
@@ -58,9 +59,9 @@ export default function ConsentCentre() {
 
             {k.studentStatus === "awaiting_consent" && (
               <Callout tone="warning" title={`${firstName(k.name)}'s account is waiting for you`}>
-                <a href={`/consent/${k.id}`} className="font-semibold text-primary underline">
+                <Link href={`/consent/${k.id}`} className="font-semibold text-primary underline">
                   Review the consent request
-                </a>{" "}
+                </Link>{" "}
                 to switch it on.
               </Callout>
             )}

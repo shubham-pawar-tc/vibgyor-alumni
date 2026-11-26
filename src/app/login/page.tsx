@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, AtSign, Briefcase, ChevronRight, GraduationCap, Hash, KeyRound, Lock, LogIn, MailCheck, ShieldCheck, Smartphone, Sparkles, UserPlus, Users, type LucideIcon } from "lucide-react";
@@ -149,7 +150,7 @@ export default function LoginPage() {
               <Callout tone="info" title="Students and parents don't need to sign up">
                 Your school creates your account from school records. Students: your parent gets a message to give consent first. Parents: use the mobile number or email registered with the school.
               </Callout>
-              <a
+              <Link
                 href="/join"
                 className="group flex items-center gap-3 rounded-xl border border-border p-3.5 transition-colors hover:border-primary/40 hover:bg-primary-soft/40"
               >
@@ -161,7 +162,7 @@ export default function LoginPage() {
                   <span className="block text-[13.5px] text-muted">Join or claim your alumni profile</span>
                 </span>
                 <ArrowRight className="icon-nudge h-4 w-4 text-primary" />
-              </a>
+              </Link>
             </div>
           </Card>
         </Reveal>

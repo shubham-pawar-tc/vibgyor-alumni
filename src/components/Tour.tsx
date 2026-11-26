@@ -7,6 +7,7 @@ import { roleLabels } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { tours, type TourStep } from "@/lib/tours";
 import { cn } from "@/lib/utils";
+import { withBase } from "@/lib/routeFallback";
 import { Avatar } from "./ui";
 
 const KEY = "vaa-tour";
@@ -62,7 +63,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       const target = step.path.split("?")[0];
       if (pathname === target) {
         // same page: reload so the page starts fresh
-        setTimeout(() => window.location.assign(step.path), 150);
+        setTimeout(() => window.location.assign(withBase(step.path)), 150);
       } else {
         router.push(step.path);
       }
