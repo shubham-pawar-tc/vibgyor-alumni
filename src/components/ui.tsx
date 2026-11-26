@@ -353,7 +353,7 @@ export function PageHeader({
 
 /* ------------------------------ Tabs ------------------------------ */
 
-export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: T; label: string; count?: number }[]; value: T; onChange: (v: T) => void }) {
+export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: T; label: string; count?: number; dot?: boolean }[]; value: T; onChange: (v: T) => void }) {
   return (
     <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <div className="inline-flex gap-1 rounded-xl bg-surface-2 p-1" role="tablist">
@@ -369,6 +369,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
             )}
           >
             {t.label}
+            {t.dot && <span className="h-2 w-2 rounded-full bg-warning" aria-label="needs action" />}
             {t.count !== undefined && (
               <span className={cn("rounded-full px-1.5 text-[12px] tabular-nums", value === t.id ? "bg-primary-soft text-primary" : "bg-border/70")}>{t.count}</span>
             )}

@@ -78,7 +78,7 @@ function Inner() {
             </thead>
             <tbody className="divide-y divide-border">
               {students.map((s) => {
-                const parent = s.parentIds?.[0] ? state.users.find((u) => u.id === s.parentIds![0]) : undefined;
+                const guardianNames = (s.parentIds ?? []).map((id) => state.users.find((u) => u.id === id)?.name).filter(Boolean).join(", ");
                 const below = (s.className ?? 0) < minClass;
                 return (
                   <tr key={s.id} className={cn("hover:bg-surface-2/50", below && "opacity-60")}>
@@ -91,7 +91,7 @@ function Inner() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-muted">{parent?.name ?? "—"}</td>
+                    <td className="px-3 py-3 text-muted">{guardianNames || "—"}</td>
                     <td className="px-3 py-3">{below ? <Pill>Below age gate</Pill> : <StatusPill status={s.studentStatus} />}</td>
                     {(Object.keys(consentPurposes) as ConsentPurpose[]).map((p) => (
                       <td key={p} className="px-3 py-3 text-center">

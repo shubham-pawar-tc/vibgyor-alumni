@@ -19,6 +19,11 @@ export function firstName(name: string) {
   return name.replace(/^(Dr\.|Mrs\.|Mr\.|Ms\.)\s*/i, "").split(" ")[0];
 }
 
+/** Prefix for every message to a parent, so a parent with several children knows which one it is about. */
+export function childTag(child: { name: string; className?: number }) {
+  return `[${firstName(child.name)}${child.className ? ` · Class ${child.className}` : ""}]`;
+}
+
 const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
 export function timeAgo(iso: string, now = Date.now()) {

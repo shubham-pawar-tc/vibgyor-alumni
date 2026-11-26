@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText, History } from "lucide-react";
-import { Avatar, Button, Callout, Card, CardHeader, Modal, PageHeader, Pill, Req, Switch } from "@/components/ui";
+import { Avatar, Button, Callout, Card, CardHeader, Modal, PageHeader, Pill, Req, Switch, Tabs } from "@/components/ui";
 import { StatusPill } from "@/components/Homes";
 import { campusName, consentPurposes } from "@/lib/data";
 import { hasConsent, latestConsent, useStore } from "@/lib/store";
@@ -20,12 +20,23 @@ const effects: Record<ConsentPurpose, string> = {
 export default function ConsentCentre() {
   const { me, state, setConsent } = useStore();
   const [confirm, setConfirm] = useState<{ studentId: string; purpose: ConsentPurpose; grant: boolean } | null>(null);
+  const [childId, setChildId] = useState<string>("");
+  // Open on the child named in ?child= (from Parent home or the consent page).
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("child");
+    if (q) setChildId(q);
+  }, []);
   if (!me) return null;
 
   if (me.role !== "PAR")
     return <Callout tone="warning">The consent centre is for parents and guardians. Switch to Neha Mehta to try it.</Callout>;
 
   const kids = (me.childIds ?? []).map((id) => state.users.find((u) => u.id === id)!).filter(Boolean);
+  // With 2+ children show one child at a time (tabs), so it's always clear whose permissions are being changed.
+  const multi = kids.length > 1;
+  const active = kids.find((k) => k.id === childId) ?? kids.find((k) => k.studentStatus === "awaiting_consent") ?? kids[0];
+  const shown = multi && active ? [active] : kids;
+  const confirmChild = confirm ? state.users.find((u) => u.id === confirm.studentId) : undefined;
 
   return (
     <>
@@ -39,7 +50,17 @@ export default function ConsentCentre() {
         description="Every permission you've given, when, and under which notice. Change any of them at any time; it takes effect immediately."
       />
 
-      {kids.map((k) => {
+      {multi && active && (
+        <div className="mb-5">
+          <Tabs
+            tabs={kids.map((k) => ({ id: k.id, label: firstName(k.name), dot: k.studentStatus === "awaiting_consent" }))}
+            value={active.id}
+            onChange={setChildId}
+          />
+        </div>
+      )}
+
+      {shown.map((k) => {
         const history = state.audit.filter((a) => a.category === "consent" && a.target.startsWith(k.name)).slice(0, 6);
         const platformOn = hasConsent(state, k.id, "platform");
         return (
@@ -59,7 +80,7 @@ export default function ConsentCentre() {
 
             {k.studentStatus === "awaiting_consent" && (
               <Callout tone="warning" title={`${firstName(k.name)}'s account is waiting for you`}>
-                <Link href={`/consent/${k.id}`} className="font-semibold text-primary underline">
+                <Link href={`/consent/${k.id}?p=${me.id}`} className="font-semibold text-primary underline">
                   Review the consent request
                 </Link>{" "}
                 to switch it on.
@@ -67,7 +88,7 @@ export default function ConsentCentre() {
             )}
 
             <Card>
-              <CardHeader title="Permissions" subtitle="Separate for each purpose" />
+              <CardHeader title={multi ? `Permissions for ${firstName(k.name)}` : "Permissions"} subtitle={multi ? `Separate for each purpose. Changes here affect ${firstName(k.name)} only.` : "Separate for each purpose"} />
               <div className="divide-y divide-border">
                 {(Object.keys(consentPurposes) as ConsentPurpose[]).map((p) => {
                   const on = hasConsent(state, k.id, p);
@@ -106,7 +127,7 @@ export default function ConsentCentre() {
             <MyData subject={k} />
             <div className="grid gap-5">
               <Card>
-                <CardHeader title="History" icon={<History className="h-[18px] w-[18px]" />} />
+                <CardHeader title={multi ? `History for ${firstName(k.name)}` : "History"} icon={<History className="h-[18px] w-[18px]" />} />
                 {history.length === 0 ? (
                   <p className="px-5 py-5 text-[14px] text-muted">No consent activity yet.</p>
                 ) : (
@@ -130,7 +151,7 @@ export default function ConsentCentre() {
       <Modal
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        title={confirm?.grant ? "Allow this permission?" : "Withdraw this permission?"}
+        title={`${confirm?.grant ? "Allow" : "Withdraw"} this permission${confirmChild ? ` for ${firstName(confirmChild.name)}` : ""}?`}
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirm(null)}>
@@ -155,6 +176,17 @@ export default function ConsentCentre() {
       >
         {confirm && (
           <div className="space-y-3 text-[14px] leading-relaxed">
+            {confirmChild && (
+              <div className="flex items-center gap-3 rounded-xl border border-border p-3">
+                <Avatar name={confirmChild.name} size={36} />
+                <div>
+                  <p className="font-semibold">{confirmChild.name}</p>
+                  <p className="text-[13px] text-muted">
+                    Class {confirmChild.className} · {campusName(confirmChild.campusIds[0])}
+                  </p>
+                </div>
+              </div>
+            )}
             <p className="font-semibold">{consentPurposes[confirm.purpose].title}</p>
             <p className="text-muted">{confirm.grant ? consentPurposes[confirm.purpose].body : effects[confirm.purpose]}</p>
             <Callout tone="info">Your choice and the time are recorded.</Callout>

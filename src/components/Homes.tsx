@@ -36,8 +36,9 @@ import { Avatar, Button, Callout, Card, CardHeader, PageHeader, Pill, Req, Stat 
 
 export function StudentHome({ me }: { me: User }) {
   const { state, requestConsent } = useStore();
-  const parent = me.parentIds?.[0] ? state.users.find((u) => u.id === me.parentIds![0]) : undefined;
-  const sentRecently = state.outbox.some((o) => o.toUserId === parent?.id && o.link?.href === `/consent/${me.id}`);
+  const parents = (me.parentIds ?? []).map((id) => state.users.find((u) => u.id === id)).filter((u): u is User => !!u);
+  const parentNames = parents.length ? parents.map((p) => p.name).join(" and ") : undefined;
+  const sentRecently = state.outbox.some((o) => parents.some((p) => p.id === o.toUserId) && o.link?.href.startsWith(`/consent/${me.id}`));
 
   if (me.studentStatus === "awaiting_consent" || me.studentStatus === "paused") {
     const paused = me.studentStatus === "paused";
@@ -63,7 +64,7 @@ export function StudentHome({ me }: { me: User }) {
             <ol className="mt-5 space-y-4">
               {[
                 { done: true, title: "Account created from school records", sub: `Class ${me.className} · ${campusName(me.campusIds[0])}` },
-                { done: paused, title: `Consent request sent to ${parent?.name ?? "your parent"}`, sub: "By SMS, WhatsApp and email to the number the school has" },
+                { done: paused, title: `Consent request sent to ${parentNames ?? "your parent"}`, sub: "By SMS, WhatsApp and email to the number the school has" },
                 { done: false, title: "Your parent confirms with a one-time code", sub: "They choose what you can do: platform, mentors, MyCareerZ" },
                 { done: false, title: "You get full access", sub: "Find mentors, ask questions, join events" },
               ].map((s, i) => (
@@ -85,7 +86,7 @@ export function StudentHome({ me }: { me: User }) {
             )}
             {sentRecently && !paused && (
               <Callout tone="success" className="mt-4">
-                Sent to {parent?.name}. Demo: open the <b>device simulator</b> (bottom right) and tap the consent link.
+                Sent to {parentNames}. Demo: open the <b>device simulator</b> (bottom right) and tap the consent link.
               </Callout>
             )}
           </div>
@@ -220,7 +221,24 @@ export function ParentHome({ me }: { me: User }) {
   const kids = (me.childIds ?? []).map((id) => state.users.find((u) => u.id === id)!).filter(Boolean);
   return (
     <>
-      <PageHeader title={`Welcome, ${firstName(me.name)}`} description="You control what your child can do on the VIBGYOR Alumni Platform." />
+      <PageHeader
+        title={`Welcome, ${firstName(me.name)}`}
+        description={kids.length > 1 ? `You control what each of your ${kids.length} children can do on the VIBGYOR Alumni Platform. Each child has separate permissions.` : "You control what your child can do on the VIBGYOR Alumni Platform."}
+      />
+      {kids.length > 1 && kids.some((k) => k.studentStatus === "awaiting_consent") && (
+        <Callout tone="warning" className="mb-5" title={`${kids.filter((k) => k.studentStatus === "awaiting_consent").length} of your children ${kids.filter((k) => k.studentStatus === "awaiting_consent").length === 1 ? "is" : "are"} waiting for your permission`}>
+          {kids
+            .filter((k) => k.studentStatus === "awaiting_consent")
+            .map((k, i) => (
+              <span key={k.id}>
+                {i > 0 && " · "}
+                <Link href={`/consent/${k.id}?p=${me.id}`} className="font-semibold text-primary underline">
+                  Review for {firstName(k.name)}
+                </Link>
+              </span>
+            ))}
+        </Callout>
+      )}
       <div className="grid gap-5 md:grid-cols-2">
         {kids.map((k) => {
           const waiting = k.studentStatus === "awaiting_consent";
@@ -245,12 +263,12 @@ export function ParentHome({ me }: { me: User }) {
                 ))}
               </div>
               {waiting ? (
-                <Button href={`/consent/${k.id}`} className="mt-5 w-full">
-                  Review consent request
+                <Button href={`/consent/${k.id}?p=${me.id}`} className="mt-5 w-full">
+                  Review consent request{kids.length > 1 ? ` for ${firstName(k.name)}` : ""}
                 </Button>
               ) : (
-                <Button href="/portal/consent" variant="secondary" className="mt-5 w-full">
-                  Manage permissions
+                <Button href={`/portal/consent?child=${k.id}`} variant="secondary" className="mt-5 w-full">
+                  Manage {kids.length > 1 ? `${firstName(k.name)}'s ` : ""}permissions
                 </Button>
               )}
             </Card>

@@ -8,7 +8,7 @@ import { campusName } from "@/lib/data";
 import { googleCalUrl, icsFor } from "@/lib/community";
 import { useStore } from "@/lib/store";
 import type { RsvpStatus, VaaEvent } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, firstName } from "@/lib/utils";
 
 export default function EventsPage() {
   return (
@@ -41,7 +41,11 @@ function Events() {
   const role = me.role as "ALU" | "STU" | "PAR";
   const studentLocked = me.role === "STU" && me.studentStatus !== "active";
 
-  const mineList = state.events.filter((e) => e.audience.includes(role) && (e.campusIds === "all" || e.campusIds.includes(me.campusIds[0])));
+  // Parents see events for every child's campus, not just their own record's campus.
+  const kids = me.role === "PAR" ? (me.childIds ?? []).map((id) => state.users.find((u) => u.id === id)).filter((u): u is NonNullable<typeof u> => !!u) : [];
+  const myCampuses = me.role === "PAR" ? Array.from(new Set([...kids.flatMap((k) => k.campusIds), ...me.campusIds])) : [me.campusIds[0]];
+  const forKids = (e: VaaEvent) => (e.campusIds === "all" ? [] : kids.filter((k) => k.campusIds.some((c) => (e.campusIds as string[]).includes(c))));
+  const mineList = state.events.filter((e) => e.audience.includes(role) && (e.campusIds === "all" || e.campusIds.some((c) => myCampuses.includes(c))));
   const list = mineList
     .filter((e) => tab === "upcoming" || e.rsvps.some((r) => r.userId === me.id && r.status !== "no"))
     .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
@@ -94,6 +98,7 @@ function Events() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Pill tone={kindTone[e.kind]}>{e.kind}</Pill>
                     <span className="text-[13.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
+                    {kids.length > 1 && forKids(e).length > 0 && <Pill tone="info">For {forKids(e).map((k) => firstName(k.name)).join(" & ")}&apos;s campus</Pill>}
                     {mine?.status === "going" && (
                       <Pill tone="success" icon={<Check className="h-3 w-3" />}>
                         You&apos;re going{mine.guests ? ` +${mine.guests}` : ""}

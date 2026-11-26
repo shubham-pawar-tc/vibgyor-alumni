@@ -7,9 +7,9 @@ import { ArrowRight, CheckCircle2, Eye, FileText, Lock, MessageSquareText, Shiel
 import { Avatar, Button, Callout, Card, Checkbox, Input, Logo, Pill, Req, Switch } from "@/components/ui";
 import { ThemeToggle } from "@/components/Public";
 import { campusName, consentPurposes, NOTICE_VERSION } from "@/lib/data";
-import { hasConsent, useStore } from "@/lib/store";
-import type { ConsentPurpose } from "@/lib/types";
-import { cn, firstName, maskMobile } from "@/lib/utils";
+import { hasConsent, latestConsent, useStore } from "@/lib/store";
+import type { ConsentPurpose, User } from "@/lib/types";
+import { cn, firstName, formatDateTime, maskMobile } from "@/lib/utils";
 import { DemoOtpFill } from "@/components/DemoOtpFill";
 
 type Step = "intro" | "otp" | "choose" | "done";
@@ -26,7 +26,12 @@ export default function ParentConsentPage() {
 
   if (!hydrated) return null;
   const stu = state.users.find((u) => u.id === studentId);
-  const parent = stu?.parentIds?.[0] ? state.users.find((u) => u.id === stu.parentIds![0]) : undefined;
+  // Any guardian on record can consent. Pick the one the link was sent to (?p=), else the
+  // signed-in guardian, else the first guardian on record.
+  const guardians = (stu?.parentIds ?? []).map((id) => state.users.find((u) => u.id === id)).filter((u): u is User => !!u);
+  const linkParent = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("p") : null;
+  const parent =
+    guardians.find((g) => g.id === linkParent) ?? guardians.find((g) => g.id === state.currentUserId) ?? guardians[0];
 
   if (!stu || !parent) {
     return (
@@ -41,6 +46,8 @@ export default function ParentConsentPage() {
 
   const sn = firstName(stu.name);
   const already = hasConsent(state, stu.id, "platform") && step !== "done";
+  const platformRec = latestConsent(state, stu.id, "platform");
+  const givenBy = platformRec ? state.users.find((u) => u.id === platformRec.givenBy) : undefined;
   const otpKey = `consent:${stu.id}`;
   const steps: Step[] = ["intro", "otp", "choose", "done"];
   const stepIdx = steps.indexOf(step);
@@ -52,13 +59,16 @@ export default function ParentConsentPage() {
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-success-soft text-success">
             <CheckCircle2 className="h-7 w-7" />
           </span>
-          <h1 className="mt-5 text-xl font-bold">Consent already recorded</h1>
-          <p className="mt-2 text-sm text-muted">You can review or withdraw each permission from your Parent portal at any time.</p>
+          <h1 className="mt-5 text-xl font-bold">Consent for {sn} already recorded</h1>
+          <p className="mt-2 text-sm text-muted">
+            {givenBy && givenBy.id !== parent.id ? `${givenBy.name} gave consent ${formatDateTime(platformRec!.at)}. Nothing more is needed from you. ` : ""}
+            You can review or withdraw each permission from your Parent portal at any time.
+          </p>
           <Button
             className="mt-6"
             onClick={() => {
               login(parent.id);
-              router.push("/portal/consent");
+              router.push(`/portal/consent?child=${stu.id}`);
             }}
           >
             Open consent centre
@@ -243,7 +253,7 @@ export default function ParentConsentPage() {
             className="mt-7 w-full max-w-sm"
             onClick={() => {
               login(parent.id);
-              router.push("/portal/consent");
+              router.push(`/portal/consent?child=${stu.id}`);
             }}
           >
             Go to my Parent portal

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
+import { consentPurposes, createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
 import { maskContacts } from "./mask";
 import type {
   Capability,
@@ -23,7 +23,7 @@ import type {
   User,
   VerificationRequest,
 } from "./types";
-import { firstName, maskMobile, uid } from "./utils";
+import { childTag, firstName, maskMobile, uid } from "./utils";
 
 const KEY = "vaa-prototype-state";
 
@@ -228,36 +228,40 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       requestConsent: (studentId, actorId) => {
         const stu = getUser(studentId);
         if (!stu) return;
-        const parent = stu.parentIds?.[0] ? getUser(stu.parentIds[0]) : undefined;
-        if (!parent) return;
-        const href = `/consent/${studentId}`;
-        const fn = firstName(parent.name);
+        // Every guardian on record gets the request; the first one to verify and confirm counts.
+        const parents = (stu.parentIds ?? []).map((id) => getUser(id)).filter((u): u is User => !!u);
+        if (parents.length === 0) return;
         const sn = firstName(stu.name);
-        pushOutbox({
-          channel: "sms",
-          to: `${parent.name} · ${maskMobile(parent.mobile)}`,
-          toUserId: parent.id,
-          body: `VIBGYOR: Dear ${fn}, ${sn}'s school has invited ${sn} to the VIBGYOR Alumni Platform. Please review and give consent: vaa.vibgyor.in/c/${studentId}`,
-          link: { label: "Open consent link", href },
-        });
-        pushOutbox({
-          channel: "whatsapp",
-          to: `${parent.name} · ${maskMobile(parent.mobile)}`,
-          toUserId: parent.id,
-          body: `Hello ${fn}, VIBGYOR ${sn}'s campus needs your permission before ${sn}'s student account on the VIBGYOR Alumni Platform is switched on. It takes 2 minutes.`,
-          link: { label: "Review & consent", href },
-        });
-        pushOutbox({
-          channel: "email",
-          to: `${parent.name} · ${parent.email}`,
-          toUserId: parent.id,
-          body: `Subject: Your consent is needed for ${stu.name}\n\nWe will only switch on ${sn}'s account after you confirm, using a one-time code sent to the mobile number registered with the school.`,
-          link: { label: "Review & consent", href },
+        const tag = childTag(stu);
+        parents.forEach((parent) => {
+          const href = `/consent/${studentId}?p=${parent.id}`;
+          const fn = firstName(parent.name);
+          pushOutbox({
+            channel: "sms",
+            to: `${parent.name} · ${maskMobile(parent.mobile)}`,
+            toUserId: parent.id,
+            body: `${tag} VIBGYOR: Dear ${fn}, ${sn}'s school has invited ${sn} to the VIBGYOR Alumni Platform. Please review and give consent: vaa.vibgyor.in/c/${studentId}`,
+            link: { label: "Open consent link", href },
+          });
+          pushOutbox({
+            channel: "whatsapp",
+            to: `${parent.name} · ${maskMobile(parent.mobile)}`,
+            toUserId: parent.id,
+            body: `${tag} Hello ${fn}, VIBGYOR ${sn}'s campus needs your permission before ${sn}'s student account on the VIBGYOR Alumni Platform is switched on. It takes 2 minutes.`,
+            link: { label: "Review & consent", href },
+          });
+          pushOutbox({
+            channel: "email",
+            to: `${parent.name} · ${parent.email}`,
+            toUserId: parent.id,
+            body: `Subject: ${tag} Your consent is needed for ${stu.name}\n\nWe will only switch on ${sn}'s account after you confirm, using a one-time code sent to the mobile number registered with the school.`,
+            link: { label: "Review & consent", href },
+          });
         });
         log({
           actorId,
           action: "Consent request sent",
-          target: `${stu.name} → ${parent.name}`,
+          target: `${stu.name} → ${parents.map((p) => p.name).join(", ")}`,
           campusId: stu.campusIds[0],
           category: "consent",
           detail: "SMS, WhatsApp, email",
@@ -312,13 +316,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           category: "consent",
           detail: `${given.join(", ")} · ${NOTICE_VERSION} · ${otpRef}`,
         });
-        if (par) {
+        if (par && stu) {
+          const tag = childTag(stu);
           pushOutbox({
             channel: "whatsapp",
             to: `${par.name} · ${maskMobile(par.mobile)}`,
             toUserId: par.id,
-            body: `Thank you ${firstName(par.name)}. Your consent for ${stu?.name} is recorded (ref ${otpRef}). You can change or withdraw it any time from the Parent portal.`,
+            body: `${tag} Thank you ${firstName(par.name)}. Your consent for ${stu.name} is recorded (ref ${otpRef}). You can change or withdraw it any time from the Parent portal.`,
           });
+          // Let the other guardian(s) know, so nobody is asked twice.
+          (stu.parentIds ?? [])
+            .filter((id) => id !== par.id)
+            .map((id) => getUser(id))
+            .forEach((other) => {
+              if (!other) return;
+              pushOutbox({
+                channel: "whatsapp",
+                to: `${other.name} · ${maskMobile(other.mobile)}`,
+                toUserId: other.id,
+                body: `${tag} ${par.name} has given consent for ${stu.name} (ref ${otpRef}). Nothing more is needed from you. You can see or change it in the Parent portal.`,
+              });
+            });
         }
       },
       setConsent: (studentId, purpose, grant, actorId) => {
@@ -354,6 +372,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           return { ...s, consents, users };
         });
         const stu = getUser(studentId);
+        const actor = getUser(actorId);
+        if (stu && actor?.role === "PAR") {
+          const tag = childTag(stu);
+          (stu.parentIds ?? []).map((id) => getUser(id)).forEach((p) => {
+            if (!p) return;
+            pushOutbox({
+              channel: "whatsapp",
+              to: `${p.name} · ${maskMobile(p.mobile)}`,
+              toUserId: p.id,
+              body: `${tag} ${p.id === actor.id ? "You have" : `${actor.name} has`} ${grant ? "allowed" : "withdrawn"} "${consentPurposes[purpose].short}" for ${firstName(stu.name)}. This took effect immediately.`,
+            });
+          });
+        }
         log({
           actorId,
           action: grant ? "Consent given" : "Consent withdrawn",

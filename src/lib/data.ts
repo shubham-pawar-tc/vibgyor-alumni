@@ -141,7 +141,7 @@ export const seedUsers: User[] = [
     mobile: "—",
     className: 11,
     studentStatus: "awaiting_consent",
-    parentIds: ["par1"],
+    parentIds: ["par1", "par3"],
     dob: "2010-03-14",
     threeC: [
       { country: "United Kingdom", course: "Computer Science", college: "Imperial College London" },
@@ -168,6 +168,20 @@ export const seedUsers: User[] = [
     ],
     interests: ["Biology olympiad", "Volunteering", "Classical dance"],
   },
+  {
+    // Aarav's younger sister, on a different campus: demos a parent with two children
+    id: "stu3",
+    name: "Riya Mehta",
+    role: "STU",
+    campusIds: ["c02"],
+    email: "riya.mehta@student.example.in",
+    mobile: "—",
+    className: 8,
+    studentStatus: "awaiting_consent",
+    parentIds: ["par1", "par3"],
+    dob: "2013-01-22",
+    interests: ["Art", "Swimming"],
+  },
   // Parents
   {
     id: "par1",
@@ -176,7 +190,17 @@ export const seedUsers: User[] = [
     campusIds: ["c01"],
     email: "neha.mehta@example.com",
     mobile: "+91 98200 45210",
-    childIds: ["stu1"],
+    childIds: ["stu1", "stu3"],
+  },
+  {
+    // Second guardian for Aarav and Riya: either parent can give consent
+    id: "par3",
+    name: "Rohit Mehta",
+    role: "PAR",
+    campusIds: ["c01"],
+    email: "rohit.mehta@example.com",
+    mobile: "+91 98201 33876",
+    childIds: ["stu1", "stu3"],
   },
   {
     id: "par2",
@@ -482,7 +506,8 @@ seedUsers.push({
 export const personas: { userId: string; blurb: string }[] = [
   { userId: "stu1", blurb: "Class 11 · waiting for parent consent" },
   { userId: "stu2", blurb: "Class 12 · consented, can message mentors" },
-  { userId: "par1", blurb: "Aarav's mother" },
+  { userId: "par1", blurb: "Mother of Aarav (Malad) & Riya (Goregaon W)" },
+  { userId: "par3", blurb: "Father · second guardian for Aarav & Riya" },
   { userId: "alu1", blurb: "Mentor · Imperial College London" },
   { userId: "alu7", blurb: "Verified alumnus · not yet a mentor" },
   { userId: "alp1", blurb: "Signed up · awaiting verification" },
@@ -1229,6 +1254,22 @@ export const seedEvents: VaaEvent[] = [
     createdAt: ago(30),
     rsvps: [],
   },
+  {
+    id: "ev5",
+    title: "Class 8 parents: choosing subjects for Class 9",
+    kind: "Career talk",
+    description: "The Goregaon West counselling team and two alumni explain subject choices for Class 9–10 and what they mean later. For Class 8 students and their parents.",
+    campusIds: ["c02"],
+    audience: ["STU", "PAR"],
+    start: ahead(9, 17),
+    end: ahead(9, 18),
+    venue: "VIBGYOR High, Goregaon West – multipurpose hall",
+    online: false,
+    capacity: 120,
+    createdBy: "gao1",
+    createdAt: ago(20),
+    rsvps: [],
+  },
 ];
 
 export const seedPosts: GroupPost[] = [
@@ -1378,7 +1419,7 @@ export const seedPermissions: Record<Capability, Role[]> = {
   "engagement.log": ["TCH", "CAD", "GAO"],
 };
 
-export const STATE_VERSION = 5;
+export const STATE_VERSION = 6;
 
 export function createSeedState(): State {
   return {
