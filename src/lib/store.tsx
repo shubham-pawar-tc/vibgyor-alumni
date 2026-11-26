@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { campusName as campusNameFor, consentPurposes, createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
+import { campusName as campusNameFor, campuses as allCampuses, consentPurposes, createSeedState, masterUserKey, REQUEST_DAYS, erpRecords, ERP_EARLIEST_YEAR, migratedRecords, NOTICE_VERSION, STATE_VERSION } from "./data";
 import { maskContacts } from "./mask";
 import type {
   Capability,
@@ -17,6 +17,7 @@ import type {
   BadgeType,
   Broadcast,
   ConsentPurpose,
+  InterestStatus,
   MatchField,
   OutboxMsg,
   State,
@@ -70,6 +71,8 @@ export function loginInviteBody(template: string, u: User) {
 }
 
 /** Age gate (Settings): a student below their campus's minimum class can't be activated. Already-active accounts are not affected. */
+const campusIdsAll = () => allCampuses.map((c) => c.id);
+
 export function belowAgeGate(s: State, u: User | undefined) {
   if (!u || u.role !== "STU" || u.studentStatus === "active") return false;
   return u.studentStatus === "not_eligible" || (u.className ?? 0) < (s.campusMinClass?.[u.campusIds[0]] ?? 8);
@@ -175,6 +178,9 @@ interface Ctx {
   decideJob: (id: string, approve: boolean, actorId: string) => void;
   closeJob: (id: string, actorId: string) => void;
   markInterest: (jobId: string, userId: string, note?: string) => void;
+  setInterestStatus: (jobId: string, studentId: string, status: InterestStatus, note: string, actorId: string) => void;
+  saveStaff: (u: { id?: string; name: string; email: string; mobile: string; role: Role; campusIds: string[] }, actorId: string) => { ok: boolean; error?: string };
+  resetTwoFactor: (userId: string, actorId: string) => void;
   createEvent: (e: Omit<VaaEvent, "id" | "createdAt" | "rsvps">) => void;
   rsvp: (eventId: string, userId: string, status: RsvpStatus, guests?: number) => void;
   joinEvent: (eventId: string, userId: string) => void;
@@ -975,6 +981,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       setDeactivated: (userId, off, actorId) => {
         const u = getUser(userId);
+        if (off && userId === actorId) return;
+        if (off && u?.role === "SAD" && stateRef.current.users.filter((x) => x.role === "SAD" && !x.deactivated).length <= 1) return;
         setState((s) => ({ ...s, users: s.users.map((x) => (x.id === userId ? { ...x, deactivated: off } : x)) }));
         log({ actorId, action: off ? "Account deactivated" : "Account reactivated", target: u?.name ?? userId, campusId: u?.campusIds[0], category: "admin" });
       },
@@ -1144,6 +1152,85 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const j = stateRef.current.jobs.find((x) => x.id === id);
         log({ actorId, action: "Job closed", target: j?.title ?? id, campusId: j?.campusId, category: "community" });
       },
+      setInterestStatus: (jobId, studentId, status, note, actorId) => {
+        const j = stateRef.current.jobs.find((x) => x.id === jobId);
+        const stu = getUser(studentId);
+        const actor = getUser(actorId);
+        if (!j || !stu || !actor || stu.role !== "STU") return;
+        if (actor.role === "TCH" && !actor.campusIds.includes(stu.campusIds[0])) return;
+        setState((s) => ({
+          ...s,
+          jobs: s.jobs.map((x) =>
+            x.id === jobId
+              ? { ...x, interested: x.interested.map((i) => (i.userId === studentId ? { ...i, counsellor: { status, note: note.trim() || undefined, by: actorId, at: now() } } : i)) }
+              : x
+          ),
+        }));
+        const label: Record<InterestStatus, string> = { new: "New", checking: "Checking with your parent", passed_on: "Passed on to the company", declined: "Not taken forward" };
+        pushOutbox({
+          channel: "push",
+          to: stu.name,
+          toUserId: stu.id,
+          body: `Your counsellor updated "${j.title}": ${label[status]}${note.trim() ? ` · ${note.trim()}` : ""}`,
+          link: { label: "Open internships", href: "/portal/jobs" },
+        });
+        if (status === "passed_on" || status === "declined")
+          (stu.parentIds ?? []).map((id) => getUser(id)).forEach((p) => {
+            if (!p) return;
+            pushOutbox({
+              channel: "whatsapp",
+              to: `${p.name} · ${maskMobile(p.mobile)}`,
+              toUserId: p.id,
+              body: `${childTag(stu)} ${firstName(stu.name)}'s interest in "${j.title}" at ${j.company}: ${label[status].toLowerCase()}.${note.trim() ? ` Counsellor's note: ${note.trim()}` : ""}`,
+            });
+          });
+        log({ actorId, action: "Student interest updated", target: `${stu.name} · ${j.title}`, campusId: stu.campusIds[0], category: "community", detail: label[status] });
+      },
+      saveStaff: (input, actorId) => {
+        const actor = getUser(actorId);
+        if (actor?.role !== "SAD") return { ok: false, error: "Only the Super Admin can manage staff." };
+        const STAFF: Role[] = ["TCH", "CAD", "GAO", "FIN", "MCZ", "SAD"];
+        if (!STAFF.includes(input.role)) return { ok: false, error: "Pick a staff role." };
+        if (input.name.trim().length < 3 || !/\S+@\S+\.\S+/.test(input.email)) return { ok: false, error: "Enter a name and a valid email." };
+        const all = campusIdsAll();
+        const campusIds = input.role === "GAO" || input.role === "SAD" ? all : input.campusIds;
+        if ((input.role === "TCH" || input.role === "CAD") && campusIds.length !== 1) return { ok: false, error: "Teachers and Campus Admins have exactly one campus." };
+        if ((input.role === "FIN" || input.role === "MCZ") && campusIds.length < 1) return { ok: false, error: "Assign at least one campus." };
+        const st = stateRef.current;
+        const clash = st.users.find((u) => u.email.toLowerCase() === input.email.trim().toLowerCase() && u.id !== input.id);
+        if (clash) return { ok: false, error: `${clash.name} already uses that email.` };
+        const before = input.id ? getUser(input.id) : undefined;
+        if (before && before.role === "SAD" && input.role !== "SAD" && st.users.filter((u) => u.role === "SAD" && !u.deactivated).length <= 1)
+          return { ok: false, error: "There must always be at least one Super Admin." };
+        if (before && before.id === actorId && input.role !== "SAD") return { ok: false, error: "You can't change your own role." };
+        if (before) {
+          setState((s) => ({ ...s, users: s.users.map((u) => (u.id === before.id ? { ...u, name: input.name.trim(), email: input.email.trim(), mobile: input.mobile.trim(), role: input.role, campusIds } : u)) }));
+          log({
+            actorId,
+            action: "Staff access changed",
+            target: before.name,
+            category: "admin",
+            detail: `${before.role} → ${input.role} · ${campusIds.length === all.length ? "all campuses" : campusIds.map((c) => campusNameFor(c)).join(", ")}`,
+          });
+        } else {
+          const id = uid("staff");
+          setState((s) => ({ ...s, users: [...s.users, { id, name: input.name.trim(), email: input.email.trim(), mobile: input.mobile.trim() || "—", role: input.role, campusIds }] }));
+          pushOutbox({
+            channel: "email",
+            to: `${input.name.trim()} · ${input.email.trim()}`,
+            body: `Subject: Your VIBGYOR Alumni Platform staff account\n\nHi ${firstName(input.name)}, you've been added as ${input.role}. Sign in at vaa.vibgyor.in/login with ${input.email.trim()}: we'll send a one-time code, then you'll set up 2-factor sign-in. No password is needed.`,
+            link: { label: "Open login link", href: `/login?id=${encodeURIComponent(input.email.trim())}` },
+          });
+          log({ actorId, action: "Staff account created", target: input.name.trim(), category: "admin", detail: `${input.role} · ${campusIds.length === all.length ? "all campuses" : campusIds.map((c) => campusNameFor(c)).join(", ")}` });
+        }
+        return { ok: true };
+      },
+      resetTwoFactor: (userId, actorId) => {
+        const u = getUser(userId);
+        if (!u || getUser(actorId)?.role !== "SAD") return;
+        pushOutbox({ channel: "email", to: `${u.name} · ${u.email}`, toUserId: u.id, body: "Subject: 2-factor sign-in reset\n\nYour 2-factor sign-in was reset by the Super Admin. You'll be asked to set it up again next time you sign in. If you didn't ask for this, contact the alumni office." });
+        log({ actorId, action: "2-factor reset", target: u.name, category: "admin" });
+      },
       markInterest: (jobId, userId, note) => {
         const j = stateRef.current.jobs.find((x) => x.id === jobId);
         const u = getUser(userId);
@@ -1151,9 +1238,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setState((s) => ({ ...s, jobs: s.jobs.map((x) => (x.id === jobId ? { ...x, interested: [...x.interested.filter((i) => i.userId !== userId), { userId, at: now(), note }] } : x)) }));
         if (u.role === "STU") {
           // students never contact the employer directly: it goes to the campus career counsellor (CS-4)
-          const tch = stateRef.current.users.find((x) => x.role === "TCH" && x.campusIds.includes(u.campusIds[0]));
-          if (tch)
-            pushOutbox({ channel: "email", to: `${tch.name} · ${tch.email}`, toUserId: tch.id, body: `Subject: Student interest – ${j.title}\n\n${u.name} (Class ${u.className}) is interested in "${j.title}" at ${j.company}. Please check with the parent before passing the application on.` });
+          stateRef.current.users
+            .filter((x) => x.role === "TCH" && !x.deactivated && x.campusIds.includes(u.campusIds[0]))
+            .forEach((tch) =>
+              pushOutbox({
+                channel: "email",
+                to: `${tch.name} · ${tch.email}`,
+                toUserId: tch.id,
+                body: `Subject: Student interest – ${j.title}\n\n${u.name} (Class ${u.className}) is interested in "${j.title}" at ${j.company}. Please check with the parent before passing the application on.`,
+                link: { label: "Open student interest", href: "/portal/teacher/interest" },
+              })
+            );
           log({ actorId: userId, action: "Student interest sent to career counsellor", target: `${j.title} · ${j.company}`, campusId: u.campusIds[0], category: "community" });
         } else {
           const poster = getUser(j.postedBy);

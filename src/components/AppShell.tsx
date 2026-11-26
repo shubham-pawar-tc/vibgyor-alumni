@@ -115,6 +115,7 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { section: "Governance", href: "/portal/admin/audit", label: "Audit log", icon: FileClock },
         ...(me.role === "SAD"
           ? [
+              { href: "/portal/admin/staff", label: "Staff & scopes", icon: UsersRound },
               { href: "/portal/admin/permissions", label: "Permissions", icon: KeyRound },
               { href: "/portal/admin/settings", label: "Settings", icon: Settings },
             ]
@@ -122,7 +123,11 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
       ];
     }
     case "TCH":
-      return [home, { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen }];
+      return [
+        home,
+        { href: "/portal/teacher/interest", label: "Student interest", icon: Briefcase },
+        { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen },
+      ];
     default:
       return [home];
   }

@@ -47,7 +47,7 @@
 flowchart TD
     A([Login: OTP + 2FA]) --> B[Group alumni dashboard<br/>All 39 campuses]
     B --> C[Same queues as Campus Admin,<br/>every campus]
-    B --> D[Campuses table<br/>top 8 by records · verified % · mentors]
+    B --> D[Campuses table<br/>top 8 or all 39 · sortable · CSV export]
     B --> E[Duplicates]
     B --> F[Master lists]
     B --> G[Broadcasts to any / all campuses]
@@ -63,7 +63,7 @@ flowchart LR
     A([Group dashboard]) --> B[Stats across all campuses:<br/>Alumni records · Active mentors ·<br/>Open safety reports · Awaiting consent]
     A --> C[Work queues, all campuses]
     A --> D[Data completeness KPIs]
-    A --> E[Campuses: top 8<br/>Alumni · Verified % · Mentors]
+    A --> E[Campuses: top 8 / show all 39<br/>sort by Campus · Alumni · Verified % · Mentors<br/>Export CSV]
     A --> F[Recent activity]
 ```
 
@@ -128,7 +128,7 @@ Verification, safeguarding, moderation, data requests, jobs & events, records, e
 |---|---|---|
 | 1 | Admin pages had no role guard | ✅ **Fixed** (see [CAD-FLOW.md](CAD-FLOW.md) section 9) |
 | 2 | `verify`, `chats.read`, `broadcast.send`, `records.view` weren't enforced | ✅ **Fixed** (CAD section 9) |
-| 3 | The Campuses table only shows the top 8 | Open: full sortable table of all 39 campuses with export |
+| 3 | The Campuses table only showed the top 8 | ✅ **Fixed.** *Show all 39 campuses*, click any column heading to sort, *Export CSV* downloads all 39 |
 
 ---
 

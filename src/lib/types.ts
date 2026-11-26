@@ -123,7 +123,13 @@ export interface Job {
   status: "pending" | "approved" | "rejected" | "closed";
   at: string;
   decidedBy?: string;
-  interested: { userId: string; at: string; note?: string }[];
+  interested: {
+    userId: string;
+    at: string;
+    note?: string;
+    /** Students only: what the campus career counsellor has done with this interest. */
+    counsellor?: { status: InterestStatus; note?: string; by: string; at: string };
+  }[];
 }
 
 export type RsvpStatus = "going" | "maybe" | "no";
@@ -265,6 +271,8 @@ export interface BadgeRequest {
   at: string;
   status: "pending" | "approved" | "rejected";
 }
+
+export type InterestStatus = "new" | "checking" | "passed_on" | "declined";
 
 export type Channel = "email" | "whatsapp" | "push" | "sms";
 

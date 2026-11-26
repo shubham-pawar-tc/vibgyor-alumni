@@ -188,9 +188,11 @@ flowchart LR
     A([Internships]) --> B[Only posts marked<br/>'Also show to current students'<br/>AND approved by the campus]
     B --> C[I'm interested]
     C --> D[Email to campus career counsellor<br/>NOT the company]
-    D --> E[Counsellor checks with the parent]
-    E --> F[Counsellor helps the student apply]
+    D --> E[Counsellor: Checking with parent]
+    E --> F[Passed on to the company<br/>or Not taken forward]
     C --> G[Button → 'Sent to your counsellor']
+    E -.-> G2[Card shows the counsellor's status]
+    F -.-> G2
 ```
 
 Callout: *"When you tap 'I'm interested', your campus career counsellor gets the request, not the company. They check with your parent and help you apply."*
@@ -269,7 +271,7 @@ Data download / correction / deletion for a student is done **by the parent** fr
 |---|---|---|
 | 1 | A student below the age gate fell through to the normal home | ✅ **Fixed.** Below-gate students (e.g. Advait, Class 7) see *"Not open for your class yet"*. No consent request can be sent, the consent link says *"This link is not active"*, and the admin *Remind all* skips them. The gate uses the campus's current setting, so raising it in Settings also stops new activations. Students already active are not affected |
 | 2 | No button to ask a parent for mentor contact | ✅ **Fixed.** *Ask my parent to allow mentor contact* on Home and Find a mentor sends every guardian a WhatsApp starting `[Child · Class N]` with a link to the Consent centre |
-| 3 | Students can't see or download their own data; only the parent can | Open: policy decision for when the student turns 18 or leaves school |
+| 3 | Students couldn't see or download their own data | ✅ **Default built (needs VIBGYOR sign-off).** Under 18: profile says the parent manages data from the Consent centre. From the 18th birthday (from `dob`): the student's profile shows *Your data* (download, correct, delete, complaint). Still a policy question: should the 18-year-old also take over consent from the parent? Today consent stays with the parent |
 
 ---
 

@@ -118,6 +118,12 @@ function ReportCard({ r, allowed, onAct }: { r: Report; allowed: boolean; onAct:
             <p className="mt-1 line-clamp-2 text-muted">
               <MaskedText text={job.description} />
             </p>
+            <p className="mt-1.5 text-[13px] text-muted">
+              Status: {job.status} · {job.interested.length} interested ·{" "}
+              <Link href="/portal/admin/content" className="font-semibold text-primary hover:underline">
+                Open in Jobs &amp; events
+              </Link>
+            </p>
           </>
         )}
         {r.kind === "profile" && subject && (

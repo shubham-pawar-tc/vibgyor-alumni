@@ -58,7 +58,8 @@ What each role sees in the portal menu. Pages outside a role's list show *"Not a
 | Become a mentor / Mentor badge | – | – | – | – | ✅ | – | – | – | – | – | – |
 | Admin: Verification, Safeguarding, Moderation, Data requests, Jobs & events, Alumni records, Engagement log, Student consents, Broadcasts, Audit log | – | – | – | – | – | – | ✅ | ✅ | – | – | ✅ ⁴ |
 | Admin: Duplicates, Master lists | – | – | – | – | – | – | – | ✅ | – | – | ✅ |
-| Admin: Permissions, Settings | – | – | – | – | – | – | – | – | – | – | ✅ |
+| Admin: Staff & scopes, Permissions, Settings | – | – | – | – | – | – | – | – | – | – | ✅ |
+| Student interest (internship inbox) | – | – | – | – | – | ✅ own campus | – | – | – | – | – |
 
 1. Only after a parent consents (platform use; mentor contact for messaging). Locked/paused students see a lock screen.
 2. *Mentor inbox* – only alumni holding an active Mentor badge.
@@ -66,7 +67,7 @@ What each role sees in the portal menu. Pages outside a role's list show *"Not a
 4. Pages open for SAD, but actions follow the capability matrix below (e.g. SAD cannot approve verifications, read chats or send broadcasts by default; those buttons show *"Your role can't …"*). Admin pages refuse non-staff with *"Staff only"*; the Engagement log also allows TCH (own campus).
 5. *Mentor chats* – parents read their own children's conversations, can join them to message the mentor (can't start new ones), and can report a message; each view is logged.
 
-TCH, FIN and MCZ see a role overview in this prototype (TCH also has the Engagement log); their full tools arrive in later releases:
+TCH, FIN and MCZ see a role overview in this prototype (TCH also has Student interest and the Engagement log); their full tools arrive in later releases. Super Admin assigns each staff member's campuses in *Staff & scopes*:
 
 - **TCH** – student 3C preferences, mentor match suggestions, career talk requests, campus events. Own campus only; can't broadcast or export.
 - **FIN** – payments, 80G receipts & Form 10BD, refunds, reconciliation (Release 3). No directory or student data.

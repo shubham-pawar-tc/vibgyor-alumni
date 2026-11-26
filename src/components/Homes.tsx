@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { download, toCsv } from "@/lib/admin";
 import { AskMentorPermission } from "./AskMentorPermission";
 import {
   ArrowRight,
@@ -654,24 +655,51 @@ function ScopeNote() {
 }
 
 function CampusTable() {
-  const rows = campuses
+  const [sort, setSort] = useState<"total" | "verified" | "mentors" | "name">("total");
+  const [all, setAll] = useState(false);
+  const sorted = campuses
     .map((c, i) => {
       const p = population.filter((r) => r.campusIdx === i);
       return { c, total: p.length, verified: p.filter((r) => r.verified).length, mentors: p.filter((r) => r.mentor).length };
     })
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 8);
+    .sort((a, b) =>
+      sort === "name" ? a.c.name.localeCompare(b.c.name) : sort === "verified" ? b.verified / (b.total || 1) - a.verified / (a.total || 1) : b[sort] - a[sort]
+    );
+  const rows = all ? sorted : sorted.slice(0, 8);
+  const exportCsv = () =>
+    download(
+      "campuses.csv",
+      toCsv([["Campus", "City", "Alumni", "Verified %", "Mentors"], ...sorted.map((r) => [r.c.name, r.c.city, r.total, r.total ? Math.round((r.verified / r.total) * 100) : 0, r.mentors])])
+    );
+  const th = (k: typeof sort, text: string, cls: string) => (
+    <th className={cls}>
+      <button type="button" onClick={() => setSort(k)} className={cn("font-semibold hover:text-text", sort === k && "text-text underline underline-offset-4")}>
+        {text}
+      </button>
+    </th>
+  );
   return (
     <Card className="overflow-hidden">
-      <CardHeader title="Campuses" subtitle="Top 8 by alumni records" action={<Req ids="M1" />} />
+      <CardHeader
+        title="Campuses"
+        subtitle={all ? `All ${campuses.length} campuses` : `Top 8 of ${campuses.length}`}
+        action={
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={exportCsv}>
+              Export CSV
+            </Button>
+            <Req ids="M1" />
+          </div>
+        }
+      />
       <div className="overflow-x-auto">
         <table className="w-full min-w-[480px] text-[14px]">
           <thead>
             <tr className="border-b border-border text-left text-[13px] text-muted">
-              <th className="px-5 py-2.5 font-semibold">Campus</th>
-              <th className="px-3 py-2.5 text-right font-semibold">Alumni</th>
-              <th className="px-3 py-2.5 text-right font-semibold">Verified</th>
-              <th className="px-5 py-2.5 text-right font-semibold">Mentors</th>
+              {th("name", "Campus", "px-5 py-2.5")}
+              {th("total", "Alumni", "px-3 py-2.5 text-right")}
+              {th("verified", "Verified", "px-3 py-2.5 text-right")}
+              {th("mentors", "Mentors", "px-5 py-2.5 text-right")}
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -681,13 +709,16 @@ function CampusTable() {
                   {r.c.name} <span className="text-muted">· {r.c.city}</span>
                 </td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{r.total}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{Math.round((r.verified / r.total) * 100)}%</td>
+                <td className="px-3 py-2.5 text-right tabular-nums">{r.total ? Math.round((r.verified / r.total) * 100) : 0}%</td>
                 <td className="px-5 py-2.5 text-right tabular-nums">{r.mentors}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <button type="button" onClick={() => setAll(!all)} className="w-full border-t border-border py-2.5 text-[14px] font-semibold text-primary hover:bg-surface-2/60">
+        {all ? "Show top 8" : `Show all ${campuses.length} campuses`}
+      </button>
     </Card>
   );
 }

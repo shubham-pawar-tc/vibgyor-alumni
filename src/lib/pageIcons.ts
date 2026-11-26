@@ -45,6 +45,8 @@ const map: [string, LucideIcon, string][] = [
   ["/portal/admin/masters", ListChecks, B],
   ["/portal/admin/broadcast", Megaphone, R],
   ["/portal/admin/audit", FileClock, I],
+  ["/portal/admin/staff", UsersRound, G],
+  ["/portal/teacher/interest", Briefcase, O],
   ["/portal/admin/permissions", KeyRound, Y],
   ["/portal/admin/settings", Settings, V],
   ["/portal/profile", UserRound, B],

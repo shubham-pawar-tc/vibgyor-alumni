@@ -270,7 +270,7 @@ Students and parents are never broadcast audiences.
 |---|---|---|
 | 1 | Admin pages could be opened by any signed-in user who typed the URL | ✅ **Fixed.** Every `/portal/admin/*` page is wrapped in `AdminOnly` (CAD / GAO / SAD; the Engagement log also allows TCH). Others see *"Staff only"* |
 | 2 | `verify`, `chats.read`, `broadcast.send`, `records.view` weren't checked | ✅ **Fixed.** Verification and badge decisions need `verify`; *View conversation* needs `chats.read`; *New broadcast* needs `broadcast.send`; Alumni records and the staff directory need `records.view`. Without the capability the page shows *"Your role can't …"* |
-| 3 | Moderation of jobs is split: approval in *Jobs & events*, reports in *Moderation* | Open: link the two, or show reported jobs in Jobs & events |
+| 3 | Job approval and job reports lived on separate pages with no link | ✅ **Fixed.** *Jobs & events → All jobs* shows a red *N reports · review* tag (and a dot on the tab) linking to Moderation; each job report in Moderation shows the job's status and *Open in Jobs & events* |
 
 ---
 

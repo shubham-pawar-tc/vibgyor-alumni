@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { CalendarDays, CheckCircle2, GraduationCap, Plus, XCircle } from "lucide-react";
+import { CalendarDays, CheckCircle2, Flag, GraduationCap, Plus, XCircle } from "lucide-react";
 import { AdminOnly, useScope } from "@/components/admin";
 import { MaskedText } from "@/components/MaskPreview";
 import { Avatar, Button, Callout, Card, Checkbox, Empty, Field, Input, Modal, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
@@ -29,6 +30,8 @@ function Content() {
 
   const jobs = state.jobs.filter((j) => inScope(j.campusId));
   const pending = jobs.filter((j) => j.status === "pending");
+  const reportsFor = (jobId: string) => state.reports.filter((r) => r.kind === "job" && r.jobId === jobId && r.status === "open").length;
+  const reportedJobs = jobs.filter((j) => reportsFor(j.id) > 0).length;
   const events = state.events.filter((e) => e.campusIds === "all" || e.campusIds.some((c) => inScope(c)));
 
   return (
@@ -47,7 +50,7 @@ function Content() {
         <Tabs
           tabs={[
             { id: "approve", label: "Jobs to approve", count: pending.length },
-            { id: "jobs", label: "All jobs", count: jobs.length },
+            { id: "jobs", label: "All jobs", count: jobs.length, dot: reportedJobs > 0 },
             { id: "events", label: "Events", count: events.length },
           ]}
           value={tab}
@@ -127,7 +130,14 @@ function Content() {
                   <td className="px-4 py-3">{campusName(j.campusId)}</td>
                   <td className="px-4 py-3 tabular-nums">{j.interested.length}</td>
                   <td className="px-4 py-3">
-                    <Pill tone={j.status === "approved" ? "success" : j.status === "pending" ? "warning" : j.status === "rejected" ? "danger" : "neutral"}>{j.status}</Pill>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Pill tone={j.status === "approved" ? "success" : j.status === "pending" ? "warning" : j.status === "rejected" ? "danger" : "neutral"}>{j.status}</Pill>
+                      {reportsFor(j.id) > 0 && (
+                        <Link href="/portal/admin/moderation" className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-[12.5px] font-semibold text-danger hover:underline">
+                          <Flag className="h-3 w-3" /> {reportsFor(j.id)} report{reportsFor(j.id) > 1 ? "s" : ""} · review
+                        </Link>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

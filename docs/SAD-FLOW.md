@@ -22,7 +22,22 @@
 | Queues | Verification · Safeguarding · Moderation · Data requests · Jobs & events |
 | People & data | Alumni records · Engagement log · Student consents · Duplicates · Master lists |
 | Communication | Broadcasts |
-| Governance | Audit log · **Permissions** · **Settings** |
+| Governance | Audit log · **Staff & scopes** · **Permissions** · **Settings** |
+
+### Staff & scopes
+
+```mermaid
+flowchart LR
+    A([Staff & scopes]) --> B{Add or edit}
+    B --> C[Name · email · mobile · role]
+    C --> D{Role}
+    D -->|TCH / CAD| E[Exactly one campus]
+    D -->|FIN / MCZ| F[Any set of campuses<br/>select all / clear]
+    D -->|GAO / SAD| G[All campuses, fixed]
+    E & F & G --> H[Save → audit log<br/>new staff get a sign-in email]
+    A --> I[Reset 2-factor → email to the person]
+    A --> J[Switch off → can't sign in<br/>not yourself, not the last SAD]
+```
 
 ### Default permissions for SAD
 
@@ -136,8 +151,8 @@ Same pages as the Group Alumni Office, all campuses:
 |---|---|---|
 | 1 | `verify`, `chats.read`, `broadcast.send`, `records.view` weren't checked, so SAD could approve verifications, read chats and send broadcasts | ✅ **Fixed.** Those actions now follow the matrix. By default SAD sees *"Your role can't approve verifications / read student chats / send broadcasts"*; switching a cell on in Permissions enables it immediately |
 | 2 | Admin pages had no role guard | ✅ **Fixed** (`AdminOnly` on every admin page) |
-| 3 | FIN and MCZ campus assignments are fixed in seed data | Open: *Staff & scopes* page to assign campuses per staff user |
-| 4 | No way to create or remove staff accounts | Open: staff management page with invite, role, campus, 2FA reset |
+| 3 | FIN and MCZ campus assignments were fixed in seed data | ✅ **Fixed.** *Staff & scopes* (`/portal/admin/staff`): pick any set of campuses for Finance and MyCareerZ; TCH and CAD get exactly one; GAO and SAD always see all |
+| 4 | No way to create or remove staff accounts | ✅ **Fixed.** *Add staff* sends a sign-in email (one-time code + 2-factor, no password). Each row can be edited, have 2-factor reset, or be switched off. Safety rules: you can't switch yourself off or change your own role, and the last active Super Admin can't be removed. Every change goes to the audit log |
 
 ---
 

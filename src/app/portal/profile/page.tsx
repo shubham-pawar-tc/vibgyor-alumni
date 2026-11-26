@@ -9,7 +9,7 @@ import { campusName, privateFieldLabels, visibilityLabels } from "@/lib/data";
 import { completeness } from "@/lib/community";
 import { useStore } from "@/lib/store";
 import type { AlumniProfile, PrivateField, ThreeC, User, Visibility } from "@/lib/types";
-import { uid } from "@/lib/utils";
+import { ageFrom, uid } from "@/lib/utils";
 
 export default function ProfilePage() {
   const { me } = useStore();
@@ -361,6 +361,7 @@ function StudentProfile({ me }: { me: User }) {
   const [interest, setInterest] = useState("");
   const [saved, setSaved] = useState(false);
   const parents = (me.parentIds ?? []).map((id) => state.users.find((u) => u.id === id)).filter(Boolean) as User[];
+  const adult = (ageFrom(me.dob) ?? 0) >= 18;
 
   const save = (fields: Partial<User>) => {
     updateProfile(me.id, {}, fields);
@@ -436,8 +437,18 @@ function StudentProfile({ me }: { me: User }) {
           <Callout tone="safe" title="Who sees your profile?">
             Only mentors you message see your first name, class and 3C choices. You&apos;re never listed in the alumni directory, and your contact details are never shown.
           </Callout>
+          {!adult && (
+            <p className="flex items-start gap-1.5 text-[13px] text-muted">
+              <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Until you turn 18, your parent downloads, corrects or deletes your data from their Consent centre (DPDP Act 2023). From your 18th birthday you can do it yourself here.
+            </p>
+          )}
         </div>
       </div>
+      {adult && (
+        <div className="mt-5">
+          <MyData subject={me} />
+        </div>
+      )}
     </>
   );
 }

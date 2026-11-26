@@ -69,3 +69,12 @@ export function avatarHue(name: string) {
   for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360;
   return h;
 }
+
+/** Whole years since `dob` (ISO date). Undefined if no dob. */
+export function ageFrom(dob?: string, at: Date = new Date()) {
+  if (!dob) return undefined;
+  const d = new Date(dob);
+  let a = at.getFullYear() - d.getFullYear();
+  if (at.getMonth() < d.getMonth() || (at.getMonth() === d.getMonth() && at.getDate() < d.getDate())) a--;
+  return a;
+}

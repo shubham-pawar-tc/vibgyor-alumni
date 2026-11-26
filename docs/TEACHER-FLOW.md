@@ -13,7 +13,7 @@
 | Who | Class teacher or career counsellor at one campus |
 | Login | OTP + **2-factor** (all staff) |
 | Scope | **Own campus only** |
-| Menu (today) | **Home** (role overview) · **Engagement log** |
+| Menu (today) | **Home** (role overview) · **Student interest** · **Engagement log** |
 | Capabilities (default matrix) | `engagement.log` (log alumni interactions). Nothing else |
 
 ### Built today
@@ -22,7 +22,7 @@
 |---|---|---|
 | 1 | Sign in with OTP + 2-factor code | `/login` |
 | 2 | See the role overview: planned workspace and access limits | `/portal` |
-| 3 | **Receive students' internship interest** by email: *"Student interest – <job>. <Student> (Class N) is interested… Please check with the parent before passing the application on."* | Email (first teacher on the student's campus) |
+| 3 | **Receive students' internship interest** by email: *"Student interest – <job>. <Student> (Class N) is interested… Please check with the parent before passing the application on."* | Email to every active teacher on the student's campus, with a link to **Student interest** |
 | 4 | Log alumni interactions, own campus (single or bulk CSV) | Engagement log |
 
 ### Planned workspace (from the role overview)
@@ -71,8 +71,12 @@ sequenceDiagram
     S->>P: Internships → I'm interested
     P->>T: Email: "Student interest – Job-shadowing week.<br/>Diya Iyer (Class 12) is interested…<br/>check with the parent first"
     P-->>S: "Sent to your counsellor"
-    T->>N: Checks with the parent (offline today)
-    T->>S: Helps the student apply (offline today)
+    T->>P: Student interest → Update → Checking with parent
+    P-->>S: "Counsellor is checking with your parent"
+    T->>N: Talks to the parent
+    T->>P: Update → Passed on (or Not taking it forward) + note
+    P-->>S: Notification with the note
+    P-->>N: WhatsApp "[Diya · Class 12] … passed on" + note
 ```
 
 Students never contact employers directly. The company only hears from the counsellor.
@@ -103,6 +107,6 @@ flowchart TD
 | # | Item | Status |
 |---|---|---|
 | 1 | Teacher had `engagement.log` but no menu link, and the page blocked them | ✅ **Fixed.** TCH menu: **Home · Engagement log**. The page allows TCH, scoped to their own campus |
-| 2 | Internship interest goes to the **first** teacher found on the campus, with no inbox to track it | Open: teacher inbox with status (checking with parent / passed on / declined) |
+| 2 | Internship interest went to the **first** teacher on the campus, with no inbox | ✅ **Fixed.** Every teacher on the campus is emailed. *Student interest* (`/portal/teacher/interest`) lists own-campus students with tabs *To handle* / *Done*, the student's note, parents and consent; *Update* sets Checking with parent / Passed on / Declined with a note. The student sees the status on the job card; parents get a WhatsApp when it's passed on or declined |
 | 3 | Admin pages had no role guard | ✅ **Fixed.** A teacher opening any other admin page sees *"Staff only"* |
 | 4 | Whole workspace (3C view, match suggestions, talk requests) not built yet | Planned for a later prototype phase |

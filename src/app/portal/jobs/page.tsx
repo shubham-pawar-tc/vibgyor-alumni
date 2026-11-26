@@ -107,6 +107,7 @@ function Jobs() {
             const poster = state.users.find((u) => u.id === j.postedBy);
             const mine = j.postedBy === me.id;
             const done = j.interested.some((i) => i.userId === me.id);
+            const myStatus = j.interested.find((i) => i.userId === me.id)?.counsellor;
             return (
               <Card key={j.id} className="flex flex-col p-5">
                 <div className="flex items-start gap-3">
@@ -161,7 +162,16 @@ function Jobs() {
                     </>
                   ) : done ? (
                     <p className="flex items-center gap-1.5 text-[14px] font-semibold text-success">
-                      <CheckCircle2 className="h-4 w-4" /> {student ? "Sent to your counsellor" : "Interest sent"}
+                      <CheckCircle2 className="h-4 w-4" />{" "}
+                      {!student
+                        ? "Interest sent"
+                        : !myStatus
+                          ? "Sent to your counsellor"
+                          : myStatus.status === "checking"
+                            ? "Counsellor is checking with your parent"
+                            : myStatus.status === "passed_on"
+                              ? "Passed on to the company"
+                              : "Not taken forward"}
                     </p>
                   ) : (
                     <Button
