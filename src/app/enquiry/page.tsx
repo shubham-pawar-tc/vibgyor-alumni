@@ -1,12 +1,15 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- static export with images.unoptimized */
 
 import { allOk, check, clean, whenFilled } from "@/lib/validate";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Clock, Send, ShieldCheck } from "lucide-react";
+import { Clock, Send, ShieldCheck } from "lucide-react";
 import { PublicFooter, PublicHeader } from "@/components/Public";
 import { Button, Callout, Card, Checkbox, Field, Input, Req, Select, Textarea } from "@/components/ui";
 import { campuses } from "@/lib/data";
+import { Emoji, photo, type EmojiName } from "@/components/Emoji";
+import { Backdrop, EmojiSticker, LEAF, PillEyebrow, Underlined } from "@/components/Funk";
 import { useStore } from "@/lib/store";
 
 type Topic = "mycareerz" | "admissions" | "alumni";
@@ -48,11 +51,13 @@ function EnquiryForm() {
 
   if (done)
     return (
-      <Card className="mx-auto max-w-xl p-8 text-center">
-        <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-success-soft text-success">
-          <CheckCircle2 className="h-7 w-7" />
+      <Card className="mx-auto max-w-xl rounded-[1.75rem] rounded-tr-[4rem] p-8 text-center shadow-md">
+        <span className="mx-auto grid h-20 w-20 -rotate-6 place-items-center rounded-3xl border border-border bg-surface shadow-lg">
+          <Emoji name="party" size={48} />
         </span>
-        <h1 className="mt-5 text-2xl font-semibold">Thank you, we&apos;ve got it</h1>
+        <h1 className="mt-6 text-2xl font-semibold">
+          Thank you, <Underlined>we&apos;ve got it</Underlined>
+        </h1>
         <p className="mt-2 text-muted">Your reference is <span className="font-mono font-semibold text-text">{done.ref}</span>.</p>
         {topic === "mycareerz" && (
           <div className="mx-auto mt-6 max-w-sm space-y-2 rounded-xl bg-surface-2 p-4 text-left text-sm">
@@ -82,18 +87,38 @@ function EnquiryForm() {
         <div className="flex gap-2">
           <Req ids="J4" /> <Req ids="F5" /> <Req ids="MCZ-1" />
         </div>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Get in touch</h1>
-        <p className="mt-3 text-body leading-relaxed text-muted">
-          Questions about admissions, the alumni association or MyCareerZ career counselling? Send us a note and the right team will reply within one working day.
-        </p>
-        <div className="mt-8 space-y-4">
-          {[
-            ["Admissions", "Routed to the campus admissions team"],
-            ["MyCareerZ", "Sent straight to a MyCareerZ counsellor, with your consent"],
-            ["Alumni office", "For alumni records, reunions and documents"],
-          ].map(([t, d]) => (
-            <div key={t} className="flex gap-3">
-              <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+        <div className="mt-4">
+          <PillEyebrow emoji="mail">Contact</PillEyebrow>
+        </div>
+        <h1 className="mt-4 text-3xl font-semibold sm:text-[2.75rem] sm:leading-[1.12]">
+          Get in <Underlined>touch</Underlined>
+        </h1>
+        <p className="mt-4 text-body leading-relaxed text-muted">The right team replies within one working day.</p>
+
+        <div className="relative mt-8 hidden px-3 pt-3 lg:block">
+          <Backdrop dots="left" />
+          <div className={`relative overflow-hidden ${LEAF} shadow-lg ring-1 ring-black/5`}>
+            <img src={photo("mentor-session")} alt="" className="aspect-[16/10] w-full object-cover" />
+          </div>
+          <EmojiSticker name="envelope" size={30} className="absolute -right-1 top-0 rotate-12" />
+          <EmojiSticker name="chat" size={26} className="absolute -bottom-3 left-8 -rotate-6" />
+        </div>
+
+        <div className="mt-8 space-y-3">
+          {(
+            [
+              ["classical", "Admissions", "Campus admissions team"],
+              ["bulb", "MyCareerZ", "A career counsellor, with your consent"],
+              ["graduation-cap", "Alumni office", "Records, reunions, documents"],
+            ] as [EmojiName, string, string][]
+          ).map(([e, t, d], i) => (
+            <div
+              key={t}
+              className={`flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-xs transition-transform duration-300 hover:rotate-0 ${
+                i % 2 ? "rotate-[0.5deg]" : "-rotate-[0.5deg]"
+              }`}
+            >
+              <Emoji name={e} size={34} />
               <div>
                 <p className="text-sm font-semibold">{t}</p>
                 <p className="text-sm text-muted">{d}</p>
@@ -103,7 +128,7 @@ function EnquiryForm() {
         </div>
       </div>
 
-      <Card className="p-5 sm:p-7">
+      <Card className="rounded-[1.75rem] rounded-tr-[4rem] p-5 shadow-md sm:p-7">
         <form onSubmit={submit} className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="I want to talk to" htmlFor="topic">
@@ -175,7 +200,7 @@ export default function EnquiryPage() {
   return (
     <>
       <PublicHeader />
-      <main className="px-4 py-12 sm:px-6 sm:py-16">
+      <main className="overflow-hidden px-4 py-12 sm:px-6 sm:py-16">
         <Suspense>
           <EnquiryForm />
         </Suspense>

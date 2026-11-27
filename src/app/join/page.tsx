@@ -3,8 +3,10 @@
 import { allOk, check, clean, normalizeMobile, whenFilled } from "@/lib/validate";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, AtSign, BadgeCheck, Check, CheckCircle2, Clock, Copy, Database, Hash, HeartHandshake, History, Lock, Mail, MailCheck, PartyPopper, Phone, Search, ShieldCheck, Sparkles, User, UserPlus, Users, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, AtSign, BadgeCheck, Check, CheckCircle2, Clock, Copy, Hash, HeartHandshake, Mail, MailCheck, PartyPopper, Phone, Search, ShieldCheck, Sparkles, User, Wand2 } from "lucide-react";
 import { AuthBand, PublicFooter, PublicHeader } from "@/components/Public";
+import { Underlined } from "@/components/Funk";
+import { Emoji } from "@/components/Emoji";
 import { Reveal } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { Avatar, Button, Callout, Card, Field, Input, Pill, Req, Select } from "@/components/ui";
@@ -73,21 +75,23 @@ export default function JoinPage() {
       <PublicHeader />
       <AuthBand
         eyebrow="Join the VIBGYOR Alumni Association"
-        eyebrowIcon={UserPlus}
+        emoji="graduation-cap"
         title={
           <>
-            One VIBGYOR. Every Generation.
+            One VIBGYOR. Every generation.
             <span className="mt-1 block text-primary">
-              <span className="accent-underline box-decoration-clone">A Lifetime of Connections.</span>
+              A lifetime of <Underlined>connections.</Underlined>
             </span>
           </>
         }
         body="Claim the profile you had on the old portal or sign up fresh. It takes under two minutes."
         chips={[
-          { icon: History, label: "Old profiles kept", color: "var(--o)" },
-          { icon: BadgeCheck, label: "Instant verification", color: "var(--g)" },
-          { icon: Lock, label: "You control your privacy", color: "var(--v)" },
+          { emoji: "hourglass", label: "Old profiles kept" },
+          { emoji: "check", label: "Instant verification" },
+          { emoji: "lock", label: "You control your privacy" },
         ]}
+        image="alumni-reunion"
+        stickers={["graduation-cap", "handshake", "heart"]}
       />
       <main className="relative mx-auto -mt-20 grid max-w-6xl items-start gap-8 px-4 pb-6 sm:px-6 lg:grid-cols-[1.35fr_1fr]">
         <Reveal>
@@ -106,8 +110,8 @@ export default function JoinPage() {
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
                 <button onClick={() => setStep("claim")} className="group relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-primary-soft/40 p-5 text-left transition-colors duration-150 hover:-translate-y-0.5 hover:border-primary">
                   <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-fg">Most alumni</span>
-                  <span className=" grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-fg">
-                    <History className="h-6 w-6" />
+                  <span className="grid h-14 w-14 -rotate-6 place-items-center rounded-2xl border border-border bg-surface shadow-md transition-transform duration-300 group-hover:rotate-0">
+                    <Emoji name="key" size={34} />
                   </span>
                   <p className="mt-4 font-semibold">Claim my existing profile</p>
                   <p className="mt-1 text-sm text-muted">Find it with the email or mobile you used before. No need to start again.</p>
@@ -116,8 +120,8 @@ export default function JoinPage() {
                   </span>
                 </button>
                 <button onClick={() => setStep("details")} className="group rounded-2xl border-2 border-border p-5 text-left transition-colors duration-150 hover:-translate-y-0.5 hover:border-primary/50">
-                  <span className=" grid h-12 w-12 place-items-center rounded-lg border border-border bg-surface-2 text-muted">
-                    <UserPlus className="h-6 w-6" />
+                  <span className="grid h-14 w-14 rotate-6 place-items-center rounded-2xl border border-border bg-surface shadow-md transition-transform duration-300 group-hover:rotate-0">
+                    <Emoji name="sparkles" size={34} />
                   </span>
                   <p className="mt-4 font-semibold">I&apos;m new here</p>
                   <p className="mt-1 text-sm text-muted">Sign up with your campus, pass year and admission number.</p>
@@ -345,22 +349,20 @@ export default function JoinPage() {
         <Reveal delay={120} className="space-y-4">
           <Card className="p-6">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-success-soft text-success">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
+              <Emoji name="shield" size={40} />
               <p className="font-semibold">How we verify alumni</p>
             </div>
             <p className="mt-1 text-sm text-muted">So that students only ever meet real VIBGYOR alumni.</p>
             <ol className="relative mt-6 space-y-6">
               <span className="absolute bottom-4 left-[18px] top-4 w-px bg-border" aria-hidden />
               {[
-                { icon: Database, color: "var(--g)", title: "Automatic match", body: "Pass year + admission number + name checked against school records. Instant." },
-                { icon: Users, color: "var(--b)", title: "Campus alumni office", body: "If anything differs, your campus checks it with the records side by side." },
-                { icon: HeartHandshake, color: "var(--v)", title: "Peer vouch", body: "For older batches without digital records, two verified batchmates can vouch for you." },
+                { emoji: "gear" as const, title: "Automatic match", body: "Pass year + admission number + name checked against school records. Instant." },
+                { emoji: "classical" as const, title: "Campus alumni office", body: "If anything differs, your campus checks it with the records side by side." },
+                { emoji: "handshake" as const, title: "Peer vouch", body: "For older batches without digital records, two verified batchmates can vouch for you." },
               ].map((s, i) => (
                 <li key={s.title} className="relative flex gap-3">
-                  <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-surface-2 text-muted ring-4 ring-surface">
-                    <s.icon className="h-[18px] w-[18px]" />
+                  <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-surface ring-4 ring-surface">
+                    <Emoji name={s.emoji} size={24} />
                     <span className="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-surface text-xs font-semibold text-text shadow">{i + 1}</span>
                   </span>
                   <div>

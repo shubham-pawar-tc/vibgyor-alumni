@@ -1,14 +1,17 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- static export with images.unoptimized */
 
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { LogIn, Menu, X, type LucideIcon } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
 import { Button, Logo } from "./ui";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
-import { Dropdown, Enter, EnterItem } from "./motion";
+import { Dropdown, Enter, EnterItem, Reveal } from "./motion";
+import { Emoji, photo as photoUrl, type EmojiName } from "./Emoji";
+import { Backdrop, EmojiSticker, LEAF, PillEyebrow } from "./Funk";
 
 export { ThemeToggle };
 
@@ -125,36 +128,62 @@ export function PublicFooter() {
   );
 }
 
-/** Page-top band used by login, join and other public flows. Content below can overlap it with a negative margin. */
+/** Page-top band for public flows (join): pill eyebrow, big title, emoji chips and a leaf-framed photo.
+ *  Content below can overlap the bottom of the band with a negative margin. */
 export function AuthBand({
   eyebrow,
+  emoji = "sparkles",
   title,
   body,
   chips,
+  image,
+  stickers = [],
 }: {
   eyebrow: string;
-  eyebrowIcon?: LucideIcon;
+  emoji?: EmojiName;
   title: React.ReactNode;
   body?: React.ReactNode;
-  chips?: { icon: LucideIcon; label: string; color?: string }[];
+  chips?: { emoji: EmojiName; label: string }[];
+  /** File name in public/images/photos, without extension. */
+  image?: string;
+  stickers?: EmojiName[];
 }) {
   return (
-    <section className="border-b border-border bg-surface pb-28 pt-12 sm:pt-14">
-      <Enter className="container-page">
-        <EnterItem as="p" className="eyebrow">{eyebrow}</EnterItem>
-        <EnterItem as="h1" className="mt-3 max-w-2xl text-3xl font-semibold sm:text-4xl">{title}</EnterItem>
-        {body && <EnterItem as="p" className="mt-4 max-w-xl text-base text-muted">{body}</EnterItem>}
-        {chips && (
-          <EnterItem><ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-            {chips.map((c) => (
-              <li key={c.label} className="inline-flex items-center gap-2 text-sm text-muted">
-                <c.icon className="h-4 w-4 text-accent-strong" />
-                {c.label}
-              </li>
-            ))}
-          </ul></EnterItem>
+    <section className="overflow-hidden border-b border-border bg-surface pb-28 pt-10 sm:pt-12">
+      <div className="container-page grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+        <Enter>
+          <EnterItem>
+            <PillEyebrow emoji={emoji}>{eyebrow}</PillEyebrow>
+          </EnterItem>
+          <EnterItem as="h1" className="mt-5 max-w-2xl text-3xl font-semibold sm:text-[2.75rem] sm:leading-[1.12]">{title}</EnterItem>
+          {body && <EnterItem as="p" className="mt-5 max-w-xl text-base text-muted">{body}</EnterItem>}
+          {chips && (
+            <EnterItem className="mt-6 flex flex-wrap gap-2">
+              {chips.map((c, i) => (
+                <span
+                  key={c.label}
+                  className={`inline-flex items-center gap-2 rounded-full border border-border bg-surface py-1.5 pl-2 pr-3.5 text-sm font-medium shadow-xs transition-transform duration-200 hover:-translate-y-0.5 hover:rotate-0 ${
+                    i % 2 ? "rotate-1" : "-rotate-1"
+                  }`}
+                >
+                  <Emoji name={c.emoji} size={22} /> {c.label}
+                </span>
+              ))}
+            </EnterItem>
+          )}
+        </Enter>
+        {image && (
+          <Reveal delay={120} className="relative mx-auto hidden w-full max-w-[460px] px-4 pt-4 lg:block">
+            <Backdrop />
+            <div className={`relative overflow-hidden ${LEAF} shadow-lg ring-1 ring-black/5`}>
+              <img src={photoUrl(image)} alt="" className="aspect-[5/3.6] w-full object-cover" />
+            </div>
+            {stickers[0] && <EmojiSticker name={stickers[0]} size={34} className="absolute left-0 top-0 -rotate-12" />}
+            {stickers[1] && <EmojiSticker name={stickers[1]} size={30} className="absolute -right-1 top-1/2 rotate-12" />}
+            {stickers[2] && <EmojiSticker name={stickers[2]} size={26} className="absolute -bottom-3 left-1/3 rotate-6" />}
+          </Reveal>
         )}
-      </Enter>
+      </div>
     </section>
   );
 }

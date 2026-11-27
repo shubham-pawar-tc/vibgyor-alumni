@@ -1,10 +1,11 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- static export with images.unoptimized */
 
 import { check, clean, whenFilled } from "@/lib/validate";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, AtSign, ChevronRight, KeyRound, Lock, ShieldCheck, Smartphone, type LucideIcon } from "lucide-react";
+import { ArrowRight, AtSign, ChevronRight, KeyRound, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Enter, EnterItem, Reveal } from "@/components/motion";
 import { Avatar, Button, Field, Input, Logo, LogoTiles, Modal, Pill, Req, Tabs } from "@/components/ui";
@@ -13,6 +14,8 @@ import { useStore } from "@/lib/store";
 import type { User } from "@/lib/types";
 import { maskMobile } from "@/lib/utils";
 import { DemoOtpFill } from "@/components/DemoOtpFill";
+import { Emoji, photo, type EmojiName } from "@/components/Emoji";
+import { Backdrop, EmojiSticker, LEAF, PillEyebrow, Underlined } from "@/components/Funk";
 
 const groups: { title: string; roles: string[] }[] = [
   { title: "Students & parents", roles: ["STU", "PAR"] },
@@ -20,10 +23,10 @@ const groups: { title: string; roles: string[] }[] = [
   { title: "Staff & partners · 2-factor", roles: ["TCH", "CAD", "GAO", "FIN", "MCZ", "SAD"] },
 ];
 
-const trust: { icon: LucideIcon; label: string; body: string }[] = [
-  { icon: Smartphone, label: "One-time codes", body: "By SMS in India, by email overseas." },
-  { icon: ShieldCheck, label: "Two-factor for staff", body: "Every admin action is recorded in the audit log." },
-  { icon: Lock, label: "Data stored in India", body: "Handled under the DPDP Act 2023." },
+const trust: { emoji: EmojiName; label: string; body: string }[] = [
+  { emoji: "phone", label: "One-time codes", body: "By SMS in India, by email overseas." },
+  { emoji: "shield", label: "Two-factor for staff", body: "Every admin action is recorded in the audit log." },
+  { emoji: "lock", label: "Data stored in India", body: "Handled under the DPDP Act 2023." },
 ];
 
 export default function LoginPage() {
@@ -100,24 +103,35 @@ export default function LoginPage() {
             <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">Alumni Association</span>
           </Link>
           <Enter className="max-w-md">
-            <EnterItem as="p" className="text-xs font-semibold uppercase tracking-[0.08em] text-white/60">
-              Sign in
-            </EnterItem>
-            <EnterItem as="h1" className="mt-4 text-4xl font-semibold text-white">
-              Welcome back to the VIBGYOR family.
-            </EnterItem>
-            <EnterItem as="p" className="mt-4 text-base text-white/70">
-              Alumni, students, parents and staff all sign in here. No passwords to remember: we send you a one-time code.
+            <EnterItem className="relative mb-8">
+              <Backdrop invert />
+              <div className={`relative overflow-hidden ${LEAF} shadow-lg`}>
+                <img src={photo("hero-graduation")} alt="" className="aspect-[16/9] w-full object-cover" />
+              </div>
+              <EmojiSticker name="wave" size={30} className="absolute -left-3 -top-3 -rotate-12 text-text" />
+              <EmojiSticker name="key" size={26} className="absolute -bottom-3 right-8 rotate-12 text-text" />
             </EnterItem>
             <EnterItem>
-              <ul className="mt-10 space-y-4 border-t border-white/15 pt-8">
-                {trust.map((t) => (
-                  <li key={t.label} className="flex items-start gap-3">
-                    <t.icon className="mt-0.5 h-4 w-4 shrink-0 text-white/60" />
-                    <span>
-                      <span className="block text-sm font-semibold">{t.label}</span>
-                      <span className="block text-sm text-white/60">{t.body}</span>
-                    </span>
+              <PillEyebrow emoji="key" invert>Sign in</PillEyebrow>
+            </EnterItem>
+            <EnterItem as="h1" className="mt-4 text-4xl font-semibold text-white">
+              Welcome back to the <Underlined>VIBGYOR family.</Underlined>
+            </EnterItem>
+            <EnterItem as="p" className="mt-4 text-base text-white/70">
+              No passwords to remember: we send you a one-time code.
+            </EnterItem>
+            <EnterItem>
+              <ul className="mt-8 grid grid-cols-3 gap-2.5">
+                {trust.map((t, i) => (
+                  <li
+                    key={t.label}
+                    title={t.body}
+                    className={`flex flex-col items-start gap-2 rounded-2xl bg-white/[0.07] p-3 ring-1 ring-white/10 transition-transform duration-300 hover:rotate-0 ${
+                      i % 2 ? "rotate-1" : "-rotate-1"
+                    }`}
+                  >
+                    <Emoji name={t.emoji} size={30} />
+                    <span className="text-sm font-semibold leading-snug">{t.label}</span>
                   </li>
                 ))}
               </ul>
