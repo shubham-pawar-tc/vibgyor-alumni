@@ -103,6 +103,7 @@ export function PublicFooter() {
               { href: "/login", label: "Student & parent login" },
               { href: "/enquiry", label: "Enquiry form" },
               { href: "/demo", label: "Demo guide" },
+              { href: "/project-understanding", label: "Project understanding" },
             ].map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="ds-interactive text-muted hover:text-text">
