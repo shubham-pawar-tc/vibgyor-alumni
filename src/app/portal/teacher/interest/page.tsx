@@ -80,14 +80,14 @@ function Inbox() {
                     <p className="font-semibold">
                       {stu!.name} <span className="font-normal text-muted">· Class {stu!.className}</span>
                     </p>
-                    <p className="text-[14px]">
+                    <p className="text-sm">
                       {j.title} · {j.company} <span className="text-muted">· {timeAgo(i.at)}</span>
                     </p>
-                    {i.note && <p className="mt-2 rounded-xl bg-surface-2 px-3 py-2 text-[14px]">&ldquo;{i.note}&rdquo;</p>}
-                    <p className="mt-2 text-[13px] text-muted">
+                    {i.note && <p className="mt-2 rounded-xl bg-surface-2 px-3 py-2 text-sm">&ldquo;{i.note}&rdquo;</p>}
+                    <p className="mt-2 text-label text-muted">
                       Parent{parents.length > 1 ? "s" : ""}: {parents.join(" and ") || "—"} · Platform consent {hasConsent(state, stu!.id, "platform") ? "given" : "missing"}
                     </p>
-                    {i.counsellor?.note && <p className="mt-1 text-[13px] text-muted">Your note: {i.counsellor.note}</p>}
+                    {i.counsellor?.note && <p className="mt-1 text-label text-muted">Your note: {i.counsellor.note}</p>}
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <Pill tone={tone[st]}>{label[st]}</Pill>
@@ -152,8 +152,8 @@ function Inbox() {
               <option>Entrance exam planning</option>
             </Select>
             <Textarea rows={2} value={ref.note} onChange={(e) => setRef({ ...ref, note: e.target.value })} placeholder="Note for the counsellor (optional)" aria-label="Note" />
-            <p className="text-[13px] text-muted">Only students whose parent switched on MyCareerZ sharing can be referred.</p>
-            {refMsg && <p className={`text-[14px] font-semibold ${refMsg.ok ? "text-success" : "text-danger"}`}>{refMsg.text}</p>}
+            <p className="text-label text-muted">Only students whose parent switched on MyCareerZ sharing can be referred.</p>
+            {refMsg && <p className={`text-sm font-semibold ${refMsg.ok ? "text-success" : "text-danger"}`}>{refMsg.text}</p>}
           </div>
         )}
       </Modal>
@@ -178,19 +178,19 @@ function Inbox() {
           </>
         }
       >
-        <label className="block text-[14px] font-semibold" htmlFor="int-status">
+        <label className="block text-sm font-semibold" htmlFor="int-status">
           Status
         </label>
-        <Select id="int-status" className="mt-1.5" value={status} onChange={(e) => setStatus(e.target.value as InterestStatus)}>
+        <Select id="int-status" className="mt-2" value={status} onChange={(e) => setStatus(e.target.value as InterestStatus)}>
           <option value="checking">Checking with parent</option>
           <option value="passed_on">Passed on to the company</option>
           <option value="declined">Not taking it forward</option>
         </Select>
-        <label className="mt-4 block text-[14px] font-semibold" htmlFor="int-note">
+        <label className="mt-4 block text-sm font-semibold" htmlFor="int-note">
           Note (shared with the student{status === "passed_on" || status === "declined" ? " and parents" : ""})
         </label>
-        <Textarea id="int-note" className="mt-1.5" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Spoke to your mother; application sent to the company on Monday." />
-        <p className="mt-2 text-[13px] text-muted">The student gets a notification. Parents get a WhatsApp when it&apos;s passed on or declined.</p>
+        <Textarea id="int-note" className="mt-2" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Spoke to your mother; application sent to the company on Monday." />
+        <p className="mt-2 text-label text-muted">The student gets a notification. Parents get a WhatsApp when it&apos;s passed on or declined.</p>
       </Modal>
     </>
   );

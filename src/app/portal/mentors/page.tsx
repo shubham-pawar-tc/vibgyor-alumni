@@ -92,7 +92,7 @@ export default function MentorsPage() {
     <>
       <PageHeader
         eyebrow={
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <Req ids="E1" /> <Req ids="CS-4" /> <Req ids="C7" />
           </div>
         }
@@ -140,37 +140,37 @@ export default function MentorsPage() {
                 <div className="flex items-start gap-4">
                   <Avatar name={m.name} size={52} />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <p className="truncate font-semibold">{m.name}</p>
                       <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
                     </div>
-                    <p className="truncate text-[14px] text-muted">
+                    <p className="truncate text-sm text-muted">
                       {m.title}, {m.company}
                     </p>
-                    <p className="mt-0.5 flex items-center gap-1 truncate text-[13.5px] text-muted">
+                    <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-muted">
                       <MapPin className="h-3 w-3" /> {m.city} · Batch {m.batch}, {campusName(m.campusIds[0]).split(",")[0]}
                     </p>
                   </div>
                   {pct > 0 && (
                     <div className="shrink-0 text-right">
-                      <p className="text-lg font-bold leading-none text-primary tabular-nums">{pct}%</p>
-                      <p className="text-[12px] text-muted">match</p>
+                      <p className="text-lg font-semibold leading-none text-primary tabular-nums">{pct}%</p>
+                      <p className="text-xs text-muted">match</p>
                     </div>
                   )}
                 </div>
-                <div className="mt-4 flex flex-wrap gap-1.5">
+                <div className="mt-4 flex flex-wrap gap-2">
                   <Pill tone="primary">{m.college}</Pill>
                   <Pill>{m.course}</Pill>
                   <Pill>{m.country}</Pill>
                 </div>
                 {reasons[0] && (
-                  <p className="mt-3 flex items-start gap-1.5 text-[14px] font-medium text-success">
+                  <p className="mt-3 flex items-start gap-2 text-sm font-medium text-success">
                     <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {reasons[0]}
                   </p>
                 )}
-                <p className="mt-3 flex-1 text-[14px] leading-relaxed text-muted">{m.bio}</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{m.bio}</p>
                 <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
-                  <span className="flex items-center gap-1.5 text-[13px] text-muted">
+                  <span className="flex items-center gap-2 text-label text-muted">
                     <EyeOff className="h-3.5 w-3.5" /> Contact details hidden
                   </span>
                   {existing ? (
@@ -227,7 +227,7 @@ export default function MentorsPage() {
             <Textarea id="q" rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="Introduce yourself and ask one clear question." />
           </Field>
           <MaskPreview text={text} />
-          <p className="flex items-start gap-2 text-[13.5px] text-muted">
+          <p className="flex items-start gap-2 text-sm text-muted">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> This conversation is recorded and visible to your campus alumni office. Messages can&apos;t be deleted.
           </p>
         </div>

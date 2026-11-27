@@ -43,7 +43,7 @@ function Inner() {
   return (
     <>
       <PageHeader
-        eyebrow={<div className="flex flex-wrap gap-1.5"><Req ids="CS-5" /> <Req ids="CS-7" /> <Req ids="CS-9" /> <Req ids="L6" /> <Req ids="CS-16" /></div>}
+        eyebrow={<div className="flex flex-wrap gap-2"><Req ids="CS-5" /> <Req ids="CS-7" /> <Req ids="CS-9" /> <Req ids="L6" /> <Req ids="CS-16" /></div>}
         title="Safeguarding"
         description={`Reports, auto-flags and every student–mentor conversation${group ? " across all campuses" : ` for ${campusName(me?.campusIds[0])} students`}. Target: respond within 24 hours.`}
       />
@@ -90,11 +90,11 @@ function Inner() {
                         <Pill tone="success">{r.resolution}</Pill>
                       )}
                     </div>
-                    <p className="mt-1 text-[13.5px] text-muted">
+                    <p className="mt-1 text-sm text-muted">
                       {reporter ? `Reported by ${reporter.name}` : "Raised automatically"} · {timeAgo(r.at)} · about {subject?.name} ({subject?.role === "STU" ? "student" : isMentor ? "mentor" : "alumnus"})
                     </p>
                     {msg && (
-                      <div className="mt-3 rounded-xl bg-surface-2 px-3.5 py-2.5 text-[14.5px] leading-relaxed">
+                      <div className="mt-3 rounded-xl bg-surface-2 px-4 py-3 text-body leading-relaxed">
                         <MaskedText text={msg.text} />
                       </div>
                     )}
@@ -125,7 +125,7 @@ function Inner() {
             );
           })}
           {closed.length > 0 && (
-            <button onClick={() => setShowClosed(!showClosed)} className="text-[14px] font-semibold text-primary">
+            <button onClick={() => setShowClosed(!showClosed)} className="text-sm font-semibold text-primary">
               {showClosed ? "Hide" : "Show"} {closed.length} resolved report{closed.length > 1 ? "s" : ""}
             </button>
           )}
@@ -150,10 +150,10 @@ function Inner() {
                       <Avatar name={m.name} size={38} className="ring-2 ring-surface" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-semibold">
+                      <p className="truncate text-sm font-semibold">
                         {s.name} <span className="font-normal text-muted">(Class {s.className})</span> ↔ {m.name}
                       </p>
-                      <p className="truncate text-[13.5px] text-muted">
+                      <p className="truncate text-sm text-muted">
                         {c.topic} · {msgs.length} messages · last {timeAgo(msgs.at(-1)?.at ?? c.createdAt)}
                       </p>
                     </div>
@@ -185,8 +185,8 @@ function Inner() {
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <Avatar name={m.name} size={40} />
                     <div className="min-w-0">
-                      <p className="truncate text-[14px] font-semibold">{m.name}</p>
-                      <p className="truncate text-[13.5px] text-muted">
+                      <p className="truncate text-sm font-semibold">{m.name}</p>
+                      <p className="truncate text-sm text-muted">
                         Batch {m.batch} · {campusName(m.campusIds[0]).split(",")[0]} · {m.title}, {m.company}
                       </p>
                     </div>
@@ -224,10 +224,10 @@ function Inner() {
                     <div key={m.id} className="flex gap-3">
                       <Avatar name={u?.name ?? "?"} size={30} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13px] text-muted">
+                        <p className="text-label text-muted">
                           <span className="font-semibold text-text">{u?.name}</span> · {u?.role === "STU" ? "student" : u?.role === "PAR" ? "parent" : "mentor"} · {formatDateTime(m.at)}
                         </p>
-                        <div className={cn("mt-1 rounded-xl px-3.5 py-2.5 text-[14.5px] leading-relaxed", m.maskedKinds.length ? "bg-warning-soft/60 ring-1 ring-warning/30" : "bg-surface-2")}>
+                        <div className={cn("mt-1 rounded-xl px-4 py-3 text-body leading-relaxed", m.maskedKinds.length ? "bg-warning-soft/60 ring-1 ring-warning/30" : "bg-surface-2")}>
                           <MaskedText text={m.text} />
                         </div>
                       </div>
@@ -235,7 +235,7 @@ function Inner() {
                   );
                 })}
             </div>
-            <p className="text-[13px] text-muted">Messages are kept for the retention period VIBGYOR sets and can&apos;t be deleted by either party.</p>
+            <p className="text-label text-muted">Messages are kept for the retention period VIBGYOR sets and can&apos;t be deleted by either party.</p>
           </div>
         )}
       </Modal>
@@ -263,7 +263,7 @@ function Inner() {
           </>
         }
       >
-        <ul className="space-y-2 text-[14px]">
+        <ul className="space-y-2 text-sm">
           <li>• Hidden from student mentor search immediately</li>
           <li>• All their student conversations become read-only</li>
           <li>• The action is logged and can be reversed</li>

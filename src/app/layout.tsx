@@ -1,15 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { OutboxWidget } from "@/components/Outbox";
 import { TourProvider } from "@/components/Tour";
+import { MotionProvider } from "@/components/motion";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  display: "swap",
-});
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
+const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], weight: ["500", "600", "700"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "VIBGYOR Alumni Platform",
@@ -20,8 +18,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f7fc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c0d1c" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f7fa" },
+    { media: "(prefers-color-scheme: dark)", color: "#101827" },
   ],
 };
 
@@ -33,13 +31,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${jakarta.variable} antialiased`}>
+      <body className={`${inter.variable} ${manrope.variable} antialiased`}>
+        <MotionProvider>
         <StoreProvider>
           <TourProvider>
             {children}
             <OutboxWidget />
           </TourProvider>
         </StoreProvider>
+        </MotionProvider>
       </body>
     </html>
   );

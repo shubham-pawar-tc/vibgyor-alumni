@@ -43,12 +43,12 @@ function Permissions() {
     <>
       <PageHeader eyebrow={<Req ids="A6" />} title="Permissions" description="What each staff role can do. Changes apply immediately and are written to the audit log." />
       <Card className="mb-5 overflow-x-auto">
-        <table className="w-full min-w-[720px] text-[14px]">
+        <table className="w-full min-w-[720px] text-sm">
           <thead className="border-b border-border">
             <tr>
-              <th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wider text-muted">Can…</th>
+              <th className="px-4 py-3 text-left text-label font-semibold uppercase tracking-[0.08em] text-muted">Can…</th>
               {ROLES.map((r) => (
-                <th key={r} className="px-2 py-3 text-center text-[13px] font-semibold leading-tight">
+                <th key={r} className="px-2 py-3 text-center text-label font-semibold leading-tight">
                   {roleLabels[r]}
                 </th>
               ))}
@@ -57,7 +57,7 @@ function Permissions() {
           <tbody className="divide-y divide-border">
             {(Object.keys(capabilityLabels) as Capability[]).map((cap) => (
               <tr key={cap} className="hover:bg-surface-2/50">
-                <td className="px-4 py-2.5">
+                <td className="px-4 py-3">
                   <span className="font-medium">{capabilityLabels[cap]}</span>
                   {LIVE.includes(cap) && (
                     <Pill tone="success" className="ml-2">
@@ -71,12 +71,12 @@ function Permissions() {
                   const locked = (r === "SAD" && cap === "requests.handle") || guard;
                   if (guard)
                     return (
-                      <td key={r} className="px-2 py-2.5 text-center" title="Guard rail (§7): this role can never have this">
+                      <td key={r} className="px-2 py-3 text-center" title="Guard rail (§7): this role can never have this">
                         <Lock className="mx-auto h-3.5 w-3.5 text-muted" aria-label={`${roleLabels[r]}: never allowed`} />
                       </td>
                     );
                   return (
-                    <td key={r} className="px-2 py-2.5 text-center">
+                    <td key={r} className="px-2 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={on}
@@ -98,7 +98,7 @@ function Permissions() {
           <CardHeader title="Fixed safety rules" subtitle="Built in. No role can switch these off." icon={<ShieldCheck className="h-5 w-5" />} />
           <ul className="space-y-2 p-5">
             {FIXED.map((f) => (
-              <li key={f} className="flex items-start gap-2 text-[14px]">
+              <li key={f} className="flex items-start gap-2 text-sm">
                 <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted" /> {f}
               </li>
             ))}

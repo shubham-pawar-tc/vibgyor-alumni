@@ -13,7 +13,7 @@ export function DemoOtpFill({ otpKey, onFill }: { otpKey: string; onFill: (code:
         const c = peekOtp(otpKey);
         if (c) onFill(c);
       }}
-      className="mx-auto flex items-center gap-1.5 text-[14px] font-semibold text-primary"
+      className="mx-auto flex items-center gap-2 text-sm font-semibold text-primary"
     >
       <KeyRound className="h-3.5 w-3.5" /> Autofill demo code
     </button>

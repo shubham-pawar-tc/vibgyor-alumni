@@ -64,8 +64,8 @@ function Staff() {
         </Select>
       </div>
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-[14px]">
-          <thead className="border-b border-border text-left text-[13px] uppercase tracking-wider text-muted">
+        <table className="w-full min-w-[720px] text-sm">
+          <thead className="border-b border-border text-left text-label uppercase tracking-[0.08em] text-muted">
             <tr>
               <th className="px-4 py-3 font-semibold">Person</th>
               <th className="px-4 py-3 font-semibold">Role</th>
@@ -92,7 +92,7 @@ function Staff() {
                 <td className="px-4 py-3">{scopeText(u)}</td>
                 <td className="px-4 py-3">{u.deactivated ? <Pill tone="neutral">Switched off</Pill> : <Pill tone="success">Active</Pill>}</td>
                 <td className="px-4 py-3">
-                  <div className="flex justify-end gap-1.5">
+                  <div className="flex justify-end gap-2">
                     <Button size="sm" variant="secondary" onClick={() => open(u)} aria-label={`Edit ${u.name}`}>
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -171,8 +171,8 @@ function Staff() {
             ) : multi ? (
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-[14px] font-semibold">Campuses ({draft.campusIds.length} selected)</p>
-                  <div className="flex gap-2 text-[13px]">
+                  <p className="text-sm font-semibold">Campuses ({draft.campusIds.length} selected)</p>
+                  <div className="flex gap-2 text-label">
                     <button type="button" className="font-semibold text-primary" onClick={() => setDraft({ ...draft, campusIds: campuses.map((c) => c.id) })}>
                       Select all
                     </button>
@@ -183,7 +183,7 @@ function Staff() {
                 </div>
                 <div className="grid max-h-64 grid-cols-1 gap-1 overflow-y-auto rounded-xl border border-border p-2 sm:grid-cols-2">
                   {campuses.map((c) => (
-                    <label key={c.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[14px] hover:bg-surface-2">
+                    <label key={c.id} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-surface-2">
                       <input
                         type="checkbox"
                         checked={draft.campusIds.includes(c.id)}
@@ -203,8 +203,8 @@ function Staff() {
                 ))}
               </Select>
             )}
-            {!draft.id && <p className="text-[13px] text-muted">They get an email with a sign-in link. Sign-in is one-time code plus 2-factor; no password is sent.</p>}
-            {err && <p className="text-[14px] font-semibold text-danger">{err}</p>}
+            {!draft.id && <p className="text-label text-muted">They get an email with a sign-in link. Sign-in is one-time code plus 2-factor; no password is sent.</p>}
+            {err && <p className="text-sm font-semibold text-danger">{err}</p>}
           </div>
         )}
       </Modal>

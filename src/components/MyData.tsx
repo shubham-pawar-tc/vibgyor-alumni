@@ -43,7 +43,7 @@ export function MyData({ subject }: { subject: User }) {
       <div className="grid grid-cols-2 gap-2 p-5 sm:grid-cols-4">
         <button
           onClick={() => download(`vaa-data-${subject.name.toLowerCase().replace(/[^a-z]+/g, "-")}.txt`, buildDataText(state, subject.id), "text/plain;charset=utf-8")}
-          className="flex flex-col items-start gap-2 rounded-xl border border-border p-3 text-left text-[14px] font-semibold hover:bg-surface-2"
+          className="flex flex-col items-start gap-2 rounded-xl border border-border p-3 text-left text-sm font-semibold hover:bg-surface-2"
         >
           <Download className="h-4 w-4 text-primary" /> Download data
         </button>
@@ -54,7 +54,7 @@ export function MyData({ subject }: { subject: User }) {
               setType(x.type);
               setDetails("");
             }}
-            className="flex flex-col items-start gap-2 rounded-xl border border-border p-3 text-left text-[14px] font-semibold hover:bg-surface-2"
+            className="flex flex-col items-start gap-2 rounded-xl border border-border p-3 text-left text-sm font-semibold hover:bg-surface-2"
           >
             <x.icon className={`h-4 w-4 ${x.type === "deletion" ? "text-danger" : "text-primary"}`} /> {x.label}
           </button>
@@ -63,18 +63,18 @@ export function MyData({ subject }: { subject: User }) {
       {mine.length > 0 && (
         <div className="divide-y divide-border border-t border-border">
           {mine.map((r) => (
-            <div key={r.id} className="flex flex-wrap items-center gap-2 px-5 py-3 text-[14px]">
+            <div key={r.id} className="flex flex-wrap items-center gap-2 px-5 py-3 text-sm">
               <span className="font-semibold capitalize">{r.type}</span>
               <span className="text-muted">sent {formatDate(r.at)}</span>
               <span className="flex-1" />
-              {r.status !== "done" && r.status !== "rejected" && <span className="text-[13px] text-muted">reply by {formatDate(r.due)}</span>}
+              {r.status !== "done" && r.status !== "rejected" && <span className="text-label text-muted">reply by {formatDate(r.due)}</span>}
               {statusPill[r.status]}
-              {r.resolution && <p className="w-full text-[13.5px] text-muted">{r.resolution}</p>}
+              {r.resolution && <p className="w-full text-sm text-muted">{r.resolution}</p>}
             </div>
           ))}
         </div>
       )}
-      <p className="border-t border-border px-5 py-3 text-[13px] text-muted">Grievance officer: [TBC, VIBGYOR to name] · DPDP Act 2023</p>
+      <p className="border-t border-border px-5 py-3 text-label text-muted">Grievance officer: [TBC, VIBGYOR to name] · DPDP Act 2023</p>
 
       <Modal
         open={!!type}
@@ -100,7 +100,7 @@ export function MyData({ subject }: { subject: User }) {
       >
         <div className="space-y-3">
           {type === "deletion" && (
-            <p className="text-[14.5px] text-muted">
+            <p className="text-body text-muted">
               The alumni office will confirm before deleting. Your name and contact details are removed. Records the school must keep by law (such as consent records) are kept until their retention period ends.
             </p>
           )}

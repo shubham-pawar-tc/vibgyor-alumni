@@ -52,10 +52,10 @@ function EnquiryForm() {
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-success-soft text-success">
           <CheckCircle2 className="h-7 w-7" />
         </span>
-        <h1 className="mt-5 text-2xl font-bold">Thank you, we&apos;ve got it</h1>
+        <h1 className="mt-5 text-2xl font-semibold">Thank you, we&apos;ve got it</h1>
         <p className="mt-2 text-muted">Your reference is <span className="font-mono font-semibold text-text">{done.ref}</span>.</p>
         {topic === "mycareerz" && (
-          <div className="mx-auto mt-6 max-w-sm space-y-2 rounded-xl bg-surface-2 p-4 text-left text-[14px]">
+          <div className="mx-auto mt-6 max-w-sm space-y-2 rounded-xl bg-surface-2 p-4 text-left text-sm">
             {studentMcz ? (
               <p className="flex items-start gap-2">
                 <Clock className="mt-0.5 h-4 w-4 shrink-0 text-warning" /> Held until your parent confirms consent. We&apos;ve asked them by SMS.
@@ -79,11 +79,11 @@ function EnquiryForm() {
   return (
     <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1fr_1.3fr]">
       <div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           <Req ids="J4" /> <Req ids="F5" /> <Req ids="MCZ-1" />
         </div>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Get in touch</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted">
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Get in touch</h1>
+        <p className="mt-3 text-body leading-relaxed text-muted">
           Questions about admissions, the alumni association or MyCareerZ career counselling? Send us a note and the right team will reply within one working day.
         </p>
         <div className="mt-8 space-y-4">
@@ -93,10 +93,10 @@ function EnquiryForm() {
             ["Alumni office", "For alumni records, reunions and documents"],
           ].map(([t, d]) => (
             <div key={t} className="flex gap-3">
-              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+              <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
               <div>
                 <p className="text-sm font-semibold">{t}</p>
-                <p className="text-[14px] text-muted">{d}</p>
+                <p className="text-sm text-muted">{d}</p>
               </div>
             </div>
           ))}

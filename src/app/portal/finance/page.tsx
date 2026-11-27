@@ -97,8 +97,8 @@ function Finance() {
         </div>
       )}
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-[14px]">
-          <thead className="border-b border-border text-left text-[13px] uppercase tracking-wider text-muted">
+        <table className="w-full min-w-[760px] text-sm">
+          <thead className="border-b border-border text-left text-label uppercase tracking-[0.08em] text-muted">
             <tr>
               {tab === "recon" && <th className="w-10 px-4 py-3" />}
               <th className="px-4 py-3 font-semibold">Payment</th>
@@ -119,7 +119,7 @@ function Finance() {
                 )}
                 <td className="px-4 py-3">
                   <p className="font-semibold">{KIND[p.kind]}{p.fund ? ` · ${p.fund}` : ""}</p>
-                  <p className="font-mono text-[12.5px] text-muted">
+                  <p className="font-mono text-label text-muted">
                     {p.ref} · {formatDate(p.at)}
                   </p>
                 </td>
@@ -134,7 +134,7 @@ function Finance() {
                     {p.status === "refunded" ? <Pill tone="danger">Refunded</Pill> : <Pill tone="success">Paid</Pill>}
                     {p.reconciled && <Pill tone="neutral">Reconciled</Pill>}
                   </div>
-                  {p.refund && <p className="mt-1 text-[12.5px] text-muted">{p.refund.reason}</p>}
+                  {p.refund && <p className="mt-1 text-label text-muted">{p.refund.reason}</p>}
                 </td>
                 <td className="px-4 py-3 text-right">
                   {p.status === "paid" && canRefund && (
@@ -173,8 +173,8 @@ function Finance() {
         }
       >
         <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (shown to the payer and in the audit log)" aria-label="Reason" />
-        <p className="mt-2 text-[13px] text-muted">A refunded document fee puts the request back to &quot;Fee due&quot;; a refunded MyCareerZ session is cancelled.</p>
-        {err && <p className="mt-2 text-[14px] font-semibold text-danger">{err}</p>}
+        <p className="mt-2 text-label text-muted">A refunded document fee puts the request back to &quot;Fee due&quot;; a refunded MyCareerZ session is cancelled.</p>
+        {err && <p className="mt-2 text-sm font-semibold text-danger">{err}</p>}
       </Modal>
 
       <Modal

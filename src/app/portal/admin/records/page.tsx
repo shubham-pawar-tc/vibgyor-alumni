@@ -1,6 +1,7 @@
 "use client";
 
 import { allOk, check, clean, normalizeMobile, whenFilled } from "@/lib/validate";
+import { AnimatedBar } from "@/components/motion";
 import Link from "next/link";
 import { useState } from "react";
 import { CheckCircle2, Download, Mail, MessageCircle, Pencil, Power, Search, Send, Smartphone } from "lucide-react";
@@ -106,8 +107,8 @@ function Records() {
       </Card>
 
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-[14px]">
-          <thead className="border-b border-border text-left text-[12.5px] uppercase tracking-wider text-muted">
+        <table className="w-full min-w-[760px] text-sm">
+          <thead className="border-b border-border text-left text-label uppercase tracking-[0.08em] text-muted">
             <tr>
               {canEdit && (
                 <th className="w-10 py-3 pl-4">
@@ -146,11 +147,11 @@ function Records() {
                     </td>
                   )}
                   <td className="px-4 py-3">
-                    <Link href={`/portal/people/${u.id}`} className="flex items-center gap-2.5 hover:underline">
+                    <Link href={`/portal/people/${u.id}`} className="flex items-center gap-3 hover:underline">
                       <Avatar name={u.name} size={30} />
                       <span className="min-w-0">
                         <span className="block font-semibold">{u.name}</span>
-                        <span className="block text-[13px] text-muted">{u.email}</span>
+                        <span className="block text-label text-muted">{u.email}</span>
                       </span>
                     </Link>
                   </td>
@@ -160,16 +161,14 @@ function Records() {
                   <td className="px-4 py-3 text-muted">{[u.title, u.company].filter(Boolean).join(", ") || "—"}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-2">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-                      </div>
+                      <AnimatedBar value={pct} trackClassName="h-1.5 w-16" />
                       <span className="tabular-nums text-muted">{pct}%</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     {u.deactivated ? <Pill tone="danger">Deactivated</Pill> : u.role === "ALU" ? <Pill tone="success">Verified</Pill> : <Pill tone="warning">Pending</Pill>}
                     {u.loginInviteAt && (
-                      <span className="mt-1 block text-[12px] text-muted" title={`${u.loginInviteCount ?? 1} login link(s) sent`}>
+                      <span className="mt-1 block text-xs text-muted" title={`${u.loginInviteCount ?? 1} login link(s) sent`}>
                         Link sent {timeAgo(u.loginInviteAt)}
                       </span>
                     )}
@@ -206,7 +205,7 @@ function Records() {
           </tbody>
         </table>
       </Card>
-      <p className="mt-2 text-[13px] text-muted">{rows.length} records. Deactivated people disappear from the directory, groups and chats, but their history is kept.</p>
+      <p className="mt-2 text-label text-muted">{rows.length} records. Deactivated people disappear from the directory, groups and chats, but their history is kept.</p>
 
       {editing && <EditRecord u={editing} onClose={() => setEditing(null)} />}
       {exporting && <ExportModal rows={rows} onClose={() => setExporting(false)} />}
@@ -271,7 +270,7 @@ function EditRecord({ u, onClose }: { u: User; onClose: () => void }) {
         <Field label="Company" htmlFor="rc" error={errs.company}><Input id="rc" value={f.company} invalid={!!errs.company} onChange={set("company")} /></Field>
         <Field label="City" htmlFor="rci" error={errs.city}><Input id="rci" value={f.city} invalid={!!errs.city} onChange={set("city")} /></Field>
       </div>
-      <p className="mt-3 text-[13px] text-muted">The change and the fields you edited go into the audit log.</p>
+      <p className="mt-3 text-label text-muted">The change and the fields you edited go into the audit log.</p>
     </Modal>
   );
 }
@@ -307,7 +306,7 @@ function ExportModal({ rows, onClose }: { rows: User[]; onClose: () => void }) {
     >
       <div className="space-y-4">
         <div>
-          <p className="mb-2 text-[14px] font-semibold">Columns</p>
+          <p className="mb-2 text-sm font-semibold">Columns</p>
           <div className="grid grid-cols-2 gap-2">
             {exportFields.map((f) => (
               <Checkbox key={f.key} checked={fields.includes(f.key)} onChange={(v) => setFields(v ? [...fields, f.key] : fields.filter((x) => x !== f.key))} label={f.label} />
@@ -353,8 +352,8 @@ function InviteModal({ people, onClose }: { people: User[]; onClose: (sent: bool
           <p className="mt-3 font-semibold">
             Sent to {result.sent} {result.sent === 1 ? "person" : "people"}
           </p>
-          {result.skipped > 0 && <p className="mt-1 text-[14px] text-muted">{result.skipped} skipped (deactivated, or no contact for the chosen channels)</p>}
-          <p className="mt-3 text-[13px] text-muted">Demo: open the device simulator to see the messages. Recorded in the audit log.</p>
+          {result.skipped > 0 && <p className="mt-1 text-sm text-muted">{result.skipped} skipped (deactivated, or no contact for the chosen channels)</p>}
+          <p className="mt-3 text-label text-muted">Demo: open the device simulator to see the messages. Recorded in the audit log.</p>
         </div>
       </Modal>
     );
@@ -379,14 +378,14 @@ function InviteModal({ people, onClose }: { people: User[]; onClose: (sent: bool
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-4">
           <div>
-            <p className="mb-2 text-[14px] font-semibold">Send by</p>
+            <p className="mb-2 text-sm font-semibold">Send by</p>
             <div className="flex gap-2">
               {opts.map(([id, label, Icon]) => (
                 <button
                   key={id}
                   onClick={() => toggle(id)}
                   className={cn(
-                    "flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border text-[14px] font-semibold",
+                    "flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border text-sm font-semibold",
                     channels.includes(id) ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2"
                   )}
                   aria-pressed={channels.includes(id)}
@@ -396,21 +395,21 @@ function InviteModal({ people, onClose }: { people: User[]; onClose: (sent: bool
               ))}
             </div>
             {noMobile > 0 && channels.some((c) => c !== "email") && (
-              <p className="mt-2 text-[13px] text-muted">{noMobile} without a mobile number will get email only.</p>
+              <p className="mt-2 text-label text-muted">{noMobile} without a mobile number will get email only.</p>
             )}
           </div>
           <Field label="Message" htmlFor="tpl" hint="Placeholders: {{first_name}}, {{login_id}}, {{login_link}}, {{campus}}, {{batch}}. {{login_link}} is required.">
-            <Textarea id="tpl" rows={12} value={template} onChange={(e) => setTemplate(e.target.value)} className="font-mono text-[13px]" />
+            <Textarea id="tpl" rows={12} value={template} onChange={(e) => setTemplate(e.target.value)} className="font-mono text-label" />
           </Field>
           {template !== LOGIN_INVITE_TEMPLATE && (
-            <button className="text-[13px] font-semibold text-primary" onClick={() => setTemplate(LOGIN_INVITE_TEMPLATE)}>
+            <button className="text-label font-semibold text-primary" onClick={() => setTemplate(LOGIN_INVITE_TEMPLATE)}>
               Reset to default message
             </button>
           )}
         </div>
         <div className="space-y-3">
-          <p className="text-[14px] font-semibold">Preview for {sample.name}</p>
-          <div className="whitespace-pre-wrap rounded-xl border border-border bg-surface-2 p-4 text-[14px] leading-relaxed">{loginInviteBody(template, sample)}</div>
+          <p className="text-sm font-semibold">Preview for {sample.name}</p>
+          <div className="whitespace-pre-wrap rounded-xl border border-border bg-surface-2 p-4 text-sm leading-relaxed">{loginInviteBody(template, sample)}</div>
           <Callout tone="safe" title="No passwords are sent">
             Everyone signs in with their registered email or mobile and a one-time code. The link fills in their login ID; it doesn&apos;t sign them in by itself.
           </Callout>
@@ -419,7 +418,7 @@ function InviteModal({ people, onClose }: { people: User[]; onClose: (sent: bool
               {already} of these {already === 1 ? "has" : "have"} already been sent a link. They&apos;ll get it again.
             </Callout>
           )}
-          {people.length > 1 && <p className="text-[13px] text-muted">Each person gets their own name, login ID and link.</p>}
+          {people.length > 1 && <p className="text-label text-muted">Each person gets their own name, login ID and link.</p>}
         </div>
       </div>
     </Modal>

@@ -115,9 +115,9 @@ function Events() {
             return (
               <Card key={e.id} className="flex flex-col overflow-hidden sm:flex-row">
                 <div className="flex shrink-0 flex-row items-center gap-3 bg-primary-soft px-5 py-3 text-primary sm:w-28 sm:flex-col sm:justify-center sm:gap-0 sm:py-5">
-                  <span className="text-[13px] font-bold uppercase tracking-wider">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
-                  <span className="text-3xl font-bold leading-none">{d.getDate()}</span>
-                  <span className="text-[13px] font-medium">{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
+                  <span className="text-label font-semibold uppercase tracking-[0.08em]">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                  <span className="text-3xl font-semibold leading-none">{d.getDate()}</span>
+                  <span className="text-label font-medium">{d.toLocaleDateString("en-IN", { weekday: "short" })}</span>
                 </div>
                 <div className="min-w-0 flex-1 p-5">
                   <div className="flex flex-wrap items-center gap-2">
@@ -127,7 +127,7 @@ function Events() {
                         Live now
                       </Pill>
                     )}
-                    <span className="text-[13.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
+                    <span className="text-sm text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
                     {kids.length > 1 && forKids(e).length > 0 && <Pill tone="info">For {forKids(e).map((k) => firstName(k.name)).join(" & ")}&apos;s campus</Pill>}
                     {mine?.status === "going" && (
                       <Pill tone="success" icon={<Check className="h-3 w-3" />}>
@@ -135,8 +135,8 @@ function Events() {
                       </Pill>
                     )}
                   </div>
-                  <h3 className="mt-2 text-[17px] font-semibold leading-snug">{e.title}</h3>
-                  <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[14px] text-muted">
+                  <h3 className="mt-2 text-lg font-semibold leading-snug">{e.title}</h3>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
                     <span>
                       {d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}–{new Date(e.end).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })} IST
                     </span>
@@ -147,7 +147,7 @@ function Events() {
                       <Users className="h-3.5 w-3.5" /> {seats} / {e.capacity} going
                     </span>
                   </div>
-                  <p className="mt-3 text-[14.5px] leading-relaxed">{e.description}</p>
+                  <p className="mt-3 text-body leading-relaxed">{e.description}</p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
                     <div className="flex overflow-hidden rounded-xl border border-border">
@@ -163,7 +163,7 @@ function Events() {
                           disabled={studentLocked || (s === "going" && full)}
                           onClick={() => rsvp(e.id, me.id, s, s === "going" ? mine?.guests : undefined)}
                           className={cn(
-                            "h-9 border-r border-border px-3.5 text-[14px] font-semibold last:border-r-0 disabled:opacity-40",
+                            "h-9 border-r border-border px-4 text-sm font-semibold last:border-r-0 disabled:opacity-40",
                             mine?.status === s ? (s === "going" ? "bg-success text-white" : s === "maybe" ? "bg-warning-soft text-warning" : "bg-surface-2") : "hover:bg-surface-2"
                           )}
                         >
@@ -172,12 +172,12 @@ function Events() {
                       ))}
                     </div>
                     {e.kind === "Reunion" && mine?.status === "going" && (
-                      <label className="flex items-center gap-2 text-[14px]">
+                      <label className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={!!mine.guests} onChange={(ev) => rsvp(e.id, me.id, "going", ev.target.checked ? 1 : 0)} className="h-4 w-4 accent-[var(--primary)]" />
                         Bringing a +1
                       </label>
                     )}
-                    {full && <span className="text-[13.5px] font-medium text-danger">Full</span>}
+                    {full && <span className="text-sm font-medium text-danger">Full</span>}
                     <span className="flex-1" />
                     {e.online && (
                       <JoinButton
@@ -193,10 +193,10 @@ function Events() {
                     )}
                     {mine?.status === "going" && (
                       <div className="flex gap-1">
-                        <button onClick={() => downloadIcs(e)} className="flex h-9 items-center gap-1.5 rounded-xl px-3 text-[14px] font-semibold text-primary hover:bg-primary-soft">
+                        <button onClick={() => downloadIcs(e)} className="flex h-9 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-primary hover:bg-primary-soft">
                           <CalendarPlus className="h-4 w-4" /> Add to calendar (.ics)
                         </button>
-                        <a href={googleCalUrl(e)} target="_blank" rel="noreferrer" className="flex h-9 items-center rounded-xl px-3 text-[14px] font-semibold text-muted hover:bg-surface-2">
+                        <a href={googleCalUrl(e)} target="_blank" rel="noreferrer" className="flex h-9 items-center rounded-xl px-3 text-sm font-semibold text-muted hover:bg-surface-2">
                           Google
                         </a>
                       </div>
@@ -223,7 +223,7 @@ function Events() {
                 href={joining.joinUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-[14px] font-semibold text-primary-fg hover:brightness-110"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-fg hover:brightness-110"
               >
                 <ExternalLink className="h-4 w-4" /> Open webinar room
               </a>
@@ -232,10 +232,10 @@ function Events() {
         }
       >
         {joining && (
-          <div className="space-y-3 text-[14.5px]">
+          <div className="space-y-3 text-body">
             <p className="font-semibold">{joining.title}</p>
             <p className="text-muted">Your attendance is recorded. In the live platform this opens the webinar room (for example Zoom, Teams or YouTube Live) in a new tab.</p>
-            <p className="break-all rounded-xl bg-surface-2 px-3 py-2 font-mono text-[13px]">{joining.joinUrl ?? "Link to be added by the campus"}</p>
+            <p className="break-all rounded-xl bg-surface-2 px-3 py-2 font-mono text-label">{joining.joinUrl ?? "Link to be added by the campus"}</p>
             {me.role === "STU" && <Callout tone="safe">Your camera and microphone stay off for students. Questions go through the chat and are moderated by the campus.</Callout>}
           </div>
         )}
@@ -249,7 +249,7 @@ function JoinButton({ e, nowMs, going, locked, onJoin }: { e: VaaEvent; nowMs: n
   const start = Date.parse(e.start);
   const end = Date.parse(e.end);
   const opens = start - JOIN_OPENS_MIN * 60_000;
-  const base = "flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-[14px] font-semibold";
+  const base = "flex h-9 items-center gap-2 rounded-xl px-4 text-sm font-semibold";
 
   if (nowMs >= end)
     return (
@@ -276,7 +276,7 @@ function JoinButton({ e, nowMs, going, locked, onJoin }: { e: VaaEvent; nowMs: n
       </span>
     );
   return (
-    <button onClick={onJoin} className={`${base} bg-success text-white shadow-card hover:brightness-110`}>
+    <button onClick={onJoin} className={`${base} bg-success text-white shadow-xs hover:brightness-110`}>
       <Video className="h-4 w-4" /> {nowMs >= start ? "Join now" : `Join now · starts in ${untilText(start - nowMs)}`}
     </button>
   );

@@ -42,7 +42,7 @@ export default function ConsentCentre() {
     <>
       <PageHeader
         eyebrow={
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <Req ids="A9" /> <Req ids="CS-3" /> <Req ids="CS-11" />
           </div>
         }
@@ -70,7 +70,7 @@ export default function ConsentCentre() {
                 <Avatar name={k.name} size={48} />
                 <div className="min-w-0 flex-1">
                   <p className="text-lg font-semibold">{k.name}</p>
-                  <p className="text-[14px] text-muted">
+                  <p className="text-sm text-muted">
                     Class {k.className} · {campusName(k.campusIds[0])}
                   </p>
                 </div>
@@ -101,9 +101,9 @@ export default function ConsentCentre() {
                           <p className="font-semibold">{consentPurposes[p].title}</p>
                           {on ? <Pill tone="success">Allowed</Pill> : <Pill>Not allowed</Pill>}
                         </div>
-                        <p className="mt-1 text-[14px] leading-relaxed text-muted">{consentPurposes[p].body}</p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted">{consentPurposes[p].body}</p>
                         {rec && (
-                          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
+                          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-label text-muted">
                             <span className="inline-flex items-center gap-1">
                               <FileText className="h-3.5 w-3.5" /> {rec.status === "granted" ? "Given" : "Withdrawn"} {formatDateTime(rec.withdrawnAt ?? rec.at)}
                             </span>
@@ -129,13 +129,13 @@ export default function ConsentCentre() {
               <Card>
                 <CardHeader title={multi ? `History for ${firstName(k.name)}` : "History"} icon={<History className="h-[18px] w-[18px]" />} />
                 {history.length === 0 ? (
-                  <p className="px-5 py-5 text-[14px] text-muted">No consent activity yet.</p>
+                  <p className="px-5 py-5 text-sm text-muted">No consent activity yet.</p>
                 ) : (
                   <div className="divide-y divide-border">
                     {history.map((h) => (
                       <div key={h.id} className="px-5 py-3">
-                        <p className="text-[14px] font-medium">{h.action}</p>
-                        <p className="text-[13px] text-muted">
+                        <p className="text-sm font-medium">{h.action}</p>
+                        <p className="text-label text-muted">
                           {formatDateTime(h.at)} {h.detail && `· ${h.detail}`}
                         </p>
                       </div>
@@ -175,13 +175,13 @@ export default function ConsentCentre() {
         }
       >
         {confirm && (
-          <div className="space-y-3 text-[14px] leading-relaxed">
+          <div className="space-y-3 text-sm leading-relaxed">
             {confirmChild && (
               <div className="flex items-center gap-3 rounded-xl border border-border p-3">
                 <Avatar name={confirmChild.name} size={36} />
                 <div>
                   <p className="font-semibold">{confirmChild.name}</p>
-                  <p className="text-[13px] text-muted">
+                  <p className="text-label text-muted">
                     Class {confirmChild.className} · {campusName(confirmChild.campusIds[0])}
                   </p>
                 </div>

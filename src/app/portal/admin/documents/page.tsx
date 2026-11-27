@@ -57,7 +57,7 @@ function DocsAdmin() {
             const u = state.users.find((x) => x.id === r.userId);
             const n = NEXT[r.status];
             return (
-              <div key={r.id} className="flex flex-wrap items-center gap-3 px-5 py-4 text-[14px]">
+              <div key={r.id} className="flex flex-wrap items-center gap-3 px-5 py-4 text-sm">
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">
                     {r.doc} × {r.copies} <span className="font-normal text-muted">· {u?.name} · Batch {u?.batch}</span>

@@ -114,19 +114,19 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       {mounted && hydrated && tour && step && active && (
         <div
           className={cn(
-            "animate-in fixed inset-x-3 bottom-20 z-40 overflow-hidden rounded-2xl border-2 border-primary bg-surface shadow-lift sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-[380px]",
+            "animate-in fixed inset-x-3 bottom-20 z-40 overflow-hidden rounded-xl border border-border-strong bg-surface shadow-lg sm:inset-x-auto sm:bottom-5 sm:left-5 sm:w-[380px]",
             pathname.startsWith("/portal") && "lg:left-[284px]"
           )}
           role="region"
           aria-label="Guided tour"
         >
           {/* header */}
-          <div className="flex items-center gap-2 bg-primary px-4 py-2.5 text-primary-fg">
+          <div className="flex items-center gap-2 bg-primary px-4 py-3 text-primary-fg">
             <MapPin className="h-4 w-4 shrink-0" />
-            <p className="min-w-0 flex-1 truncate text-[14px] font-semibold">
+            <p className="min-w-0 flex-1 truncate text-sm font-semibold">
               Tour {tour.id}: {tour.title}
             </p>
-            <span className="shrink-0 text-[13px] font-semibold opacity-90">
+            <span className="shrink-0 text-label font-semibold opacity-90">
               {active.step + 1}/{total}
             </span>
             <button onClick={() => setMin(!min)} className="grid h-7 w-7 place-items-center rounded-md hover:bg-white/15" aria-label={min ? "Expand" : "Minimise"}>
@@ -145,12 +145,12 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
           {!min && (
             <div className="space-y-3 px-4 pb-4 pt-3">
-              <p className="text-[16px] font-bold leading-snug">{step.title}</p>
+              <p className="text-base font-semibold leading-snug">{step.title}</p>
 
               {/* who */}
-              <div className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2">
-                {who ? <Avatar name={who.name} size={28} /> : <span className="grid h-7 w-7 place-items-center rounded-full bg-border text-[12px] font-bold">?</span>}
-                <p className="text-[13.5px]">
+              <div className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2">
+                {who ? <Avatar name={who.name} size={28} /> : <span className="grid h-7 w-7 place-items-center rounded-full bg-border text-xs font-semibold">?</span>}
+                <p className="text-sm">
                   <span className="text-muted">You are: </span>
                   <span className="font-semibold">{who ? `${who.name} · ${roleLabels[who.role]}` : step.path.startsWith("/consent") ? "Neha Mehta · Parent (on her phone)" : "A visitor (not signed in)"}</span>
                 </p>
@@ -158,13 +158,13 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
               {/* do this */}
               <div>
-                <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-semibold uppercase tracking-wider text-primary">
+                <p className="mb-2 flex items-center gap-2 text-label font-semibold uppercase tracking-[0.08em] text-primary">
                   <MousePointerClick className="h-3.5 w-3.5" /> Do this
                 </p>
-                <ol className="space-y-1.5">
+                <ol className="space-y-2">
                   {step.doThis.map((d, i) => (
-                    <li key={i} className="flex gap-2 text-[14.5px] leading-snug">
-                      <span className="mt-px grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary-soft text-[12px] font-bold text-primary">{i + 1}</span>
+                    <li key={i} className="flex gap-2 text-body leading-snug">
+                      <span className="mt-px grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-semibold text-primary">{i + 1}</span>
                       {d}
                     </li>
                   ))}
@@ -172,7 +172,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
               </div>
 
               {/* notice */}
-              <div className="flex gap-2 rounded-xl border border-dashed border-border px-3 py-2 text-[13.5px] leading-snug text-muted">
+              <div className="flex gap-2 rounded-xl border border-dashed border-border px-3 py-2 text-sm leading-snug text-muted">
                 <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>
                   <b className="text-text">Why it matters: </b>
@@ -190,15 +190,15 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </button>
-                <button onClick={() => goTo(step)} className="h-10 flex-1 rounded-xl border border-border px-3 text-[14px] font-semibold hover:bg-surface-2">
+                <button onClick={() => goTo(step)} className="h-10 flex-1 rounded-xl border border-border px-3 text-sm font-semibold hover:bg-surface-2">
                   Take me there
                 </button>
                 {isLast ? (
-                  <button onClick={() => Date.now() - lastMove.current > 700 && stop()} className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-success px-3 text-[14px] font-semibold text-white">
+                  <button onClick={() => Date.now() - lastMove.current > 700 && stop()} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-success px-3 text-sm font-semibold text-white">
                     <Check className="h-4 w-4" /> Finish
                   </button>
                 ) : (
-                  <button onClick={() => move(1)} className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 text-[14px] font-semibold text-primary-fg hover:bg-primary-hover">
+                  <button onClick={() => move(1)} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-3 text-sm font-semibold text-primary-fg hover:bg-primary-hover">
                     Next <ArrowRight className="h-4 w-4" />
                   </button>
                 )}

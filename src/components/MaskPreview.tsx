@@ -8,7 +8,7 @@ export function MaskPreview({ text }: { text: string }) {
   const { kinds } = maskContacts(text);
   if (!kinds.length) return null;
   return (
-    <div className="animate-in flex items-start gap-2.5 rounded-xl bg-warning-soft px-3.5 py-2.5 text-[13.5px] text-warning">
+    <div className="animate-in flex items-start gap-3 rounded-xl bg-warning-soft px-4 py-3 text-sm text-warning">
       <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
       <span>
         <b>Contact details will be hidden:</b> {kinds.map((k) => maskKindLabel[k]).join(", ")}. Please keep conversations on the platform; your campus will be notified.
@@ -24,7 +24,7 @@ export function MaskedText({ text }: { text: string }) {
     <>
       {parts.map((p, i) =>
         /^\[.* hidden\]$/.test(p) ? (
-          <span key={i} className="mx-0.5 inline-flex items-center rounded-md bg-warning-soft px-1.5 py-px text-[0.85em] font-semibold text-warning">
+          <span key={i} className="mx-0.5 inline-flex items-center rounded-md bg-warning-soft px-2 py-px text-[0.85em] font-semibold text-warning">
             {p.slice(1, -1)}
           </span>
         ) : (

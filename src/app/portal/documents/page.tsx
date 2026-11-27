@@ -49,7 +49,7 @@ function Docs() {
                 <option>Courier</option>
               </Select>
             </div>
-            <p className="text-[14px]">
+            <p className="text-sm">
               Fee: <b>₹{fee.toLocaleString("en-IN")}</b> {delivery === "Courier" && <span className="text-muted">(includes ₹{COURIER_FEE} courier)</span>}
             </p>
             <Button className="w-full" onClick={() => requestDocument(me.id, doc, copies, delivery)}>
@@ -64,7 +64,7 @@ function Docs() {
           ) : (
             <ul className="divide-y divide-border">
               {mine.map((r) => (
-                <li key={r.id} className="flex flex-wrap items-center gap-3 px-5 py-3.5 text-[14px]">
+                <li key={r.id} className="flex flex-wrap items-center gap-3 px-5 py-4 text-sm">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">
                       {r.doc} × {r.copies}

@@ -1,6 +1,7 @@
 "use client";
 
 import { allOk, check, clean, whenFilled } from "@/lib/validate";
+import { AnimatedBar } from "@/components/motion";
 import Link from "next/link";
 import { useState } from "react";
 import { CalendarDays, CheckCircle2, Flag, GraduationCap, Plus, XCircle } from "lucide-react";
@@ -75,14 +76,14 @@ function Content() {
                 <Card key={j.id} className="p-5">
                   <div className="flex flex-wrap items-start gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-[16px] font-semibold">{j.title}</p>
-                      <p className="text-[14px] text-muted">
+                      <p className="text-base font-semibold">{j.title}</p>
+                      <p className="text-sm text-muted">
                         {j.company} · {j.location} · {j.type}
                       </p>
                     </div>
                     {j.forStudents && <Pill tone="warning" icon={<GraduationCap className="h-3 w-3" />}>Wants to reach students</Pill>}
                   </div>
-                  <p className="mt-3 rounded-xl bg-surface-2 p-3 text-[14.5px] leading-relaxed">
+                  <p className="mt-3 rounded-xl bg-surface-2 p-3 text-body leading-relaxed">
                     <MaskedText text={j.description} />
                   </p>
                   {kinds.length > 0 && (
@@ -92,7 +93,7 @@ function Content() {
                   )}
                   <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
                     <Avatar name={poster?.name ?? "?"} size={30} />
-                    <span className="min-w-0 flex-1 text-[13.5px] text-muted">
+                    <span className="min-w-0 flex-1 text-sm text-muted">
                       {poster?.name} · {poster?.role === "ALU" ? "Verified alumni" : poster?.role} · Batch {poster?.batch} · posted {timeAgo(j.at)}
                     </span>
                     <Button variant="secondary" size="sm" onClick={() => decideJob(j.id, false, me.id)}>
@@ -110,8 +111,8 @@ function Content() {
 
       {tab === "jobs" && (
         <Card className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-[14px]">
-            <thead className="border-b border-border text-left text-[13px] uppercase tracking-wider text-muted">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead className="border-b border-border text-left text-label uppercase tracking-[0.08em] text-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">Job</th>
                 <th className="px-4 py-3 font-semibold">Posted by</th>
@@ -131,10 +132,10 @@ function Content() {
                   <td className="px-4 py-3">{campusName(j.campusId)}</td>
                   <td className="px-4 py-3 tabular-nums">{j.interested.length}</td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Pill tone={j.status === "approved" ? "success" : j.status === "pending" ? "warning" : j.status === "rejected" ? "danger" : "neutral"}>{j.status}</Pill>
                       {reportsFor(j.id) > 0 && (
-                        <Link href="/portal/admin/moderation" className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-[12.5px] font-semibold text-danger hover:underline">
+                        <Link href="/portal/admin/moderation" className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-label font-semibold text-danger hover:underline">
                           <Flag className="h-3 w-3" /> {reportsFor(j.id)} report{reportsFor(j.id) > 1 ? "s" : ""} · review
                         </Link>
                       )}
@@ -158,28 +159,26 @@ function Content() {
                 <Card key={e.id} className="p-5">
                   <div className="flex items-center gap-2">
                     <Pill tone="primary">{e.kind}</Pill>
-                    <span className="text-[13.5px] text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
+                    <span className="text-sm text-muted">{e.campusIds === "all" ? "All campuses" : campusName(e.campusIds[0])}</span>
                   </div>
-                  <p className="mt-2 text-[15px] font-semibold">{e.title}</p>
-                  <p className="text-[14px] text-muted">
+                  <p className="mt-2 text-body font-semibold">{e.title}</p>
+                  <p className="text-sm text-muted">
                     {formatDateTime(e.start)} · {e.venue}
                   </p>
                   {e.online && e.joinUrl && (
-                    <a href={e.joinUrl} target="_blank" rel="noreferrer" className="mt-0.5 block truncate text-[13px] font-medium text-primary hover:underline">
+                    <a href={e.joinUrl} target="_blank" rel="noreferrer" className="mt-0.5 block truncate text-label font-medium text-primary hover:underline">
                       {e.joinUrl}
                     </a>
                   )}
-                  <p className="mt-1 text-[13.5px] text-muted">For: {e.audience.map((a) => ({ ALU: "Alumni", STU: "Students", PAR: "Parents" })[a]).join(", ")}</p>
+                  <p className="mt-1 text-sm text-muted">For: {e.audience.map((a) => ({ ALU: "Alumni", STU: "Students", PAR: "Parents" })[a]).join(", ")}</p>
                   <div className="mt-3">
-                    <div className="flex justify-between text-[13.5px]">
+                    <div className="flex justify-between text-sm">
                       <span className="text-muted">
                         {seats} going · {e.rsvps.filter((r) => r.status === "maybe").length} maybe{e.online ? ` · ${e.attended?.length ?? 0} joined online` : ""}
                       </span>
                       <span className="font-semibold tabular-nums">{Math.round((seats / e.capacity) * 100)}% full</span>
                     </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (seats / e.capacity) * 100)}%` }} />
-                    </div>
+                    <AnimatedBar value={Math.min(100, (seats / e.capacity) * 100)} trackClassName="mt-2 h-2" />
                   </div>
                 </Card>
               );
@@ -308,7 +307,7 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
               <Field label="Venue text (optional)" htmlFor="ev" hint='Shown on the card. Default: "Online – link sent to registered attendees".'>
                 <Input id="ev" value={f.venue} onChange={(e) => setF({ ...f, venue: e.target.value })} placeholder="Online – link sent to registered attendees" />
               </Field>
-              {f.joinUrl.trim() && !linkOk && <p className="text-[13px] font-medium text-danger sm:col-span-2">Enter a full link starting with https://</p>}
+              {f.joinUrl.trim() && !linkOk && <p className="text-label font-medium text-danger sm:col-span-2">Enter a full link starting with https://</p>}
             </div>
           ) : (
             <Field label="Venue" htmlFor="ev">
@@ -326,7 +325,7 @@ function CreateEvent({ onClose }: { onClose: () => void }) {
           </Field>
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <p className="text-[14px] font-semibold">Who can sign up?</p>
+          <p className="text-sm font-semibold">Who can sign up?</p>
           <div className="flex flex-wrap gap-4">
             <Checkbox checked={f.audience.ALU} onChange={(v) => setF({ ...f, audience: { ...f.audience, ALU: v } })} label="Alumni" />
             <Checkbox checked={f.audience.STU} onChange={(v) => setF({ ...f, audience: { ...f.audience, STU: v } })} label="Students" />

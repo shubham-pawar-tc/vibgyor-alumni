@@ -93,10 +93,10 @@ function ReportCard({ r, allowed, onAct }: { r: Report; allowed: boolean; onAct:
   return (
     <Card className={`p-5 ${late ? "border-danger/50" : ""}`}>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary-soft text-primary">
+        <span className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface-2 text-muted">
           <Icon className="h-4 w-4" />
         </span>
-        <p className="text-[14px] font-semibold capitalize">{r.kind} reported</p>
+        <p className="text-sm font-semibold capitalize">{r.kind} reported</p>
         <Pill tone="warning">{r.reason}</Pill>
         <span className="flex-1" />
         {r.status === "open" ? (
@@ -108,7 +108,7 @@ function ReportCard({ r, allowed, onAct }: { r: Report; allowed: boolean; onAct:
         )}
       </div>
 
-      <div className="mt-3 rounded-xl bg-surface-2 p-3 text-[14.5px]">
+      <div className="mt-3 rounded-xl bg-surface-2 p-3 text-body">
         {r.kind === "post" && (post ? <p className="whitespace-pre-wrap">{post.text}</p> : <p className="italic text-muted">Post has been removed.</p>)}
         {r.kind === "job" && job && (
           <>
@@ -118,7 +118,7 @@ function ReportCard({ r, allowed, onAct }: { r: Report; allowed: boolean; onAct:
             <p className="mt-1 line-clamp-2 text-muted">
               <MaskedText text={job.description} />
             </p>
-            <p className="mt-1.5 text-[13px] text-muted">
+            <p className="mt-2 text-label text-muted">
               Status: {job.status} · {job.interested.length} interested ·{" "}
               <Link href="/portal/admin/content" className="font-semibold text-primary hover:underline">
                 Open in Jobs &amp; events
@@ -133,9 +133,9 @@ function ReportCard({ r, allowed, onAct }: { r: Report; allowed: boolean; onAct:
         )}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-muted">
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
         {subject && (
-          <Link href={`/portal/people/${subject.id}`} className="flex items-center gap-1.5 hover:text-text">
+          <Link href={`/portal/people/${subject.id}`} className="flex items-center gap-2 hover:text-text">
             <Avatar name={subject.name} size={22} /> {subject.name}
             {subject.deactivated && " (deactivated)"}
           </Link>
@@ -165,7 +165,7 @@ function ReportCard({ r, allowed, onAct }: { r: Report; allowed: boolean; onAct:
           )}
         </div>
       ) : (
-        <p className="mt-3 border-t border-border pt-3 text-[14px]">
+        <p className="mt-3 border-t border-border pt-3 text-sm">
           <b>Outcome:</b> {r.resolution} · by {state.users.find((u) => u.id === r.resolvedBy)?.name}
         </p>
       )}

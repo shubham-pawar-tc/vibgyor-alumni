@@ -28,8 +28,8 @@ export default function SettingsPage() {
           {list.map((c) => (
             <div key={c.id} className="flex items-center justify-between gap-4 px-5 py-3">
               <div>
-                <p className="text-[14px] font-medium">{c.name}</p>
-                <p className="text-[13px] text-muted">{c.city}</p>
+                <p className="text-sm font-medium">{c.name}</p>
+                <p className="text-label text-muted">{c.city}</p>
               </div>
               <Select value={state.campusMinClass[c.id] ?? 8} onChange={(e) => setMinClass(c.id, Number(e.target.value), me.id)} className="!h-9 w-[140px]" aria-label={`Minimum class for ${c.name}`}>
                 {[6, 7, 8, 9, 10, 11].map((n) => (

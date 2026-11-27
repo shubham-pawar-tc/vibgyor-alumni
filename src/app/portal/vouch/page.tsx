@@ -1,6 +1,7 @@
 "use client";
 
 import { Gate } from "@/components/Gate";
+import { AnimatedBar } from "@/components/motion";
 import { useState } from "react";
 import { CheckCircle2, HeartHandshake } from "lucide-react";
 import { Avatar, Button, Callout, Card, Checkbox, Empty, Modal, PageHeader, Pill, Req } from "@/components/ui";
@@ -53,23 +54,21 @@ function VouchPageInner() {
                   <Avatar name={v.name} size={48} />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{v.name}</p>
-                    <p className="text-[14px] text-muted">
+                    <p className="text-sm text-muted">
                       Batch {v.passYear} · signed up {timeAgo(v.submittedAt)}
                     </p>
                   </div>
                   {v.status === "peer_approved" ? <Pill tone="success">Verified</Pill> : <Pill tone="warning">Pending</Pill>}
                 </div>
                 <div className="mt-4">
-                  <div className="flex items-center justify-between text-[13.5px]">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-muted">Vouches</span>
                     <span className="font-semibold tabular-nums">{v.vouches.length} / 2</span>
                   </div>
-                  <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2">
-                    <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(1, v.vouches.length / 2) * 100}%` }} />
-                  </div>
+                  <AnimatedBar value={Math.min(1, v.vouches.length / 2) * 100} trackClassName="mt-2 h-2" />
                   <ul className="mt-2 space-y-1">
                     {v.vouches.map((x) => (
-                      <li key={x.by} className="text-[13.5px] text-muted">
+                      <li key={x.by} className="text-sm text-muted">
                         ✓ {x.byName}
                       </li>
                     ))}
@@ -77,7 +76,7 @@ function VouchPageInner() {
                 </div>
                 <div className="mt-4 border-t border-border pt-4">
                   {iVouched ? (
-                    <p className="flex items-center gap-1.5 text-[14px] font-semibold text-success">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-success">
                       <CheckCircle2 className="h-4 w-4" /> You vouched for {v.name.split(" ")[0]}
                     </p>
                   ) : (
@@ -123,7 +122,7 @@ function VouchPageInner() {
         }
       >
         <div className="space-y-4">
-          <p className="text-[14px] text-muted">
+          <p className="text-sm text-muted">
             Verified alumni can message students as mentors, so this matters. Your campus can see who vouched for whom.
           </p>
           {confirm && confirm.vouches.length === 1 && (

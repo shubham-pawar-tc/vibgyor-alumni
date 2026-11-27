@@ -51,8 +51,10 @@ import { activeBadge, useStore } from "@/lib/store";
 import type { User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { findDuplicates, unmappedValues } from "@/lib/admin";
-import { Avatar, Logo, Pill } from "./ui";
-import { ThemeToggle } from "./Public";
+import { Avatar, Logo, Pill, Skeleton } from "./ui";
+import { motion } from "motion/react";
+import { Drawer, Dropdown, PageTransition } from "./motion";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface NavItem {
   href: string;
@@ -173,8 +175,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (!hydrated || !me) {
     return (
-      <div className="grid min-h-screen place-items-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="min-h-screen lg:pl-[var(--sidebar-w)]" role="status" aria-label="Loading your portal">
+        <aside className="fixed inset-y-0 left-0 hidden w-[var(--sidebar-w)] space-y-3 border-r border-border bg-surface p-5 lg:block">
+          <Skeleton className="h-8 w-36" />
+          <div className="space-y-3 pt-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-4" />
+            ))}
+          </div>
+        </aside>
+        <div className="h-[var(--header-h)] border-b border-border bg-surface" />
+        <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
+          <Skeleton className="h-7 w-64" />
+          <Skeleton className="h-4 w-96 max-w-full" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-[var(--card-radius)]" />
+            ))}
+          </div>
+          <Skeleton className="h-64 rounded-[var(--card-radius)]" />
+        </div>
       </div>
     );
   }
@@ -200,35 +220,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
   const nav = navFor(me, counts);
 
-  const sidebar = (
+  const sidebar = (variant: "desktop" | "mobile") => (
     <div className="flex h-full flex-col">
-      <div className="flex h-[72px] items-center justify-between px-5 pt-1">
+      <div className="flex h-[var(--header-h)] items-center justify-between border-b border-border px-5">
         <Logo href="/portal" />
-        <button className="grid h-9 w-9 place-items-center rounded-xl hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(false)} aria-label="Close menu">
+        <button className="grid h-9 w-9 place-items-center rounded-md hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(false)} aria-label="Close menu">
           <X className="h-5 w-5" />
         </button>
       </div>
-      <div className="px-4 pb-2">
-        <div className="rounded-xl bg-surface-2 px-3 py-2.5">
-          <p className="text-[12px] font-semibold uppercase tracking-wider text-muted">Signed in as</p>
-          <p className="mt-0.5 truncate text-[14px] font-semibold">{roleLabels[me.role]}</p>
-          <p className="truncate text-[13px] text-muted">{scope ? (scope.length === 1 ? campusName(scope[0]) : `${scope.length} campuses`) : "All 39 campuses"}</p>
+      <div className="px-5 pb-1 pt-4">
+        <div>
+          <p className="truncate text-sm font-semibold">{roleLabels[me.role]}</p>
+          <p className="truncate text-label text-muted">{scope ? (scope.length === 1 ? campusName(scope[0]) : `${scope.length} campuses`) : "All 39 campuses"}</p>
         </div>
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
+      <nav className="flex-1 space-y-px overflow-y-auto px-3 py-2" aria-label="Portal">
         {nav.map((n) => {
           const heading = n.section ? (
-            <p key={`s-${n.section}`} className="px-3 pb-1 pt-4 text-[11.5px] font-semibold uppercase tracking-wider text-muted/80">
+            <p key={`s-${n.section}`} className="px-3 pb-1 pt-5 text-xs font-semibold uppercase tracking-[0.08em] text-subtle">
               {n.section}
             </p>
           ) : null;
-          const active = n.href === "/portal" ? pathname === "/portal" : pathname.startsWith(n.href) && n.href !== "#";
+          // trailingSlash export: pathname can be "/portal/"; compare without it
+          const path = pathname.replace(/\/+$/, "") || "/";
+          const active = n.href === "/portal" ? path === "/portal" : (path === n.href || path.startsWith(n.href + "/")) && n.href !== "#";
           if (n.soon)
             return (
-              <div key={n.label} className="flex h-10 cursor-not-allowed items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium text-muted/60" title="Arrives in a later prototype phase">
+              <div key={n.label} className="flex h-[var(--nav-item-h)] cursor-not-allowed items-center gap-3 rounded-[var(--nav-item-radius)] px-3 text-sm font-medium text-subtle" title="Arrives in a later prototype phase">
                 <n.icon className="h-[18px] w-[18px]" />
                 <span className="flex-1">{n.label}</span>
-                <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide">Soon</span>
+                <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide">Soon</span>
               </div>
             );
           return [
@@ -237,21 +258,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               key={n.label}
               href={n.href}
               className={cn(
-                "group relative flex h-10 items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium transition-colors",
-                active ? "bg-primary-soft text-primary" : "text-text/80 hover:bg-surface-2 hover:text-text"
+                "ds-interactive relative flex h-[var(--nav-item-h)] items-center gap-3 rounded-[var(--nav-item-radius)] px-3 text-sm font-medium",
+                active ? "text-primary" : "text-muted hover:bg-surface-2 hover:text-text"
               )}
+              aria-current={active ? "page" : undefined}
             >
-              {active && <span className="absolute -left-3 top-2 h-6 w-1 rounded-r-full bg-primary" />}
-              <n.icon className="icon-bounce h-[18px] w-[18px]" />
-              <span className="flex-1">{n.label}</span>
-              {!!n.count && <span className={cn("grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[12px] font-bold tabular-nums", active ? "bg-primary text-primary-fg" : "bg-danger text-white")}>{n.count}</span>}
+              {active && (
+                <motion.span
+                  layoutId={`nav-active-${variant}`}
+                  className="absolute inset-0 rounded-[var(--nav-item-radius)] bg-primary-soft"
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                />
+              )}
+              <n.icon className="relative h-4 w-4 shrink-0" />
+              <span className="relative flex-1 truncate">{n.label}</span>
+              {!!n.count && <span className={cn("relative grid h-5 min-w-5 place-items-center rounded-[var(--radius-sm)] px-2 text-xs font-semibold tabular-nums", active ? "bg-primary text-primary-fg" : "bg-surface-3 text-text")}>{n.count}</span>}
             </Link>,
           ];
         })}
       </nav>
-      <div className="space-y-0.5 border-t border-border px-3 py-3">
-        <Link href="/demo" className="flex h-10 items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium text-text/80 hover:bg-surface-2">
-          <PlayCircle className="h-[18px] w-[18px]" />
+      <div className="space-y-px border-t border-border px-3 py-3">
+        <Link href="/demo" className="flex h-[var(--nav-item-h)] items-center gap-3 rounded-[var(--nav-item-radius)] px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">
+          <PlayCircle className="h-4 w-4" />
           Guided tours
         </Link>
         <button
@@ -259,9 +287,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             reset();
             router.push("/demo");
           }}
-          className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-[14.5px] font-medium text-text/80 hover:bg-surface-2"
+          className="flex h-[var(--nav-item-h)] w-full items-center gap-3 rounded-[var(--nav-item-radius)] px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text"
         >
-          <RotateCcw className="h-[18px] w-[18px]" />
+          <RotateCcw className="h-4 w-4" />
           Reset demo data
         </button>
       </div>
@@ -269,25 +297,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen lg:pl-[264px]">
+    <div className="min-h-screen lg:pl-[var(--sidebar-w)]">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[264px] border-r border-border bg-surface lg:block">
-        <div className="spectrum-flow absolute inset-x-0 top-0 h-[3px]" />
-        {sidebar}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[var(--sidebar-w)] border-r border-border bg-surface lg:block">
+        {sidebar("desktop")}
       </aside>
       {/* Mobile drawer */}
-      {mobileNav && (
-        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileNav(false)}>
-          <aside className="animate-in h-full w-[280px] max-w-[85vw] bg-surface" onClick={(e) => e.stopPropagation()}>
-            {sidebar}
-          </aside>
-        </div>
-      )}
+      <Drawer open={mobileNav} onClose={() => setMobileNav(false)} className="h-full w-[280px] max-w-[85vw] border-r border-border bg-surface">
+        {sidebar("mobile")}
+      </Drawer>
 
-      <header className="sticky top-0 z-20 border-b border-border bg-surface/85 backdrop-blur-md">
-        <div className="spectrum-flow h-[3px] lg:hidden" />
-        <div className="flex h-16 items-center gap-2 px-4 sm:px-6">
-          <button className="grid h-9 w-9 place-items-center rounded-xl hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(true)} aria-label="Open menu">
+      <header className="sticky top-0 z-20 border-b border-border bg-surface">
+        <div className="flex h-[var(--header-h)] items-center gap-2 px-4 sm:px-6">
+          <button className="ds-interactive grid h-9 w-9 place-items-center rounded-lg hover:bg-surface-2 lg:hidden" onClick={() => setMobileNav(true)} aria-label="Open menu" aria-expanded={mobileNav}>
             <Menu className="h-5 w-5" />
           </button>
           <div className="lg:hidden">
@@ -305,7 +327,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
         </div>
       </header>
-      <main key={pathname} className="page-in mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <PageTransition routeKey={pathname}>{children}</PageTransition>
+      </main>
     </div>
   );
 }
@@ -330,18 +354,17 @@ export function RoleSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-9 items-center gap-2 rounded-xl border border-dashed border-primary/50 bg-primary-soft/60 px-2.5 text-[13.5px] font-semibold text-primary hover:bg-primary-soft"
+        className="flex h-8 items-center gap-2 rounded-md border border-dashed border-border-strong px-3 text-label font-medium text-muted hover:bg-surface-2 hover:text-text"
       >
-        <span className="hidden sm:inline">Demo:</span> Switch role
+        <span className="hidden sm:inline">Demo ·</span> Switch role
         <ChevronDown className="h-3.5 w-3.5" />
       </button>
-      {open && (
-        <div className="animate-in absolute right-0 top-11 z-50 w-[300px] max-w-[calc(100vw-32px)] overflow-hidden rounded-2xl border border-border bg-surface shadow-lift">
+      <Dropdown open={open} className="absolute right-0 top-11 z-50 w-[300px] max-w-[calc(100vw-32px)] overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
           <div className="border-b border-border px-4 py-3">
-            <p className="text-[14px] font-semibold">Switch persona</p>
-            <p className="text-[13px] text-muted">Demo only · real users sign in with OTP</p>
+            <p className="text-sm font-semibold">Switch persona</p>
+            <p className="text-label text-muted">Demo only · real users sign in with OTP</p>
           </div>
-          <div className="max-h-[60vh] overflow-y-auto p-1.5">
+          <div className="max-h-[60vh] overflow-y-auto p-2">
             {personas.map((p) => {
               const u = state.users.find((x) => x.id === p.userId);
               if (!u) return null;
@@ -353,14 +376,14 @@ export function RoleSwitcher() {
                     setOpen(false);
                     router.push("/portal");
                   }}
-                  className={cn("flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left hover:bg-surface-2", me?.id === u.id && "bg-primary-soft")}
+                  className={cn("flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-surface-2", me?.id === u.id && "bg-primary-soft")}
                 >
                   <Avatar name={u.name} size={32} />
                   <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="truncate text-[14px] font-semibold">{u.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-sm font-semibold">{u.name}</span>
                     </span>
-                    <span className="block truncate text-[12.5px] text-muted">
+                    <span className="block truncate text-label text-muted">
                       {roleLabels[u.role]} · {p.blurb}
                     </span>
                   </span>
@@ -368,8 +391,7 @@ export function RoleSwitcher() {
               );
             })}
           </div>
-        </div>
-      )}
+      </Dropdown>
     </div>
   );
 }
@@ -386,15 +408,14 @@ function UserMenu({ me, onLogout }: { me: User; onLogout: () => void }) {
       <button onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-full p-0.5 hover:bg-surface-2 sm:pr-2" aria-label="Account menu">
         <Avatar name={me.name} size={34} />
         <span className="hidden text-left md:block">
-          <span className="block max-w-[140px] truncate text-[14px] font-semibold leading-tight">{me.name}</span>
-          <span className="block text-[12px] leading-tight text-muted">{roleLabels[me.role]}</span>
+          <span className="block max-w-[140px] truncate text-sm font-semibold leading-tight">{me.name}</span>
+          <span className="block text-xs leading-tight text-muted">{roleLabels[me.role]}</span>
         </span>
       </button>
-      {open && (
-        <div className="animate-in absolute right-0 top-12 z-50 w-60 rounded-2xl border border-border bg-surface p-1.5 shadow-lift">
-          <div className="px-3 py-2.5">
-            <p className="truncate text-[14px] font-semibold">{me.name}</p>
-            <p className="truncate text-[13px] text-muted">{me.email}</p>
+      <Dropdown open={open} className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-border bg-surface p-2 shadow-lg">
+          <div className="px-3 py-3">
+            <p className="truncate text-sm font-semibold">{me.name}</p>
+            <p className="truncate text-label text-muted">{me.email}</p>
             <div className="mt-2 flex flex-wrap gap-1">
               <Pill tone="primary">{roleLabels[me.role]}</Pill>
               {me.badges?.map((b) => (
@@ -412,16 +433,15 @@ function UserMenu({ me, onLogout }: { me: User; onLogout: () => void }) {
                 switchContext(linked.id);
                 router.push("/portal");
               }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-[14px] font-medium hover:bg-surface-2"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-surface-2"
             >
               <Repeat className="h-4 w-4" /> Switch to {roleLabels[linked.role]}
             </button>
           )}
-          <button onClick={onLogout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[14px] font-medium hover:bg-surface-2">
+          <button onClick={onLogout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-surface-2">
             <LogOut className="h-4 w-4" /> Sign out
           </button>
-        </div>
-      )}
+      </Dropdown>
     </div>
   );
 }

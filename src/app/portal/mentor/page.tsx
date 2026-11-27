@@ -46,7 +46,7 @@ function MentorPageInner() {
             </span>
             <div>
               <p className="text-lg font-semibold">{active ? "Active mentor" : "Badge suspended"}</p>
-              <p className="text-[14px] text-muted">
+              <p className="text-sm text-muted">
                 Since {formatDate(badge.since)} · code of conduct accepted {me.codeOfConductAcceptedAt ? formatDate(me.codeOfConductAcceptedAt) : ""}
               </p>
             </div>
@@ -72,7 +72,7 @@ function MentorPageInner() {
             </span>
             <div>
               <p className="text-lg font-semibold">Waiting for campus approval</p>
-              <p className="text-[14px] text-muted">Code of conduct accepted {formatDate(pending.codeAcceptedAt)}. Your Campus Admin will review your request.</p>
+              <p className="text-sm text-muted">Code of conduct accepted {formatDate(pending.codeAcceptedAt)}. Your Campus Admin will review your request.</p>
             </div>
           </div>
           <Callout tone="info" className="mt-5">
@@ -93,7 +93,7 @@ function MentorPageInner() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.5fr_1fr]">
         <Card>
           <CardHeader title="Safeguarding code of conduct" subtitle="Draft wording; VIBGYOR will supply the final text" icon={<ShieldCheck className="h-[18px] w-[18px]" />} />
-          <div className="space-y-3.5 p-5">
+          <div className="space-y-4 p-5">
             {code.map((c, i) => (
               <Checkbox key={i} checked={checks[i]} onChange={(v) => setChecks((s) => s.map((x, j) => (j === i ? v : x)))} label={c} />
             ))}
@@ -110,7 +110,7 @@ function MentorPageInner() {
         <div className="space-y-4">
           <Card className="p-5">
             <p className="font-semibold">What students will see</p>
-            <ul className="mt-3 space-y-2.5 text-[14.5px]">
+            <ul className="mt-3 space-y-3 text-body">
               {["Name and photo", "Batch and campus", "College, course and country", "Current role and company", "Short bio"].map((x) => (
                 <li key={x} className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success" /> {x}
@@ -125,7 +125,7 @@ function MentorPageInner() {
           </Card>
           <Card className="p-5">
             <p className="font-semibold">How it works</p>
-            <ol className="mt-3 space-y-2 text-[14.5px] text-muted">
+            <ol className="mt-3 space-y-2 text-body text-muted">
               <li>1. Accept the code of conduct</li>
               <li>2. Your Campus Admin approves the badge</li>
               <li>3. Students matched to your path can message you</li>

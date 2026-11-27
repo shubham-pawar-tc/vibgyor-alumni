@@ -80,7 +80,7 @@ function Careers() {
           >
             {parent ? `Book and pay ${rupees(MCZ_SESSION_FEE)} (demo payment)` : "Request a session"}
           </Button>
-          {msg && <p className={`mt-3 text-[14px] font-semibold ${msg.ok ? "text-success" : "text-danger"}`}>{msg.text}</p>}
+          {msg && <p className={`mt-3 text-sm font-semibold ${msg.ok ? "text-success" : "text-danger"}`}>{msg.text}</p>}
         </Card>
       )}
       <Card>
@@ -90,7 +90,7 @@ function Careers() {
         ) : (
           <ul className="divide-y divide-border">
             {list.map((b) => (
-              <li key={b.id} className="flex items-center justify-between gap-3 px-5 py-3 text-[14px]">
+              <li key={b.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
                 <span>
                   <b>{b.topic}</b> {b.slot && <span className="text-muted">· {formatDateTime(b.slot)}</span>}
                 </span>

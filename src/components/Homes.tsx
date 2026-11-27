@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatedBar } from "@/components/motion";
 import { useState } from "react";
 import { download, toCsv } from "@/lib/admin";
 import { AskMentorPermission } from "./AskMentorPermission";
@@ -13,7 +14,6 @@ import {
   Circle,
   ClipboardCheck,
   Clock,
-  Compass,
   GraduationCap,
   HeartHandshake,
   Lock,
@@ -32,7 +32,6 @@ import { activeBadge, belowAgeGate, hasConsent, latestConsent, useStore } from "
 import type { ConsentPurpose, User } from "@/lib/types";
 import { cn, firstName, fmt, formatDate, timeAgo } from "@/lib/utils";
 import { completeness, groupsFor } from "@/lib/community";
-import { pageIconFor } from "@/lib/pageIcons";
 import { Avatar, Button, Callout, Card, CardHeader, PageHeader, Pill, Req, Stat } from "./ui";
 
 /* ================================ Student ================================ */
@@ -49,11 +48,11 @@ export function StudentHome({ me }: { me: User }) {
       <div className="mx-auto max-w-2xl">
         <Card className="p-8 text-center">
           <Lock className="mx-auto h-10 w-10 text-muted" />
-          <h1 className="mt-4 text-2xl font-bold tracking-tight">Not open for your class yet, {firstName(me.name)}</h1>
-          <p className="mx-auto mt-2 max-w-md text-[15px] text-muted">
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Not open for your class yet, {firstName(me.name)}</h1>
+          <p className="mx-auto mt-2 max-w-md text-body text-muted">
             {campusName(me.campusIds[0])} opens the VIBGYOR Alumni Platform to students from <b>Class {min}</b>. You&apos;re in Class {me.className}, so your account stays switched off and no one has been asked for consent.
           </p>
-          <p className="mt-4 text-[13.5px] text-muted">We&apos;ll invite your parent when you reach Class {min}.</p>
+          <p className="mt-4 text-sm text-muted">We&apos;ll invite your parent when you reach Class {min}.</p>
         </Card>
       </div>
     );
@@ -65,19 +64,18 @@ export function StudentHome({ me }: { me: User }) {
       <div className="mx-auto max-w-2xl">
         <Card className="overflow-hidden">
           <div className="relative bg-primary px-6 py-8 text-primary-fg sm:px-8">
-            <div className="spectrum absolute inset-x-0 bottom-0 h-1" />
             {paused ? <PauseCircle className="h-10 w-10" /> : <Lock className="h-10 w-10" />}
-            <h1 className="mt-4 text-2xl font-bold tracking-tight">
+            <h1 className="mt-4 text-2xl font-semibold tracking-tight">
               {paused ? `Your account is paused, ${firstName(me.name)}` : `Hi ${firstName(me.name)}, you're nearly in`}
             </h1>
-            <p className="mt-2 max-w-md text-[15px] opacity-85">
+            <p className="mt-2 max-w-md text-body opacity-85">
               {paused
                 ? "Your parent has withdrawn permission for the platform. Talk to them if you think this is a mistake."
                 : "Because you're under 18, a parent needs to say yes before your account is switched on. We've asked them already."}
             </p>
           </div>
           <div className="p-6 sm:p-8">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Req ids="CS-1" /> <Req ids="CS-2" />
             </div>
             <ol className="mt-5 space-y-4">
@@ -90,8 +88,8 @@ export function StudentHome({ me }: { me: User }) {
                 <li key={i} className="flex gap-3">
                   {s.done || i === 0 ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" /> : i === 1 ? <Clock className="mt-0.5 h-5 w-5 shrink-0 text-warning" /> : <Circle className="mt-0.5 h-5 w-5 shrink-0 text-border" />}
                   <div>
-                    <p className="text-[14px] font-semibold">{s.title}</p>
-                    <p className="text-[14px] text-muted">{s.sub}</p>
+                    <p className="text-sm font-semibold">{s.title}</p>
+                    <p className="text-sm text-muted">{s.sub}</p>
                   </div>
                 </li>
               ))}
@@ -127,10 +125,8 @@ export function StudentHome({ me }: { me: User }) {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.6fr_1fr]">
         <div className="min-w-0 space-y-5">
           <Card className="relative overflow-hidden p-6">
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10" />
-            <Compass className="h-8 w-8 text-primary" />
-            <h2 className="mt-3 text-lg font-bold">Find a mentor for your choices</h2>
-            <p className="mt-1 max-w-md text-[14px] text-muted">We match you with alumni mentors by the country, course and college you&apos;re aiming for.</p>
+            <h2 className="text-lg font-semibold">Find a mentor for your choices</h2>
+            <p className="mt-1 max-w-md text-sm text-muted">We match you with alumni mentors by the country, course and college you&apos;re aiming for.</p>
             {mentorOk ? (
               <Button href="/portal/mentors" className="mt-5">
                 <Search className="h-4 w-4" /> Browse mentors
@@ -149,11 +145,11 @@ export function StudentHome({ me }: { me: User }) {
             <CardHeader title="My 3C choices" subtitle="Country · Course · College" action={<Req ids="B10" />} />
             <div className="divide-y divide-border">
               {me.threeC?.map((c, i) => (
-                <div key={i} className="flex items-center gap-4 px-5 py-3.5">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary-soft text-[14px] font-bold text-primary">{i + 1}</span>
+                <div key={i} className="flex items-center gap-4 px-5 py-4">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary-soft text-sm font-semibold text-primary">{i + 1}</span>
                   <div className="min-w-0">
-                    <p className="truncate text-[14px] font-semibold">{c.college}</p>
-                    <p className="truncate text-[14px] text-muted">
+                    <p className="truncate text-sm font-semibold">{c.college}</p>
+                    <p className="truncate text-sm text-muted">
                       {c.course} · {c.country}
                     </p>
                   </div>
@@ -165,20 +161,20 @@ export function StudentHome({ me }: { me: User }) {
 
         <div className="min-w-0 space-y-5">
           <Card>
-            <CardHeader title="Conversations" action={<Link href="/portal/messages" className="text-[14px] font-semibold text-primary">Open</Link>} />
+            <CardHeader title="Conversations" action={<Link href="/portal/messages" className="text-sm font-semibold text-primary">Open</Link>} />
             {myConvs.length === 0 ? (
-              <p className="px-5 py-6 text-[14px] text-muted">No conversations yet. Ask a mentor your first question.</p>
+              <p className="px-5 py-6 text-sm text-muted">No conversations yet. Ask a mentor your first question.</p>
             ) : (
               <div className="divide-y divide-border">
                 {myConvs.map((c) => {
                   const m = state.users.find((u) => u.id === c.mentorId)!;
                   const last = state.messages.filter((x) => x.convId === c.id).at(-1);
                   return (
-                    <Link key={c.id} href={`/portal/messages?c=${c.id}`} className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-2">
+                    <Link key={c.id} href={`/portal/messages?c=${c.id}`} className="flex items-center gap-3 px-5 py-4 hover:bg-surface-2">
                       <Avatar name={m.name} size={36} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[14.5px] font-semibold">{m.name}</p>
-                        <p className="truncate text-[13.5px] text-muted">{last?.text}</p>
+                        <p className="truncate text-body font-semibold">{m.name}</p>
+                        <p className="truncate text-sm text-muted">{last?.text}</p>
                       </div>
                     </Link>
                   );
@@ -188,22 +184,22 @@ export function StudentHome({ me }: { me: User }) {
           </Card>
           <Card className="p-5">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[14px] font-semibold">What your parent allowed</p>
+              <p className="text-sm font-semibold">What your parent allowed</p>
               <Req ids="CS-2" />
             </div>
-            <div className="mt-3 space-y-2.5">
+            <div className="mt-3 space-y-3">
               {(Object.keys(consentPurposes) as ConsentPurpose[]).map((p) => {
                 const on = hasConsent(state, me.id, p);
                 const rec = latestConsent(state, me.id, p);
                 const by = rec ? state.users.find((u) => u.id === rec.givenBy) : undefined;
                 return (
-                  <div key={p} className="rounded-xl bg-surface-2 px-3 py-2.5">
-                    <div className="flex items-center justify-between gap-2 text-[14px]">
+                  <div key={p} className="rounded-xl bg-surface-2 px-3 py-3">
+                    <div className="flex items-center justify-between gap-2 text-sm">
                       <span className="font-medium">{consentPurposes[p].short}</span>
                       {on ? <Pill tone="success">On</Pill> : <Pill>Off</Pill>}
                     </div>
                     {rec && (
-                      <p className="mt-1 text-[12.5px] leading-snug text-muted">
+                      <p className="mt-1 text-label leading-snug text-muted">
                         {rec.status === "granted" ? "Allowed" : "Switched off"} by <span className="font-semibold text-text">{by?.name ?? "parent"}</span> on{" "}
                         {formatDate(rec.withdrawnAt ?? rec.at)}
                         {rec.status === "granted" && <> · ref <span className="font-mono">{rec.otpRef}</span></>}
@@ -213,17 +209,17 @@ export function StudentHome({ me }: { me: User }) {
                 );
               })}
             </div>
-            <p className="mt-3 text-[12.5px] text-muted">Only your parent can change these, from their Parent portal.</p>
+            <p className="mt-3 text-label text-muted">Only your parent can change these, from their Parent portal.</p>
           </Card>
           <Card className="p-5">
-            <p className="text-[14px] font-semibold">Coming up for you</p>
+            <p className="text-sm font-semibold">Coming up for you</p>
             <div className="mt-3 grid gap-2">
-              <Link href="/portal/events" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[14px] hover:bg-border/60">
+              <Link href="/portal/events" className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-3 text-sm hover:bg-border/60">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span className="flex-1">Career talks and webinars</span>
                 <span className="font-semibold">{state.events.filter((e) => e.audience.includes("STU") && (e.campusIds === "all" || e.campusIds.includes(me.campusIds[0]))).length}</span>
               </Link>
-              <Link href="/portal/jobs" className="flex items-center gap-2.5 rounded-xl bg-surface-2 px-3 py-2.5 text-[14px] hover:bg-border/60">
+              <Link href="/portal/jobs" className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-3 text-sm hover:bg-border/60">
                 <Briefcase className="h-4 w-4 text-primary" />
                 <span className="flex-1">Internships approved by your campus</span>
                 <span className="font-semibold">{state.jobs.filter((j) => j.forStudents && j.status === "approved").length}</span>
@@ -270,7 +266,7 @@ export function ParentHome({ me }: { me: User }) {
                 <Avatar name={k.name} size={52} />
                 <div className="min-w-0 flex-1">
                   <p className="text-lg font-semibold">{k.name}</p>
-                  <p className="text-[14px] text-muted">
+                  <p className="text-sm text-muted">
                     Class {k.className} · {campusName(k.campusIds[0])}
                   </p>
                 </div>
@@ -278,7 +274,7 @@ export function ParentHome({ me }: { me: User }) {
               </div>
               <div className="mt-5 space-y-2">
                 {(Object.keys(consentPurposes) as ConsentPurpose[]).map((p) => (
-                  <div key={p} className="flex items-center justify-between rounded-xl bg-surface-2 px-3.5 py-2.5 text-[14.5px]">
+                  <div key={p} className="flex items-center justify-between rounded-xl bg-surface-2 px-4 py-3 text-body">
                     <span>{consentPurposes[p].short}</span>
                     {hasConsent(state, k.id, p) ? <Pill tone="success">Allowed</Pill> : <Pill>Not allowed</Pill>}
                   </div>
@@ -304,7 +300,7 @@ export function ParentHome({ me }: { me: User }) {
         <Card className="p-6">
           <ShieldCheck className="h-7 w-7 text-primary" />
           <p className="mt-3 font-semibold">How we keep your child safe</p>
-          <ul className="mt-3 space-y-2.5 text-[14.5px] text-muted">
+          <ul className="mt-3 space-y-3 text-body text-muted">
             <li>• Only approved alumni mentors can be contacted</li>
             <li>• All messages are recorded and reviewed by the campus</li>
             <li>• You can read your child&apos;s mentor conversations and message the mentor yourself</li>
@@ -346,7 +342,7 @@ export function AlumniHome({ me }: { me: User }) {
     <>
       <PageHeader
         eyebrow={
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             <Pill tone="success" icon={<BadgeCheck className="h-3.5 w-3.5" />}>
               Verified alumni
             </Pill>
@@ -366,7 +362,8 @@ export function AlumniHome({ me }: { me: User }) {
           Your campus alumni office has paused your Mentor badge while they review a report. Students can&apos;t see you and your student chats are read-only.
         </Callout>
       )}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="overflow-hidden rounded-[var(--card-radius)] border border-border bg-surface">
+      <div className="-mb-px -mr-px grid sm:grid-cols-2 lg:grid-cols-3">
         {isMentor || suspended ? (
           <ActionCard
             href="/portal/messages"
@@ -398,21 +395,22 @@ export function AlumniHome({ me }: { me: User }) {
         <ActionCard href="/portal/jobs" icon={Briefcase} title="Jobs" body={`${liveJobs} live job${liveJobs === 1 ? "" : "s"} from alumni · post your own`} cta="Browse jobs" />
         <ActionCard href="/portal/invite" icon={Send} title="Invite friends" body="Bring your batchmates to VAA" cta="Invite" />
       </div>
+      </div>
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="min-w-0">
-          <CardHeader title="Latest in your groups" action={<Link href="/portal/groups" className="text-[14px] font-semibold text-primary">Open</Link>} />
+          <CardHeader title="Latest in your groups" action={<Link href="/portal/groups" className="text-sm font-semibold text-primary">Open</Link>} />
           <div className="divide-y divide-border">
-            {posts.length === 0 && <p className="px-5 py-4 text-[14px] text-muted">No posts yet.</p>}
+            {posts.length === 0 && <p className="px-5 py-4 text-sm text-muted">No posts yet.</p>}
             {posts.map((p) => {
               const a = state.users.find((u) => u.id === p.authorId);
               return (
                 <div key={p.id} className="flex gap-3 px-5 py-3">
                   <Avatar name={a?.name ?? "?"} size={32} />
                   <div className="min-w-0">
-                    <p className="text-[14px]">
+                    <p className="text-sm">
                       <span className="font-semibold">{a?.name}</span> <span className="text-muted">· {timeAgo(p.at)}</span>
                     </p>
-                    <p className="line-clamp-2 text-[14px] text-muted">{p.text}</p>
+                    <p className="line-clamp-2 text-sm text-muted">{p.text}</p>
                   </div>
                 </div>
               );
@@ -420,7 +418,7 @@ export function AlumniHome({ me }: { me: User }) {
           </div>
         </Card>
         <Card className="min-w-0">
-          <CardHeader title="Upcoming events" action={<Link href="/portal/events" className="text-[14px] font-semibold text-primary">All events</Link>} />
+          <CardHeader title="Upcoming events" action={<Link href="/portal/events" className="text-sm font-semibold text-primary">All events</Link>} />
           <div className="divide-y divide-border">
             {events.map((e) => {
               const d = new Date(e.start);
@@ -428,12 +426,12 @@ export function AlumniHome({ me }: { me: User }) {
               return (
                 <Link key={e.id} href="/portal/events" className="flex items-center gap-3 px-5 py-3 hover:bg-surface-2">
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-center text-primary">
-                    <span className="text-[11px] font-bold uppercase leading-none">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
-                    <span className="text-[16px] font-bold leading-none">{d.getDate()}</span>
+                    <span className="text-xs font-semibold uppercase leading-none">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                    <span className="text-base font-semibold leading-none">{d.getDate()}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14.5px] font-semibold">{e.title}</span>
-                    <span className="block truncate text-[13px] text-muted">{e.venue}</span>
+                    <span className="block truncate text-body font-semibold">{e.title}</span>
+                    <span className="block truncate text-label text-muted">{e.venue}</span>
                   </span>
                   {going && <Pill tone="success">Going</Pill>}
                 </Link>
@@ -458,9 +456,9 @@ export function PendingAlumniHome({ me }: { me: User }) {
         <PageHeader eyebrow={<Pill tone="danger">Not verified</Pill>} title={`Sorry ${firstName(me.name)}, we couldn't verify you`} description={`${campusName(req.campusId)} alumni office · ${req.decidedAt ? timeAgo(req.decidedAt) : ""}`} />
         <Card className="p-6">
           <p className="font-semibold">Reason</p>
-          <p className="mt-1 text-[14.5px] text-muted">{req.note || "Your details didn't match school records."}</p>
+          <p className="mt-1 text-body text-muted">{req.note || "Your details didn't match school records."}</p>
           <p className="mt-5 font-semibold">What you can do</p>
-          <ul className="mt-2 space-y-1.5 text-[14.5px] text-muted">
+          <ul className="mt-2 space-y-2 text-body text-muted">
             <li>• Reply to the WhatsApp or email from your campus with a school ID or leaving certificate</li>
             <li>• If you think this is wrong, raise it under My profile → My data → Privacy complaint</li>
           </ul>
@@ -474,7 +472,7 @@ export function PendingAlumniHome({ me }: { me: User }) {
         <PageHeader eyebrow={<Pill tone="warning">Alumni – Pending</Pill>} title="Your campus needs a little more information" description={`${campusName(req.campusId)} alumni office · ${req.decidedAt ? timeAgo(req.decidedAt) : ""}`} />
         <Card className="p-6">
           <p className="font-semibold">They asked</p>
-          <p className="mt-1 rounded-xl bg-surface-2 px-3.5 py-2.5 text-[14.5px]">{req.note || "Please share a school ID or leaving certificate."}</p>
+          <p className="mt-1 rounded-xl bg-surface-2 px-4 py-3 text-body">{req.note || "Please share a school ID or leaving certificate."}</p>
           <label htmlFor="info-reply" className="mt-5 block font-semibold">
             Your reply
           </label>
@@ -484,12 +482,12 @@ export function PendingAlumniHome({ me }: { me: User }) {
             value={reply}
             onChange={(e) => setReply(e.target.value)}
             placeholder="e.g. My admission number was VG-MAL-2006-0112. I've emailed a photo of my leaving certificate."
-            className="mt-2 w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-[14.5px] outline-none focus:border-primary"
+            className="mt-2 w-full rounded-xl border border-border bg-surface px-4 py-3 text-body outline-none focus:border-primary"
           />
           <Button className="mt-3" disabled={!reply.trim()} onClick={() => { answerInfoRequest(req.id, me.id, reply); setReply(""); }}>
             Send to the alumni office
           </Button>
-          <p className="mt-2 text-[13px] text-muted">Your request goes back into the review queue. Vouching pauses until then.</p>
+          <p className="mt-2 text-label text-muted">Your request goes back into the review queue. Vouching pauses until then.</p>
         </Card>
       </div>
     );
@@ -503,7 +501,7 @@ export function PendingAlumniHome({ me }: { me: User }) {
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
             <div>
               <p className="font-semibold">Details submitted</p>
-              <p className="text-[14px] text-muted">
+              <p className="text-sm text-muted">
                 Batch {req?.passYear ?? me.batch} · {campusName(me.campusIds[0])} {req && `· ${timeAgo(req.submittedAt)}`}
               </p>
             </div>
@@ -512,7 +510,7 @@ export function PendingAlumniHome({ me }: { me: User }) {
             <Clock className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <div>
               <p className="font-semibold">Campus alumni office review</p>
-              <p className="text-[14px] text-muted">{req?.note ?? "Checking your details against school records."}</p>
+              <p className="text-sm text-muted">{req?.note ?? "Checking your details against school records."}</p>
             </div>
           </li>
           <li className="flex gap-3">
@@ -520,18 +518,16 @@ export function PendingAlumniHome({ me }: { me: User }) {
             <div className="flex-1">
               <p className="font-semibold">Or: two batchmates vouch for you</p>
               <div className="mt-2 flex items-center gap-3">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
-                  <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(vouches / 2) * 100}%` }} />
-                </div>
-                <span className="text-[14px] font-semibold tabular-nums">{vouches} / 2</span>
+                <AnimatedBar value={(vouches / 2) * 100} trackClassName="h-2 flex-1" />
+                <span className="text-sm font-semibold tabular-nums">{vouches} / 2</span>
               </div>
               {req?.vouches.map((v) => (
-                <p key={v.by} className="mt-1.5 text-[13.5px] text-muted">
+                <p key={v.by} className="mt-2 text-sm text-muted">
                   ✓ {v.byName} · {timeAgo(v.at)}
                 </p>
               ))}
               {req && (
-                <p className="mt-2 text-[13.5px] text-muted">
+                <p className="mt-2 text-sm text-muted">
                   Share this link with verified batchmates: <span className="font-mono text-text">vaa.vibgyor.in/vouch/{req.id}</span>
                 </p>
               )}
@@ -604,15 +600,13 @@ export function StaffDashboard({ me }: { me: User }) {
         <Card>
           <CardHeader title="Data completeness" subtitle="Sample KPIs" action={<Req ids="M3" />} />
           <div className="space-y-4 p-5">
-            {completeness.map((c) => (
+            {completeness.map((c, i) => (
               <div key={c.label}>
-                <div className="flex justify-between text-[14px]">
+                <div className="flex justify-between text-sm">
                   <span className="font-medium">{c.label}</span>
                   <span className="font-semibold tabular-nums">{c.v}%</span>
                 </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2">
-                  <div className={cn("h-full rounded-full", c.v < 30 ? "bg-danger" : c.v < 70 ? "bg-warning" : "bg-success")} style={{ width: `${c.v}%` }} />
-                </div>
+                <AnimatedBar value={c.v} index={i} label={c.label} trackClassName="mt-2 h-2" className={c.v < 30 ? "bg-danger" : "bg-secondary"} />
               </div>
             ))}
           </div>
@@ -622,12 +616,12 @@ export function StaffDashboard({ me }: { me: User }) {
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
         {group ? <CampusTable /> : <ScopeNote />}
         <Card>
-          <CardHeader title="Recent activity" action={<Link href="/portal/admin/audit" className="text-[14px] font-semibold text-primary">Audit log</Link>} />
+          <CardHeader title="Recent activity" action={<Link href="/portal/admin/audit" className="text-sm font-semibold text-primary">Audit log</Link>} />
           <div className="divide-y divide-border">
             {recent.map((a) => (
               <div key={a.id} className="px-5 py-3">
-                <p className="text-[14px] font-medium">{a.action}</p>
-                <p className="truncate text-[13px] text-muted">
+                <p className="text-sm font-medium">{a.action}</p>
+                <p className="truncate text-label text-muted">
                   {a.target} · {timeAgo(a.at)}
                 </p>
               </div>
@@ -644,10 +638,10 @@ function ScopeNote() {
     <Card className="p-6">
       <ShieldCheck className="h-7 w-7 text-primary" />
       <p className="mt-3 font-semibold">Campus-scoped access</p>
-      <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted">
+      <p className="mt-2 text-body leading-relaxed text-muted">
         Queues, reports, broadcasts and exports on this account are limited to your campus. The Group Alumni Office sees all 39 campuses. Every view of student data is recorded in the audit log.
       </p>
-      <div className="mt-3 flex gap-1.5">
+      <div className="mt-3 flex gap-2">
         <Req ids="A6" /> <Req ids="CS-16" />
       </div>
     </Card>
@@ -693,30 +687,30 @@ function CampusTable() {
         }
       />
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[480px] text-[14px]">
+        <table className="w-full min-w-[480px] text-sm">
           <thead>
-            <tr className="border-b border-border text-left text-[13px] text-muted">
-              {th("name", "Campus", "px-5 py-2.5")}
-              {th("total", "Alumni", "px-3 py-2.5 text-right")}
-              {th("verified", "Verified", "px-3 py-2.5 text-right")}
-              {th("mentors", "Mentors", "px-5 py-2.5 text-right")}
+            <tr className="border-b border-border text-left text-label text-muted">
+              {th("name", "Campus", "px-5 py-3")}
+              {th("total", "Alumni", "px-3 py-3 text-right")}
+              {th("verified", "Verified", "px-3 py-3 text-right")}
+              {th("mentors", "Mentors", "px-5 py-3 text-right")}
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {rows.map((r) => (
               <tr key={r.c.id} className="hover:bg-surface-2/60">
-                <td className="px-5 py-2.5 font-medium">
+                <td className="px-5 py-3 font-medium">
                   {r.c.name} <span className="text-muted">· {r.c.city}</span>
                 </td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{r.total}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{r.total ? Math.round((r.verified / r.total) * 100) : 0}%</td>
-                <td className="px-5 py-2.5 text-right tabular-nums">{r.mentors}</td>
+                <td className="px-3 py-3 text-right tabular-nums">{r.total}</td>
+                <td className="px-3 py-3 text-right tabular-nums">{r.total ? Math.round((r.verified / r.total) * 100) : 0}%</td>
+                <td className="px-5 py-3 text-right tabular-nums">{r.mentors}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <button type="button" onClick={() => setAll(!all)} className="w-full border-t border-border py-2.5 text-[14px] font-semibold text-primary hover:bg-surface-2/60">
+      <button type="button" onClick={() => setAll(!all)} className="w-full border-t border-border py-3 text-sm font-semibold text-primary hover:bg-surface-2/60">
         {all ? "Show top 8" : `Show all ${campuses.length} campuses`}
       </button>
     </Card>
@@ -724,20 +718,17 @@ function CampusTable() {
 }
 
 function QueueRow({ href, icon: Icon, title, sub, count, danger }: { href: string; icon: typeof Users; title: string; sub: string; count: number; danger?: boolean }) {
-  const color = pageIconFor(href.split("?")[0])?.color ?? "var(--primary)";
   return (
     <Link href={href} className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface-2/60">
-      <span className="icon-bounce grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ color, background: `color-mix(in srgb, ${color} 14%, transparent)` }}>
-        <Icon className="h-5 w-5" />
-      </span>
+      <Icon className="h-[18px] w-[18px] shrink-0 text-muted" />
       <div className="min-w-0 flex-1">
-        <p className="text-[14px] font-semibold">{title}</p>
-        <p className="truncate text-[13.5px] text-muted">{sub}</p>
+        <p className="text-sm font-semibold">{title}</p>
+        <p className="truncate text-sm text-muted">{sub}</p>
       </div>
-      <span className={cn("grid h-7 min-w-7 place-items-center rounded-full px-2 text-[14px] font-bold tabular-nums", count ? (danger ? "bg-danger text-white" : "bg-primary text-primary-fg") : "bg-surface-2 text-muted")}>
+      <span className={cn("grid h-6 min-w-6 place-items-center rounded-[var(--radius-sm)] px-2 text-label font-semibold tabular-nums", count ? (danger ? "bg-danger-soft text-danger" : "bg-primary-soft text-primary") : "bg-surface-2 text-muted")}>
         {count}
       </span>
-      <ArrowRight className="icon-nudge h-4 w-4 text-muted group-hover:text-primary" />
+      <ArrowRight className=" h-4 w-4 text-muted group-hover:text-primary" />
     </Link>
   );
 }
@@ -789,17 +780,13 @@ export function RoleOverview({ me }: { me: User }) {
             {f?.items.map((i) => (
               <li key={i.label}>
                 {i.href ? (
-                  <Link href={i.href} className="group flex items-center gap-3 rounded-xl px-2 py-2 text-[14px] hover:bg-surface-2">
-                    <span className="grid h-7 w-7 place-items-center rounded-xl bg-primary-soft text-primary">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
+                  <Link href={i.href} className="group flex items-center gap-3 rounded-xl px-2 py-2 text-sm hover:bg-surface-2">
+                    <ArrowRight className="h-4 w-4 text-muted group-hover:text-primary" />
                     {i.label}
                   </Link>
                 ) : (
-                  <span className="flex items-center gap-3 px-2 py-2 text-[14px] text-muted">
-                    <span className="grid h-7 w-7 place-items-center rounded-xl bg-surface-2">
-                      <Clock className="h-3.5 w-3.5" />
-                    </span>
+                  <span className="flex items-center gap-3 px-2 py-2 text-sm text-muted">
+                    <Clock className="h-4 w-4" />
                     {i.label} · later phase
                   </span>
                 )}
@@ -811,11 +798,11 @@ export function RoleOverview({ me }: { me: User }) {
           <CardHeader title="Access limits" subtitle="Enforced for this role (RFQ §5.3–5.4)" />
           <ul className="space-y-3 p-5">
             {f?.limits.map((i) => (
-              <li key={i} className="flex items-center gap-3 text-[14px]">
+              <li key={i} className="flex items-center gap-3 text-sm">
                 <ShieldCheck className="h-[18px] w-[18px] text-success" /> {i}
               </li>
             ))}
-            <li className="flex items-center gap-3 text-[14px]">
+            <li className="flex items-center gap-3 text-sm">
               <ShieldCheck className="h-[18px] w-[18px] text-success" /> Scope: {me.campusIds.length === 1 ? campusName(me.campusIds[0]) : `${me.campusIds.length} campuses`}
             </li>
           </ul>
@@ -825,24 +812,21 @@ export function RoleOverview({ me }: { me: User }) {
   );
 }
 
+/** One cell of a shortcuts panel. Cells sit in a single bordered grid (see ActionGrid), not as separate cards. */
 function ActionCard({ href, icon: Icon, title, body, cta, highlight, disabled }: { href: string; icon: typeof Users; title: string; body: string; cta: string; highlight?: boolean; disabled?: boolean }) {
-  const color = pageIconFor(href.split("?")[0])?.color ?? "var(--primary)";
   const inner = (
-    <Card className={cn("group relative flex h-full flex-col overflow-hidden p-5", !disabled && "lift", highlight && "border-primary/40", disabled && "opacity-60")}>
-      <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100" style={{ background: color }} />
-      <span
-        className="icon-bounce grid h-11 w-11 place-items-center rounded-xl"
-        style={highlight ? { background: color, color: "#fff" } : { color, background: `color-mix(in srgb, ${color} 14%, transparent)` }}
-      >
-        <Icon className="h-5 w-5" />
+    <div className={cn("group flex h-full flex-col border-b border-r border-border bg-surface p-5", !disabled && "ds-interactive hover:bg-surface-2/60", disabled && "opacity-60")}>
+      <div className="flex items-center gap-2">
+        <Icon className={cn("h-4 w-4", highlight ? "text-primary" : "text-muted")} />
+        <p className="font-semibold">{title}</p>
+        {highlight && <span className="h-1.5 w-1.5 rounded-full bg-secondary" aria-label="Suggested" />}
+      </div>
+      <p className="mt-1 flex-1 text-sm text-muted">{body}</p>
+      <span className={cn("mt-4 inline-flex items-center gap-1 text-sm font-medium", disabled ? "text-muted" : "text-link")}>
+        {cta} {!disabled && <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />}
       </span>
-      <p className="mt-4 font-bold">{title}</p>
-      <p className="mt-1 flex-1 text-[14px] text-muted">{body}</p>
-      <span className={cn("mt-4 inline-flex items-center gap-1 text-[14px] font-semibold", disabled ? "text-muted" : "text-primary")}>
-        {cta} {!disabled && <ArrowRight className="icon-nudge h-3.5 w-3.5" />}
-      </span>
-    </Card>
+    </div>
   );
-  return disabled ? inner : <Link href={href}>{inner}</Link>;
+  return disabled ? inner : <Link href={href} className="block">{inner}</Link>;
 }
 

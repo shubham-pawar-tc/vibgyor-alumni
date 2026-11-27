@@ -63,8 +63,8 @@ function BadgesAdmin() {
         </Callout>
       )}
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-[14px]">
-          <thead className="border-b border-border text-left text-[13px] uppercase tracking-wider text-muted">
+        <table className="w-full min-w-[640px] text-sm">
+          <thead className="border-b border-border text-left text-label uppercase tracking-[0.08em] text-muted">
             <tr>
               <th className="px-4 py-3 font-semibold">Person</th>
               <th className="px-4 py-3 font-semibold">Details</th>
@@ -102,7 +102,7 @@ function BadgesAdmin() {
                   </td>
                   <td className="px-4 py-3">{b.status === "active" ? <Pill tone="success">Active</Pill> : <Pill tone="danger">Suspended</Pill>}</td>
                   <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1.5">
+                    <div className="flex justify-end gap-2">
                       {b.status === "active" ? (
                         <Button size="sm" variant="secondary" onClick={() => setBadgeStatus(u.id, tab, "suspended", me.id)} title="Suspend now">
                           <PauseCircle className="h-4 w-4" /> Suspend
@@ -163,8 +163,8 @@ function BadgesAdmin() {
           <option value="batch">Their batch group</option>
           <option value="campus">Their campus alumni group</option>
         </Select>
-        <p className="mt-2 text-[13px] text-muted">They can only lead their own batch or campus group. They get an email.</p>
-        {err && <p className="mt-2 text-[14px] font-semibold text-danger">{err}</p>}
+        <p className="mt-2 text-label text-muted">They can only lead their own batch or campus group. They get an email.</p>
+        {err && <p className="mt-2 text-sm font-semibold text-danger">{err}</p>}
       </Modal>
     </>
   );

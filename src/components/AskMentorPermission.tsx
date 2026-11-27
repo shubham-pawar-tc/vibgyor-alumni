@@ -11,7 +11,7 @@ export function AskMentorPermission({ me }: { me: User }) {
   const sent = state.outbox.some((o) => o.link?.href === `/portal/consent?child=${me.id}` && o.body.includes("would like to talk to approved alumni mentors"));
   if (me.studentStatus !== "active") return null;
   return sent ? (
-    <p className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-semibold text-success">
+    <p className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-success">
       <CheckCircle2 className="h-4 w-4" /> Request sent to your parent
     </p>
   ) : (

@@ -54,21 +54,21 @@ function Directory() {
                 <Avatar name={u.listing!.business} />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{u.listing!.business}</p>
-                  <p className="text-[13.5px] text-muted">
+                  <p className="text-sm text-muted">
                     {u.name} · Batch {u.batch} · {campusName(u.campusIds[0])}
                   </p>
                 </div>
                 <Pill>{u.listing!.category}</Pill>
               </div>
-              <p className="mt-3 flex-1 text-[14px]">{u.listing!.description}</p>
+              <p className="mt-3 flex-1 text-sm">{u.listing!.description}</p>
               <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-                <span className="flex items-center gap-1 text-[13.5px] text-muted">
+                <span className="flex items-center gap-1 text-sm text-muted">
                   <MapPin className="h-3.5 w-3.5" /> {u.listing!.city}
                 </span>
                 {u.id === me.id ? (
-                  <span className="text-[13px] text-muted">Your listing</span>
+                  <span className="text-label text-muted">Your listing</span>
                 ) : sent.includes(u.id) ? (
-                  <span className="text-[13.5px] font-semibold text-success">Enquiry sent</span>
+                  <span className="text-sm font-semibold text-success">Enquiry sent</span>
                 ) : (
                   <Button size="sm" onClick={() => { setTo(u); setText(""); }}>
                     <Send className="h-3.5 w-3.5" /> Send enquiry
@@ -104,7 +104,7 @@ function Directory() {
         }
       >
         <Textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder="What do you need?" aria-label="Message" />
-        <p className="mt-2 text-[13px] text-muted">They reply through VAA Chats. Phone numbers and emails you type are hidden.</p>
+        <p className="mt-2 text-label text-muted">They reply through VAA Chats. Phone numbers and emails you type are hidden.</p>
       </Modal>
     </>
   );

@@ -39,7 +39,7 @@ function Inner() {
   return (
     <>
       <PageHeader
-        eyebrow={<div className="flex gap-1.5"><Req ids="A12" /> <Req ids="CS-16" /> <Req ids="L3" /> <Req ids="NFR-10" /></div>}
+        eyebrow={<div className="flex gap-2"><Req ids="A12" /> <Req ids="CS-16" /> <Req ids="L3" /> <Req ids="NFR-10" /></div>}
         title="Audit log"
         description="Every admin, consent, safeguarding and data-access action: who, what, when and why. Entries can't be edited."
         actions={
@@ -73,9 +73,9 @@ function Inner() {
       </Card>
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-[14px]">
+          <table className="w-full min-w-[820px] text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-[13px] text-muted">
+              <tr className="border-b border-border text-left text-label text-muted">
                 <th className="px-5 py-3 font-semibold">When</th>
                 <th className="px-3 py-3 font-semibold">Who</th>
                 <th className="px-3 py-3 font-semibold">Action</th>
@@ -86,17 +86,17 @@ function Inner() {
             <tbody className="divide-y divide-border">
               {rows.map((a) => (
                 <tr key={a.id} className="align-top hover:bg-surface-2/50">
-                  <td className="whitespace-nowrap px-5 py-3 font-mono text-[13px] text-muted">{formatDateTime(a.at)}</td>
+                  <td className="whitespace-nowrap px-5 py-3 font-mono text-label text-muted">{formatDateTime(a.at)}</td>
                   <td className="px-3 py-3 font-medium">{actor(a.actorId)}</td>
                   <td className="px-3 py-3">
                     <div className="flex flex-col items-start gap-1">
                       <span className="font-medium">{a.action}</span>
-                      <Pill tone={catTone[a.category]} className="!text-[11.5px]">{a.category.replace("_", " ")}</Pill>
+                      <Pill tone={catTone[a.category]} className="!text-xs">{a.category.replace("_", " ")}</Pill>
                     </div>
                   </td>
                   <td className="px-3 py-3">
                     {a.target}
-                    {a.campusId && <p className="text-[13px] text-muted">{campusName(a.campusId).split(",")[0]}</p>}
+                    {a.campusId && <p className="text-label text-muted">{campusName(a.campusId).split(",")[0]}</p>}
                   </td>
                   <td className="px-5 py-3 text-muted">{a.detail ?? "—"}</td>
                 </tr>
@@ -104,7 +104,7 @@ function Inner() {
             </tbody>
           </table>
         </div>
-        {rows.length === 0 && <p className="px-5 py-8 text-center text-[14px] text-muted">No entries match.</p>}
+        {rows.length === 0 && <p className="px-5 py-8 text-center text-sm text-muted">No entries match.</p>}
       </Card>
 
       <Modal
@@ -133,7 +133,7 @@ function Inner() {
         }
       >
         {exported ? (
-          <p className="text-[14px]">Export prepared ({rows.length} rows). The export itself has been added to the audit log with your reason.</p>
+          <p className="text-sm">Export prepared ({rows.length} rows). The export itself has been added to the audit log with your reason.</p>
         ) : (
           <Field label="Reason to share (required)" htmlFor="reason" hint="Recorded in the audit log with the export.">
             <Textarea id="reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Quarterly safeguarding review with the principal" />

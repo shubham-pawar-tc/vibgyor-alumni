@@ -1,39 +1,77 @@
 @import "tailwindcss";
 
-/* ------------------------------------------------------------------
-   VIBGYOR Alumni Platform – design tokens
-   Light theme by default; dark via prefers-color-scheme or data-theme.
-------------------------------------------------------------------- */
-:root {
-  --bg: #f7f7fc;
-  --surface: #ffffff;
-  --surface-2: #f1f1f8;
-  --border: #e4e4f0;
-  --text: #16173a;
-  --muted: #4a4c6c;
-  --avatar-bg-l: 93%;
-  --avatar-fg-l: 32%;
-  --primary: #2f3192;
-  --primary-hover: #24267a;
-  --primary-fg: #ffffff;
-  --primary-soft: #e9e9f8;
-  --brand-ink: #2b2d72;
-  /* Navy feature bands (hero, safety, auth). Own token so dark mode can lift it off the page background. */
-  --navy: #25276b;
-  --navy-2: #3b2f86;
-  --navy-line: rgb(255 255 255 / 0);
-  --success: #17794d;
-  --success-soft: #e3f5ec;
-  --warning: #9a5600;
-  --warning-soft: #fdf1df;
-  --danger: #c0262d;
-  --danger-soft: #fde8e8;
-  --info: #1d5fbf;
-  --info-soft: #e5effc;
-  --shadow: 0 1px 2px rgb(20 20 40 / 0.04), 0 4px 16px rgb(20 20 40 / 0.06);
-  --shadow-raised: 0 2px 4px rgb(20 20 50 / 0.05), 0 20px 44px -14px rgb(20 20 60 / 0.22);
+/* ==================================================================
+   VIBGYOR Alumni Platform — Design System
+   ------------------------------------------------------------------
+   Every screen reads from these tokens. Pages never define their own
+   colours, radii or shadows: they use the Tailwind utilities mapped in
+   `@theme` below, or the shared components in components/ui.tsx.
 
-  /* VIBGYOR brand tile colours (from the Group of Schools wordmark) */
+   Theme: light by default; dark via the saved preference
+   (data-theme on <html>, written by ThemeToggle) or, if nothing is
+   saved, the OS setting.
+================================================================== */
+
+:root {
+  /* ---- Brand palette (raw values; prefer the semantic tokens below) ---- */
+  --brand-navy: #172b4d;
+  --brand-blue: #3978e8;
+  --brand-teal: #16a68a;
+
+  /* ---- Surfaces ---- */
+  --bg: #f5f7fa;           /* page */
+  --surface: #ffffff;      /* cards, header, sidebar */
+  --surface-2: #eef1f5;    /* subtle fills, table header, hover */
+  --surface-3: #e4e8ee;    /* pressed / selected neutral */
+  --border: #dfe3ea;
+  --border-strong: #c7cdd7;
+
+  /* ---- Text ---- */
+  --text: #172033;
+  --muted: #5a6476;        /* 5.6:1 on --bg */
+  --subtle: #7b8494;       /* captions, placeholders only */
+
+  /* ---- Interactive ---- */
+  --primary: #172b4d;      /* primary actions, active nav */
+  --primary-hover: #0f1f3a;
+  --primary-fg: #ffffff;
+  --primary-soft: #e8edf5;
+  --secondary: #3978e8;    /* focus rings, selection, highlights */
+  --link: #2a64cf;         /* text links: AA on white */
+  --accent: #16a68a;
+  --accent-strong: #0e7a66;/* accent as text */
+  --accent-soft: #e2f4ef;
+  --brand-ink: #172b4d;
+
+  /* Dark feature band (hero CTA, safety section). */
+  --navy: #172b4d;
+  --navy-2: #1f3760;
+  --navy-line: rgb(255 255 255 / 0);
+
+  /* ---- Status ---- */
+  --success: #0e7a66;
+  --success-soft: #e2f4ef;
+  --warning: #9a5b00;
+  --warning-soft: #fdf3e2;
+  --danger: #c4302b;
+  --danger-soft: #fdecea;
+  --info: #2a64cf;
+  --info-soft: #e8f0fd;
+
+  /* ---- Avatars (lightness used with a per-name hue) ---- */
+  --avatar-bg-l: 92%;
+  --avatar-fg-l: 30%;
+
+  /* ---- Elevation: used sparingly. Borders do most of the separating. ---- */
+  --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04);
+  --shadow-lg: 0 16px 32px -8px rgb(16 24 40 / 0.16), 0 4px 8px -4px rgb(16 24 40 / 0.06);
+
+  /* ---- Focus ---- */
+  --ring: color-mix(in srgb, var(--secondary) 35%, transparent);
+
+  /* VIBGYOR brand tile colours — the logo only, never decoration. */
   --r: #d8392e;
   --o: #ea7336;
   --y: #f2a53a;
@@ -41,87 +79,156 @@
   --b: #3a8ed6;
   --i: #2f3180;
   --v: #7b3f9d;
+
+  /* ================= Layout & component tokens ================= */
+  --container: 72rem;          /* 1152px */
+  --gutter: 1rem;              /* 16px on phones */
+  --section-y: 5rem;           /* vertical rhythm for marketing sections */
+
+  --header-h: 4rem;
+  --sidebar-w: 16.5rem;
+
+  --nav-item-h: 2.25rem;     /* 36px */
+  --nav-item-radius: 8px;
+
+  --btn-h-sm: 2rem;          /* 32px */
+  --btn-h-md: 2.5rem;        /* 40px */
+  --btn-h-lg: 3rem;          /* 48px */
+  --btn-radius: 8px;
+
+  --input-h: 2.5rem;
+  --input-radius: 8px;
+
+  --card-radius: 12px;
+  --card-pad: 1.25rem;
+
+  --table-row-h: 3rem;
+  --table-head-h: 2.5rem;
+
+  /* ================= Motion tokens =================
+     Mirrored in src/lib/motion.ts for Motion components. */
+  --ease-natural: cubic-bezier(0.22, 1, 0.36, 1);   /* natural deceleration */
+  --ease-standard: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 150ms;     /* hover, press, colour */
+  --dur-base: 200ms;     /* dropdowns, toggles */
+  --dur-page: 250ms;     /* route transitions */
+  --dur-reveal: 500ms;   /* section reveals */
 }
 
+@media (min-width: 640px) {
+  :root { --gutter: 1.5rem; }
+}
+@media (min-width: 1024px) {
+  :root { --section-y: 6.5rem; }
+}
+
+/* ---- Dark theme values (shared by both selectors below) ---- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0c0d1c;
-    --surface: #15162b;
-    --surface-2: #1e1e31;
-    --border: #2b2b43;
-    --text: #ececf6;
-    --muted: #b6b7d2;
-    --avatar-bg-l: 24%;
+    color-scheme: dark;
+    --bg: #101827;
+    --surface: #1d2939;
+    --surface-2: #243244;
+    --surface-3: #2c3b4f;
+    --border: #2f3d51;
+    --border-strong: #42526a;
+    --text: #e8ecf2;
+    --muted: #a5afbf;
+    --subtle: #8390a3;
+    --primary: #7aa5f2;
+    --primary-hover: #94b7f5;
+    --primary-fg: #0d1524;
+    --primary-soft: #1f3354;
+    --secondary: #6b9cf0;
+    --link: #8ab2f5;
+    --accent: #2cc4a5;
+    --accent-strong: #4fd4b8;
+    --accent-soft: #123a35;
+    --brand-ink: #e8ecf2;
+    --navy: #1d2939;
+    --navy-2: #243244;
+    --navy-line: rgb(255 255 255 / 0.07);
+    --success: #4fd4b8;
+    --success-soft: #123a35;
+    --warning: #f0b860;
+    --warning-soft: #3a2a10;
+    --danger: #f2837d;
+    --danger-soft: #3d1a1a;
+    --info: #8ab2f5;
+    --info-soft: #18294a;
+    --avatar-bg-l: 26%;
     --avatar-fg-l: 82%;
-    --primary: #9fa3ff;
-    --primary-hover: #b8bbff;
-    --primary-fg: #0c0d1c;
-    --primary-soft: #22244a;
-    --brand-ink: #c9cbff;
-    --navy: #1a1c4d;
-    --navy-2: #2a2166;
-    --navy-line: rgb(255 255 255 / 0.08);
-    --success: #4fd394;
-    --success-soft: #12301f;
-    --warning: #f2b45a;
-    --warning-soft: #33240f;
-    --danger: #f27b7f;
-    --danger-soft: #3a1618;
-    --info: #79aef5;
-    --info-soft: #14253d;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
-    --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.35), 0 20px 44px -14px rgb(0 0 0 / 0.6);
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.2);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 16px 32px -8px rgb(0 0 0 / 0.55);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0c0d1c;
-  --surface: #15162b;
-  --surface-2: #1e1e31;
-  --border: #2b2b43;
-  --text: #ececf6;
-  --muted: #b6b7d2;
-  --avatar-bg-l: 24%;
+  color-scheme: dark;
+  --bg: #101827;
+  --surface: #1d2939;
+  --surface-2: #243244;
+  --surface-3: #2c3b4f;
+  --border: #2f3d51;
+  --border-strong: #42526a;
+  --text: #e8ecf2;
+  --muted: #a5afbf;
+  --subtle: #8390a3;
+  --primary: #7aa5f2;
+  --primary-hover: #94b7f5;
+  --primary-fg: #0d1524;
+  --primary-soft: #1f3354;
+  --secondary: #6b9cf0;
+  --link: #8ab2f5;
+  --accent: #2cc4a5;
+  --accent-strong: #4fd4b8;
+  --accent-soft: #123a35;
+  --brand-ink: #e8ecf2;
+  --navy: #1d2939;
+  --navy-2: #243244;
+  --navy-line: rgb(255 255 255 / 0.07);
+  --success: #4fd4b8;
+  --success-soft: #123a35;
+  --warning: #f0b860;
+  --warning-soft: #3a2a10;
+  --danger: #f2837d;
+  --danger-soft: #3d1a1a;
+  --info: #8ab2f5;
+  --info-soft: #18294a;
+  --avatar-bg-l: 26%;
   --avatar-fg-l: 82%;
-  --primary: #9fa3ff;
-  --primary-hover: #b8bbff;
-  --primary-fg: #0c0d1c;
-  --primary-soft: #22244a;
-  --brand-ink: #c9cbff;
-  --navy: #1a1c4d;
-  --navy-2: #2a2166;
-  --navy-line: rgb(255 255 255 / 0.08);
-  --success: #4fd394;
-  --success-soft: #12301f;
-  --warning: #f2b45a;
-  --warning-soft: #33240f;
-  --danger: #f27b7f;
-  --danger-soft: #3a1618;
-  --info: #79aef5;
-  --info-soft: #14253d;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
-  --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.35), 0 20px 44px -14px rgb(0 0 0 / 0.6);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.2);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 32px -8px rgb(0 0 0 / 0.55);
 }
+:root[data-theme="light"] { color-scheme: light; }
 
+/* ================= Tailwind mapping ================= */
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-text: var(--text);
   --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-fg: var(--primary-fg);
   --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-link: var(--link);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
   --color-brand-ink: var(--brand-ink);
-  --color-v: var(--v);
-  --color-i: var(--i);
-  --color-b: var(--b);
-  --color-g: var(--g);
-  --color-y: var(--y);
-  --color-o: var(--o);
-  --color-r: var(--r);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
@@ -130,262 +237,220 @@
   --color-danger-soft: var(--danger-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --shadow-card: var(--shadow);
-  --shadow-lift: var(--shadow-raised);
-  --color-navy: var(--navy);
-  --color-navy-2: var(--navy-2);
+
+  /* Typography: Inter for UI and body, Manrope for headings and figures. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Elevation */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  /* Legacy names used across screens */
+  --shadow-card: var(--shadow-xs);
+  --shadow-lift: var(--shadow-lg);
+
+  /* Radius scale: 8–12px for components, 4–6px for small inline marks. */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 12px;
+
+  /* Type scale — the only sizes used in the app (no arbitrary text-[Npx]).
+     xs 12 · label 13 · sm 14 · body 15 · base 16 · lg 18 · xl 20 · 2xl 24 · 3xl 28 · 4xl 36 · 5xl 48 */
+  --text-xs: 12px;     --text-xs--line-height: 16px;
+  --text-label: 13px;  --text-label--line-height: 18px;
+  --text-sm: 14px;     --text-sm--line-height: 20px;
+  --text-body: 15px;   --text-body--line-height: 24px;
+  --text-base: 16px;   --text-base--line-height: 26px;
+  --text-lg: 18px;     --text-lg--line-height: 28px;
+  --text-xl: 20px;     --text-xl--line-height: 28px;
+  --text-2xl: 24px;    --text-2xl--line-height: 32px;
+  --text-3xl: 28px;    --text-3xl--line-height: 36px;
+  --text-4xl: 36px;    --text-4xl--line-height: 44px;
+  --text-5xl: 48px;    --text-5xl--line-height: 56px;
+
 }
 
+/* ================= Base ================= */
 html {
   -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  font-feature-settings: "cv11", "ss01";
   overflow-x: hidden;
 }
 
-.spectrum {
-  background: linear-gradient(
-    90deg,
-    var(--r),
-    var(--o),
-    var(--y),
-    var(--g),
-    var(--b),
-    var(--i),
-    var(--v)
-  );
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  text-wrap: balance;
 }
+h1 { letter-spacing: -0.022em; }
 
-.spectrum-text {
-  background: linear-gradient(90deg, var(--r), var(--o) 22%, var(--y) 38%, var(--g) 55%, var(--b) 72%, var(--v));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+
+.font-display { font-family: var(--font-display); }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+a { text-underline-offset: 3px; }
 
 :focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--secondary);
   outline-offset: 2px;
 }
 
-@keyframes slide-in {
-  from {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-.animate-in {
-  animation: slide-in 0.2s ease-out;
-}
-
-/* ---------------- Brand flourishes ---------------- */
-
-/* Logo tile: flat brand colour with a faint top highlight so it reads crisply on any surface */
-.brand-tile {
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 -1px 0 rgb(0 0 0 / 0.08);
-  letter-spacing: 0;
-}
-
-/* Soft spectrum glow used behind hero sections */
-.hero-glow {
-  background:
-    radial-gradient(40% 50% at 12% 20%, color-mix(in srgb, var(--r) 16%, transparent), transparent 70%),
-    radial-gradient(35% 45% at 88% 10%, color-mix(in srgb, var(--b) 18%, transparent), transparent 70%),
-    radial-gradient(40% 50% at 70% 80%, color-mix(in srgb, var(--v) 14%, transparent), transparent 70%),
-    radial-gradient(30% 40% at 30% 85%, color-mix(in srgb, var(--y) 14%, transparent), transparent 70%);
-}
-
-/* Subtle dot grid */
-.dot-grid {
-  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
-}
-
-/* Card that lifts gently on hover */
-.lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-.lift:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-raised);
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-.float { animation: float 6s ease-in-out infinite; }
-.float-delay { animation: float 7s ease-in-out 1.2s infinite; }
-
-@media (prefers-reduced-motion: reduce) {
-  .float, .float-delay, .animate-in { animation: none; }
-  .lift:hover { transform: none; }
-}
-
 ::selection {
-  background: color-mix(in srgb, var(--primary) 22%, transparent);
+  background: color-mix(in srgb, var(--secondary) 24%, transparent);
 }
 
-.dot-grid-light {
-  background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
-  background-size: 22px 22px;
+/* ================= Reusable layout helpers ================= */
+.container-page {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.section-y {
+  padding-block: var(--section-y);
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-/* Campus ticker */
-.marquee {
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+/* Data table — use with <Table> in components/ui.tsx */
+.ds-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--text-sm); }
+.ds-table thead th {
+  height: var(--table-head-h);
+  padding: 0 1rem;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
 }
-@keyframes marquee {
-  to { transform: translateX(-50%); }
+.ds-table tbody td {
+  height: var(--table-row-h);
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
-.marquee-track { animation: marquee 60s linear infinite; }
-.marquee:hover .marquee-track { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track { animation: none; }
-}
+.ds-table tbody tr:last-child td { border-bottom: 0; }
+.ds-table tbody tr:hover td { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
 
-/* ================= Motion ================= */
+/* ================= Brand ================= */
 
-/* Scroll reveal (see components/motion.tsx) */
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
+/* Logo tile: flat brand colour */
+.brand-tile { letter-spacing: 0; }
 
-/* Staggered entrance on page load */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
-}
-.enter { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.enter-1 { animation-delay: 0.05s; }
-.enter-2 { animation-delay: 0.15s; }
-.enter-3 { animation-delay: 0.25s; }
-.enter-4 { animation-delay: 0.35s; }
-.enter-5 { animation-delay: 0.45s; }
-
-/* Logo tiles drop in one by one */
-@keyframes tile-in {
-  from { opacity: 0; transform: translateY(-6px) scale(0.85); }
-  to { opacity: 1; transform: none; }
-}
-.tiles-animate .brand-tile { animation: tile-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.tiles-animate .brand-tile:nth-child(2) { animation-delay: 0.05s; }
-.tiles-animate .brand-tile:nth-child(3) { animation-delay: 0.1s; }
-.tiles-animate .brand-tile:nth-child(4) { animation-delay: 0.15s; }
-.tiles-animate .brand-tile:nth-child(5) { animation-delay: 0.2s; }
-.tiles-animate .brand-tile:nth-child(6) { animation-delay: 0.25s; }
-.tiles-animate .brand-tile:nth-child(7) { animation-delay: 0.3s; }
-/* …and hop when you hover the logo */
-.logo-link:hover .brand-tile { animation: tile-hop 0.5s ease both; }
-.logo-link:hover .brand-tile:nth-child(2) { animation-delay: 0.04s; }
-.logo-link:hover .brand-tile:nth-child(3) { animation-delay: 0.08s; }
-.logo-link:hover .brand-tile:nth-child(4) { animation-delay: 0.12s; }
-.logo-link:hover .brand-tile:nth-child(5) { animation-delay: 0.16s; }
-.logo-link:hover .brand-tile:nth-child(6) { animation-delay: 0.20s; }
-.logo-link:hover .brand-tile:nth-child(7) { animation-delay: 0.24s; }
-@keyframes tile-hop {
-  0%, 100% { transform: none; }
-  40% { transform: translateY(-3px); }
-}
-
-/* Moving rainbow bar */
-@keyframes spectrum-flow {
-  to { background-position: 200% 0; }
-}
+/* A thin brand rule. Solid navy — the rainbow lives in the logo only. */
+.spectrum,
 .spectrum-flow {
-  background: linear-gradient(90deg, var(--r), var(--o), var(--y), var(--g), var(--b), var(--i), var(--v));
+  background: var(--primary);
+  opacity: 0;
 }
-
-/* Success badge pop + ring */
-@keyframes pop {
-  0% { transform: scale(0.4); opacity: 0; }
-  60% { transform: scale(1.12); opacity: 1; }
-  100% { transform: scale(1); }
+.spectrum-text,
+.spectrum-text-bright {
+  color: inherit;
 }
-.pop { animation: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-@keyframes ring {
-  from { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 40%, transparent); }
-  to { box-shadow: 0 0 0 18px transparent; }
-}
-.ring-pulse { animation: ring 1.6s ease-out 0.4s 3; }
-
-/* Icon nudge on hover of the parent .group */
-.group:hover .icon-nudge { transform: translateX(3px); }
-.icon-nudge { transition: transform 0.2s ease; }
-.group:hover .icon-bounce { animation: tile-hop 0.5s ease; }
-
-/* Button shine */
-.shine { position: relative; overflow: hidden; }
-.shine::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.28) 50%, transparent 70%);
-  transform: translateX(-120%);
-  transition: transform 0.7s ease;
-}
-.shine:hover::after { transform: translateX(120%); }
-
-/* Portal page transition */
-@keyframes page-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
-}
-.page-in { animation: page-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
-  .enter, .tiles-animate .brand-tile, .pop, .ring-pulse, .page-in, .spectrum-flow,
-  .logo-link:hover .brand-tile { animation: none; }
-  .shine::after { display: none; }
-}
+.accent-underline { text-decoration: none; }
 
 /* Navy bands get a hairline edge in dark mode so they separate from the page */
 .bg-navy { box-shadow: inset 0 1px 0 var(--navy-line), inset 0 -1px 0 var(--navy-line); }
 
-/* Hero alumni columns: endless vertical scroll */
-@keyframes col-up { to { transform: translateY(-50%); } }
-@keyframes col-down { from { transform: translateY(-50%); } to { transform: translateY(0); } }
-.col-up { animation: col-up 38s linear infinite; }
-.col-down { animation: col-down 44s linear infinite; }
-.col-up.slow { animation-duration: 52s; }
-.hero-cols:hover .col-up, .hero-cols:hover .col-down { animation-play-state: paused; }
-.hero-cols { mask-image: linear-gradient(180deg, transparent, #000 14%, #000 86%, transparent); }
+/* ================= Motion =================
+   One rule: motion explains a change of state. Nothing moves on its own.
+   The classes below are kept because screens reference them, but the
+   decorative ones are now inert. */
 
-/* Big spectrum headline on navy: brightened tile colours so every letter reads on dark */
-.spectrum-text-bright {
-  background: linear-gradient(90deg, #ff6b5e, #ff9a52 20%, #ffc35c 40%, #9ee06d 58%, #5cb5ff 76%, #c38bff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+@keyframes ds-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
 }
+/* Menus, drawers, modals: a short, quiet entrance */
+.animate-in { animation: ds-fade-in var(--dur-base) var(--ease-natural); }
+
+/* Interactive controls: colour/border transitions at micro-interaction speed */
+.ds-interactive {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: var(--dur-fast);
+  transition-timing-function: var(--ease-natural);
+}
+/* Press feedback: a 2% settle, never a bounce */
+.ds-press:active:not(:disabled) { transform: scale(0.98); }
+
+/* Loading skeleton */
+@keyframes ds-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: ds-shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Theme switch: colours cross-fade for 200ms. The class is added by
+   ThemeToggle only while switching, so normal interactions stay instant. */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+  transition-duration: var(--dur-base) !important;
+  transition-timing-function: var(--ease-standard) !important;
+  transition-delay: 0s !important;
+}
+
+/* Inert legacy decoration */
+.hero-glow, .dot-grid, .dot-grid-light { background: none; }
+.float, .float-delay, .pop, .ring-pulse, .page-in,
+.enter, .enter-1, .enter-2, .enter-3, .enter-4, .enter-5,
+.col-up, .col-down, .marquee-track { animation: none; }
+.reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
+.shine::after { display: none; }
+.icon-nudge, .icon-bounce { transition: none; }
+.marquee, .hero-cols { mask-image: none; }
+
+/* Hover affordance for clickable cards: a border change, not a jump */
+.lift { transition: border-color var(--dur-fast) var(--ease-natural), box-shadow var(--dur-fast) var(--ease-natural); }
+a:hover > .lift, .lift:is(a, button):hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
 
 @media (prefers-reduced-motion: reduce) {
-  .col-up, .col-down { animation: none; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .ds-press:active:not(:disabled) { transform: none; }
 }
 
-/* Headline accent: thin rainbow underline under a phrase (rainbow kept to logo + accents only) */
-.accent-underline {
-  background-image: linear-gradient(90deg, var(--r), var(--o), var(--y), var(--g), var(--b), var(--i), var(--v));
-  background-repeat: no-repeat;
-  background-size: 100% 0.09em;
-  background-position: 0 92%;
-  padding-bottom: 0.06em;
+/* Existing hand-built tables in the portal pick up the same header treatment
+   as <Table>, so every data table reads the same. */
+main table:not(.ds-table) thead th {
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  height: var(--table-head-h);
 }
-
+main table:not(.ds-table) tbody tr {
+  transition: background-color var(--dur-fast) var(--ease-natural);
+}
+main table:not(.ds-table) tbody tr:hover {
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+}

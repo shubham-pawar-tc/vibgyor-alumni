@@ -1,6 +1,7 @@
 "use client";
 
 import { allOk, check, clean, whenFilled } from "@/lib/validate";
+import { AnimatedBar } from "@/components/motion";
 import { useState } from "react";
 import { CheckCircle2, Eye, Lock, Plus, ShieldCheck, Trash2, Upload, X } from "lucide-react";
 import { MyData } from "@/components/MyData";
@@ -46,13 +47,11 @@ function AlumniProfileEditor({ me }: { me: User }) {
 
       <Card className="mb-5 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <div className="flex-1">
-          <div className="flex items-center justify-between text-[14px]">
+          <div className="flex items-center justify-between text-sm">
             <span className="font-semibold">Profile {pct}% complete</span>
             <span className="text-muted">{pct < 100 ? "Complete profiles appear higher in the directory" : "Looking great"}</span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-          </div>
+          <AnimatedBar value={pct} trackClassName="mt-2 h-2" />
         </div>
       </Card>
 
@@ -158,10 +157,10 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
         <CardHeader title="Work history" />
         <div className="space-y-2 p-5">
           {p.work.map((w) => (
-            <div key={w.id} className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2.5">
+            <div key={w.id} className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14.5px] font-semibold">{w.title}</p>
-                <p className="truncate text-[13.5px] text-muted">
+                <p className="truncate text-body font-semibold">{w.title}</p>
+                <p className="truncate text-sm text-muted">
                   {w.company} · {w.from}–{w.to ?? "present"}
                 </p>
               </div>
@@ -195,10 +194,10 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
         <CardHeader title="Education after VIBGYOR" />
         <div className="space-y-2 p-5">
           {p.education.map((ed) => (
-            <div key={ed.id} className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2.5">
+            <div key={ed.id} className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14.5px] font-semibold">{ed.institution}</p>
-                <p className="truncate text-[13.5px] text-muted">
+                <p className="truncate text-body font-semibold">{ed.institution}</p>
+                <p className="truncate text-sm text-muted">
                   {ed.degree} · {ed.from}–{ed.to}
                 </p>
               </div>
@@ -232,7 +231,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
         <CardHeader title="Achievements & skills" />
         <div className="space-y-4 p-5">
           <div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {p.achievements.map((a) => (
                 <Chip key={a} onRemove={() => save({ achievements: p.achievements.filter((x) => x !== a) })}>★ {a}</Chip>
               ))}
@@ -240,7 +239,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
             <AddInline placeholder="Add an achievement" value={ach} setValue={setAch} onAdd={() => (save({ achievements: [...p.achievements, ach.trim()] }), setAch(""))} />
           </div>
           <div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {p.skills.map((s) => (
                 <Chip key={s} onRemove={() => save({ skills: p.skills.filter((x) => x !== s) })}>{s}</Chip>
               ))}
@@ -255,7 +254,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
         <div className="space-y-4 p-5">
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 hover:bg-surface-2">
             <Upload className="h-5 w-5 text-muted" />
-            <span className="min-w-0 flex-1 text-[14px]">
+            <span className="min-w-0 flex-1 text-sm">
               <span className="block truncate font-semibold">{p.resumeName ?? "Upload your resume (PDF)"}</span>
               <span className="text-muted">Only shared with alumni whose job you mark interest in</span>
             </span>
@@ -266,7 +265,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
             <Switch checked={p.openTo.speaking} onChange={(v) => save({ openTo: { ...p.openTo, speaking: v } })} label="Happy to speak at school events" />
             <Switch checked={p.openTo.mentoring} onChange={(v) => save({ openTo: { ...p.openTo, mentoring: v } })} label="Open to mentoring alumni" />
           </div>
-          <p className="text-[13px] text-muted">Mentoring students needs the Mentor badge (safeguarding check). See &quot;Become a mentor&quot;.</p>
+          <p className="text-label text-muted">Mentoring students needs the Mentor badge (safeguarding check). See &quot;Become a mentor&quot;.</p>
         </div>
       </Card>
     </div>
@@ -275,7 +274,7 @@ function EditTab({ me, p, save }: { me: User; p: AlumniProfile; save: (patch: Pa
 
 function Chip({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pl-3 pr-1.5 text-[13.5px] font-medium">
+    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pl-3 pr-2 text-sm font-medium">
       {children}
       <button onClick={onRemove} className="grid h-5 w-5 place-items-center rounded-full hover:bg-border" aria-label="Remove">
         <X className="h-3 w-3" />
@@ -308,8 +307,8 @@ function PrivacyTab({ p, save }: { p: AlumniProfile; save: (patch: Partial<Alumn
         <CardHeader title="Who can see what" subtitle="Changes apply straight away" icon={<ShieldCheck className="h-5 w-5" />} />
         <div className="divide-y divide-border">
           {(Object.keys(privateFieldLabels) as PrivateField[]).map((f) => (
-            <div key={f} className="flex flex-col gap-2 px-5 py-3.5 sm:flex-row sm:items-center">
-              <p className="flex-1 text-[14px] font-medium">{privateFieldLabels[f]}</p>
+            <div key={f} className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center">
+              <p className="flex-1 text-sm font-medium">{privateFieldLabels[f]}</p>
               <Select className="sm:w-56" value={p.privacy[f]} onChange={(e) => save({ privacy: { ...p.privacy, [f]: e.target.value as Visibility } })}>
                 {(Object.keys(visibilityLabels) as Visibility[]).map((v) => (
                   <option key={v} value={v}>
@@ -328,7 +327,7 @@ function PrivacyTab({ p, save }: { p: AlumniProfile; save: (patch: Partial<Alumn
         <Callout tone="info" title="Your campus office">
           Alumni office staff can see your full record to keep it accurate. Every time they open it, it&apos;s written to the audit log.
         </Callout>
-        <p className="flex items-center gap-1.5 text-[13px] text-muted">
+        <p className="flex items-center gap-2 text-label text-muted">
           <Lock className="h-3.5 w-3.5" /> DPDP Act 2023: you can download or delete your data at any time (Phase 3).
         </p>
       </div>
@@ -348,7 +347,7 @@ function PreviewTab({ me }: { me: User }) {
   return (
     <>
       <Card className="mb-5 flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-        <p className="flex items-center gap-2 text-[14.5px] font-semibold">
+        <p className="flex items-center gap-2 text-body font-semibold">
           <Eye className="h-4 w-4 text-primary" /> See your profile as…
         </p>
         <div className="flex flex-wrap gap-2">
@@ -360,7 +359,7 @@ function PreviewTab({ me }: { me: User }) {
             <button
               key={o.id}
               onClick={() => setAs(o.id as typeof as)}
-              className={`rounded-full border px-3 py-1.5 text-[14px] font-medium ${as === o.id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2"}`}
+              className={`rounded-full border px-3 py-2 text-sm font-medium ${as === o.id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-surface-2"}`}
             >
               {o.label}
             </button>
@@ -411,7 +410,7 @@ function StudentProfile({ me }: { me: User }) {
             <div className="space-y-3 p-5">
               {threeC.map((c, i) => (
                 <div key={i} className="grid grid-cols-1 gap-2 rounded-xl bg-surface-2 p-3 sm:grid-cols-[28px_1fr_1fr_1fr_32px] sm:items-center">
-                  <span className="grid h-7 w-7 place-items-center rounded-xl bg-primary-soft text-[13px] font-bold text-primary">{i + 1}</span>
+                  <span className="grid h-7 w-7 place-items-center rounded-xl bg-primary-soft text-label font-semibold text-primary">{i + 1}</span>
                   <Input placeholder="Country" value={c.country} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, country: clean.name(e.target.value) } : x)))} />
                   <Input placeholder="Course" value={c.course} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, course: clean.text(e.target.value) } : x)))} />
                   <Input placeholder="College" value={c.college} onChange={(e) => setThreeC(threeC.map((x, j) => (j === i ? { ...x, college: clean.text(e.target.value, 120) } : x)))} />
@@ -433,7 +432,7 @@ function StudentProfile({ me }: { me: User }) {
           <Card>
             <CardHeader title="Interests" subtitle="Clubs, sports, competitions, anything you enjoy" />
             <div className="p-5">
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {(me.interests ?? []).map((t) => (
                   <Chip key={t} onRemove={() => save({ interests: (me.interests ?? []).filter((x) => x !== t) })}>{t}</Chip>
                 ))}
@@ -444,18 +443,18 @@ function StudentProfile({ me }: { me: User }) {
         </div>
         <div className="min-w-0 space-y-5">
           <Card className="p-5">
-            <p className="text-[14px] font-semibold">From school records</p>
-            <dl className="mt-3 space-y-2 text-[14px]">
+            <p className="text-sm font-semibold">From school records</p>
+            <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between"><dt className="text-muted">Name</dt><dd className="font-medium">{me.name}</dd></div>
               <div className="flex justify-between"><dt className="text-muted">Class</dt><dd className="font-medium">{me.className}</dd></div>
               <div className="flex justify-between"><dt className="text-muted">Campus</dt><dd className="font-medium">{campusName(me.campusIds[0])}</dd></div>
             </dl>
-            <p className="mt-3 text-[13px] text-muted">Wrong? Ask your class teacher to update the school record.</p>
+            <p className="mt-3 text-label text-muted">Wrong? Ask your class teacher to update the school record.</p>
           </Card>
           <Card className="p-5">
-            <p className="text-[14px] font-semibold">My parent / guardian</p>
+            <p className="text-sm font-semibold">My parent / guardian</p>
             {parents.map((pa) => (
-              <div key={pa.id} className="mt-3 rounded-xl bg-surface-2 px-3 py-2.5 text-[14px]">
+              <div key={pa.id} className="mt-3 rounded-xl bg-surface-2 px-3 py-3 text-sm">
                 <p className="font-semibold">{pa.name}</p>
                 <p className="text-muted">Gives consent, can read your mentor conversations and can join them</p>
               </div>
@@ -465,7 +464,7 @@ function StudentProfile({ me }: { me: User }) {
             Only mentors you message see your first name, class and 3C choices. You&apos;re never listed in the alumni directory, and your contact details are never shown.
           </Callout>
           {!adult && (
-            <p className="flex items-start gap-1.5 text-[13px] text-muted">
+            <p className="flex items-start gap-2 text-label text-muted">
               <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Until you turn 18, your parent downloads, corrects or deletes your data from their Consent centre (DPDP Act 2023). From your 18th birthday you can do it yourself here.
             </p>
           )}

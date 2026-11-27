@@ -51,17 +51,17 @@ function Badges() {
           return (
             <Card key={b.type} className="flex flex-col p-5">
               <div className="flex items-start gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-surface-2 text-muted">
                   <b.icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{b.title}</p>
-                  <p className="text-[13.5px] text-muted">{b.how}</p>
+                  <p className="text-sm text-muted">{b.how}</p>
                 </div>
                 {h ? <Pill tone={h.status === "active" ? "success" : "danger"}>{h.status === "active" ? "Active" : "Suspended"}</Pill> : pending(b.type) ? <Pill tone="warning">Requested</Pill> : null}
               </div>
-              <p className="mt-3 flex-1 text-[14px]">{b.gives}</p>
-              {h?.group && <p className="mt-2 text-[13px] text-muted">Group: {h.group.startsWith("batch:") ? `Batch of ${h.group.split(":")[2]}` : "Campus alumni"}</p>}
+              <p className="mt-3 flex-1 text-sm">{b.gives}</p>
+              {h?.group && <p className="mt-2 text-label text-muted">Group: {h.group.startsWith("batch:") ? `Batch of ${h.group.split(":")[2]}` : "Campus alumni"}</p>}
               <div className="mt-4">
                 {b.type === "Mentor" ? (
                   <Button size="sm" variant="secondary" href="/portal/mentor">
@@ -77,7 +77,7 @@ function Badges() {
                       Open my group
                     </Button>
                   ) : (
-                    <p className="text-[13px] text-muted">Interested? Tell your campus alumni office.</p>
+                    <p className="text-label text-muted">Interested? Tell your campus alumni office.</p>
                   )
                 ) : !h && !pending(b.type) ? (
                   <Button size="sm" onClick={() => { setAsk(b.type); setWhy(""); }}>
@@ -143,13 +143,13 @@ function Badges() {
             </div>
             <Textarea rows={3} placeholder="What you offer, and any alumni discount" value={listing.description} onChange={(e) => setListing({ ...listing, description: clean.text(e.target.value, 500) })} aria-label="Description" />
             <FieldError error={le.description} />
-            <p className="text-[13px] text-muted">Phone numbers and links in the description are hidden; enquiries come through VAA.</p>
+            <p className="text-label text-muted">Phone numbers and links in the description are hidden; enquiries come through VAA.</p>
           </div>
         ) : (
           <>
             <Textarea rows={3} placeholder="Which company do you hire for, and what roles?" value={why} onChange={(e) => setWhy(clean.text(e.target.value, 500))} aria-label="Why" />
             <FieldError error={whyErr} />
-            <p className="mt-2 text-[13px] text-muted">Your campus checks you can post on behalf of the company.</p>
+            <p className="mt-2 text-label text-muted">Your campus checks you can post on behalf of the company.</p>
           </>
         )}
       </Modal>

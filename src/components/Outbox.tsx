@@ -56,39 +56,39 @@ export function OutboxWidget() {
       {pulse && latest && !open && (
         <button
           onClick={() => setOpen(true)}
-          className="animate-in fixed bottom-24 right-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-border bg-surface p-3.5 text-left shadow-lift"
+          className="animate-in fixed bottom-24 right-4 z-40 w-[min(340px,calc(100vw-32px))] rounded-2xl border border-border bg-surface p-4 text-left shadow-lg"
         >
-          <div className="mb-1 flex items-center gap-2 text-[13px] font-semibold text-muted">
+          <div className="mb-1 flex items-center gap-2 text-label font-semibold text-muted">
             <ChannelIcon ch={latest.channel} />
             {channelMeta[latest.channel].label} sent · {latest.to}
           </div>
-          <p className="line-clamp-2 text-[14px]">{latest.body}</p>
+          <p className="line-clamp-2 text-sm">{latest.body}</p>
         </button>
       )}
 
       <button
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "fixed bottom-5 right-4 z-40 flex h-12 items-center gap-2 rounded-full bg-text px-4 text-[14px] font-semibold text-bg shadow-lift transition-transform hover:scale-[1.03]",
+          "fixed bottom-5 right-4 z-40 flex h-12 items-center gap-2 rounded-full bg-text px-4 text-sm font-semibold text-bg shadow-lg transition-transform",
           pulse && "ring-4 ring-primary/40"
         )}
         aria-label="Open device simulator"
       >
         <Smartphone className="h-4 w-4" />
         <span className="hidden sm:inline">Device simulator</span>
-        {unread > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1 text-[12px] text-white">{unread}</span>}
+        {unread > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1 text-xs text-white">{unread}</span>}
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={() => setOpen(false)}>
           <aside
-            className="animate-in flex h-full w-full max-w-[400px] flex-col border-l border-border bg-bg shadow-lift"
+            className="animate-in flex h-full w-full max-w-[400px] flex-col border-l border-border bg-bg shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border bg-surface px-5 py-4">
               <div>
                 <p className="font-semibold">Device simulator</p>
-                <p className="text-[13px] text-muted">Messages the platform would send · demo only</p>
+                <p className="text-label text-muted">Messages the platform would send · demo only</p>
               </div>
               <div className="flex gap-1">
                 <button onClick={clearOutbox} className="grid h-9 w-9 place-items-center rounded-xl text-muted hover:bg-surface-2" aria-label="Clear">
@@ -101,26 +101,26 @@ export function OutboxWidget() {
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
               {state.outbox.length === 0 && (
-                <div className="px-6 py-16 text-center text-[14px] text-muted">
+                <div className="px-6 py-16 text-center text-sm text-muted">
                   <Smartphone className="mx-auto mb-3 h-8 w-8 opacity-50" />
                   Nothing sent yet. OTP codes, consent links and broadcast previews appear here.
                 </div>
               )}
               {state.outbox.map((m) => (
-                <div key={m.id} className="rounded-2xl border border-border bg-surface p-3.5">
+                <div key={m.id} className="rounded-2xl border border-border bg-surface p-4">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="flex min-w-0 items-center gap-2 text-[13px] font-semibold">
+                    <span className="flex min-w-0 items-center gap-2 text-label font-semibold">
                       <ChannelIcon ch={m.channel} />
                       <span className="truncate">{m.to}</span>
                     </span>
-                    <span className="shrink-0 text-[12px] text-muted">{timeAgo(m.at)}</span>
+                    <span className="shrink-0 text-xs text-muted">{timeAgo(m.at)}</span>
                   </div>
-                  <p className="whitespace-pre-line text-[14px] leading-relaxed">{highlightOtp(m.body)}</p>
+                  <p className="whitespace-pre-line text-sm leading-relaxed">{highlightOtp(m.body)}</p>
                   {m.link && (
                     <Link
                       href={m.link.href}
                       onClick={() => setOpen(false)}
-                      className="mt-2.5 inline-flex h-8 items-center rounded-xl bg-primary px-3 text-[13px] font-semibold text-primary-fg"
+                      className="mt-3 inline-flex h-8 items-center rounded-xl bg-primary px-3 text-label font-semibold text-primary-fg"
                     >
                       {m.link.label}
                     </Link>
@@ -149,7 +149,7 @@ function highlightOtp(text: string) {
   if (!m) return text;
   return (
     <>
-      <span className="rounded bg-primary-soft px-1.5 py-0.5 font-mono text-[15px] font-bold tracking-widest text-primary">{m[1]}</span>
+      <span className="rounded bg-primary-soft px-2 py-0.5 font-mono text-body font-semibold tracking-widest text-primary">{m[1]}</span>
       {m[2]}
     </>
   );

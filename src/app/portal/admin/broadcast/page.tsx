@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AnimatedBar } from "@/components/motion";
 import { Bell, CalendarClock, Check, Loader2, Lock, Mail, Megaphone, MessageCircle, MessageSquareText, Plus, Send, Users } from "lucide-react";
 import { Button, Callout, Card, CardHeader, Field, Input, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
 import { AdminOnly, NoPermission } from "@/components/admin";
@@ -110,7 +111,7 @@ function Composer({ onDone }: { onDone: () => void }) {
                   ))}
                 </Select>
               ) : (
-                <div className="flex h-11 items-center gap-2 rounded-xl border border-border bg-surface-2 px-3.5 text-sm">
+                <div className="flex h-11 items-center gap-2 rounded-xl border border-border bg-surface-2 px-4 text-sm">
                   <Lock className="h-3.5 w-3.5 text-muted" /> {campusName(campus)}
                 </div>
               )}
@@ -165,7 +166,7 @@ function Composer({ onDone }: { onDone: () => void }) {
                   disabled={disabled}
                   onClick={() => toggle(c)}
                   className={cn(
-                    "flex items-start gap-3 rounded-xl border-2 p-3.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                    "flex items-start gap-3 rounded-xl border-2 p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                     on ? "border-primary bg-primary-soft/50" : "border-border hover:border-primary/40"
                   )}
                 >
@@ -174,11 +175,11 @@ function Composer({ onDone }: { onDone: () => void }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
-                      <span className="text-[14px] font-semibold">{channelInfo[c].label}</span>
+                      <span className="text-sm font-semibold">{channelInfo[c].label}</span>
                       {on && <Check className="h-4 w-4 text-primary" />}
                     </span>
-                    <span className="mt-0.5 block text-[13px] text-muted">{channelInfo[c].note}</span>
-                    {c !== "sms" && <span className="mt-1.5 block text-[13px] font-semibold tabular-nums">{fmt(aud[c as "email" | "whatsapp" | "push"])} reachable</span>}
+                    <span className="mt-0.5 block text-label text-muted">{channelInfo[c].note}</span>
+                    {c !== "sms" && <span className="mt-2 block text-label font-semibold tabular-nums">{fmt(aud[c as "email" | "whatsapp" | "push"])} reachable</span>}
                   </span>
                 </button>
               );
@@ -235,26 +236,24 @@ function Composer({ onDone }: { onDone: () => void }) {
       {/* Summary + preview */}
       <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
         <Card className="p-5">
-          <p className="text-[14px] font-medium text-muted">Audience</p>
-          <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">{fmt(aud.total)}</p>
-          <p className="text-[13.5px] text-muted">
+          <p className="text-sm font-medium text-muted">Audience</p>
+          <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">{fmt(aud.total)}</p>
+          <p className="text-sm text-muted">
             verified alumni · {campus === "all" ? "all campuses" : campusName(campus).split(",")[0]} · batches {batchFrom}–{batchTo}
           </p>
-          <div className="mt-4 space-y-2.5">
+          <div className="mt-4 space-y-3">
             {(["email", "whatsapp", "push"] as const).map((c) => {
               const pct = aud.total ? (aud[c] / aud.total) * 100 : 0;
               const on = channels.includes(c);
               return (
                 <div key={c} className={cn(!on && "opacity-40")}>
-                  <div className="flex justify-between text-[13.5px]">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">{channelInfo[c].label}</span>
                     <span className="tabular-nums">
                       {fmt(aud[c])} <span className="text-muted">· {fmt(aud.total - aud[c])} opted out / no consent</span>
                     </span>
                   </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2">
-                    <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-                  </div>
+                  <AnimatedBar value={pct} trackClassName="mt-1 h-1.5" />
                 </div>
               );
             })}
@@ -278,29 +277,28 @@ function Composer({ onDone }: { onDone: () => void }) {
             />
           </div>
           <div className="bg-surface-2 p-5">
-            <div className="mx-auto w-full max-w-[290px] rounded-2xl border-[6px] border-text/85 bg-bg p-3 shadow-lift">
+            <div className="mx-auto w-full max-w-[290px] rounded-2xl border-[6px] border-text/85 bg-bg p-3 shadow-lg">
               <div className="mx-auto mb-3 h-1.5 w-16 rounded-full bg-text/20" />
               {preview === "whatsapp" && (
-                <div className="rounded-xl bg-[#e7f7e2] p-3 text-[13.5px] leading-relaxed text-[#111] dark:bg-[#1f3b2a] dark:text-[#e9f5ec]">
-                  <p className="mb-1 text-[12px] font-semibold text-[#128c4b] dark:text-[#5fd394]">VIBGYOR Alumni ✓</p>
+                <div className="rounded-xl bg-[#e7f7e2] p-3 text-sm leading-relaxed text-[#111] dark:bg-[#1f3b2a] dark:text-[#e9f5ec]">
+                  <p className="mb-1 text-xs font-semibold text-[#128c4b] dark:text-[#5fd394]">VIBGYOR Alumni ✓</p>
                   {waText}
-                  <div className="mt-2 rounded-xl bg-white/70 py-1.5 text-center text-[13px] font-semibold text-[#128c4b] dark:bg-black/20 dark:text-[#5fd394]">RSVP</div>
+                  <div className="mt-2 rounded-xl bg-white/70 py-2 text-center text-label font-semibold text-[#128c4b] dark:bg-black/20 dark:text-[#5fd394]">RSVP</div>
                 </div>
               )}
               {preview === "email" && (
-                <div className="rounded-xl bg-surface p-3 text-[13px] leading-relaxed">
-                  <div className="spectrum mb-2 h-1 rounded-full" />
+                <div className="rounded-xl bg-surface p-3 text-label leading-relaxed">
                   <p className="font-semibold">{subject}</p>
                   <p className="mt-2 line-clamp-[10] whitespace-pre-line text-muted">{body.replace(/{{first_name}}/g, "Karan")}</p>
-                  <p className="mt-2 text-[11px] text-muted underline">Unsubscribe</p>
+                  <p className="mt-2 text-xs text-muted underline">Unsubscribe</p>
                 </div>
               )}
               {preview === "push" && (
-                <div className="flex gap-2.5 rounded-xl bg-surface p-3 shadow">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-[13px] font-bold text-primary-fg">V</span>
+                <div className="flex gap-3 rounded-xl bg-surface p-3 shadow">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-label font-semibold text-primary-fg">V</span>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold">VIBGYOR Alumni</p>
-                    <p className="line-clamp-2 text-[13px] text-muted">{subject}</p>
+                    <p className="text-label font-semibold">VIBGYOR Alumni</p>
+                    <p className="line-clamp-2 text-label text-muted">{subject}</p>
                   </div>
                 </div>
               )}
@@ -319,7 +317,7 @@ function History() {
   const list = state.broadcasts.filter((b) => group || (b.campusIds !== "all" && b.campusIds.some((c) => me.campusIds.includes(c))));
   if (!list.length)
     return (
-      <Card className="p-10 text-center text-[14px] text-muted">
+      <Card className="p-10 text-center text-sm text-muted">
         No broadcasts yet.
       </Card>
     );
@@ -339,12 +337,12 @@ function History() {
                 )}
                 {b.status === "scheduled" && <Pill tone="warning">Scheduled {b.scheduledFor && formatDateTime(b.scheduledFor)}</Pill>}
               </div>
-              <p className="mt-1 text-[13.5px] text-muted">
+              <p className="mt-1 text-sm text-muted">
                 {fmt(b.audience)} alumni · {b.campusIds === "all" ? "All campuses" : b.campusIds.map((c) => campusName(c).split(",")[0]).join(", ")} · batches {b.batchFrom}–{b.batchTo} · by{" "}
                 {state.users.find((u) => u.id === b.createdBy)?.name} · {timeAgo(b.createdAt)}
               </p>
             </div>
-            <div className="flex gap-1.5">
+            <div className="flex gap-2">
               {b.channels.map((c) => {
                 const I = channelInfo[c].icon;
                 return (
@@ -361,8 +359,8 @@ function History() {
                 const s = b.stats?.[c];
                 if (!s) return null;
                 return (
-                  <div key={c} className="rounded-xl bg-surface-2 p-3.5">
-                    <p className="text-[13px] font-semibold">{channelInfo[c].label}</p>
+                  <div key={c} className="rounded-xl bg-surface-2 p-4">
+                    <p className="text-label font-semibold">{channelInfo[c].label}</p>
                     <div className="mt-2 grid grid-cols-3 gap-2 text-center">
                       {[
                         ["Delivered", s.delivered, s.sent],
@@ -370,8 +368,8 @@ function History() {
                         ["Clicked", s.clicked, s.delivered],
                       ].map(([l, v, base]) => (
                         <div key={l as string}>
-                          <p className="text-[15px] font-bold tabular-nums">{fmt(v as number)}</p>
-                          <p className="text-[11.5px] text-muted">
+                          <p className="text-body font-semibold tabular-nums">{fmt(v as number)}</p>
+                          <p className="text-xs text-muted">
                             {l} · {base ? Math.round(((v as number) / (base as number)) * 100) : 0}%
                           </p>
                         </div>
@@ -395,7 +393,7 @@ export default function BroadcastPage() {
   return (
     <AdminOnly me={me}>
       <PageHeader
-        eyebrow={<div className="flex flex-wrap gap-1.5"><Req ids="D4" /> <Req ids="D5" /> <Req ids="D7" /> <Req ids="INT-2" /> <Req ids="INT-3" /> <Req ids="CS-10" /></div>}
+        eyebrow={<div className="flex flex-wrap gap-2"><Req ids="D4" /> <Req ids="D5" /> <Req ids="D7" /> <Req ids="INT-2" /> <Req ids="INT-3" /> <Req ids="CS-10" /></div>}
         title={composing ? "New broadcast" : "Broadcasts"}
         description={composing ? "Reach alumni by email, WhatsApp and push, honouring every opt-out." : "Campaigns sent to alumni, with delivery and engagement."}
         actions={

@@ -86,15 +86,15 @@ function MessagesInner() {
   return (
     <>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight">{me.role === "STU" ? "Messages" : "Mentor inbox"}</h1>
-        <div className="hidden gap-1.5 sm:flex">
+        <h1 className="text-2xl font-semibold tracking-tight">{me.role === "STU" ? "Messages" : "Mentor inbox"}</h1>
+        <div className="hidden gap-2 sm:flex">
           <Req ids="D2" /> <Req ids="CS-5" /> <Req ids="CS-6" /> <Req ids="CS-7" /> <Req ids="CS-8" />
         </div>
       </div>
       <Card className="grid h-[calc(100dvh-180px)] min-h-[520px] overflow-hidden lg:grid-cols-[320px_1fr]">
         {/* List */}
         <div className={cn("flex min-h-0 flex-col border-r border-border", active && "hidden lg:flex")}>
-          <div className="border-b border-border px-4 py-3 text-[13px] font-semibold uppercase tracking-wider text-muted">{convs.length} conversation{convs.length > 1 ? "s" : ""}</div>
+          <div className="border-b border-border px-4 py-3 text-label font-semibold uppercase tracking-[0.08em] text-muted">{convs.length} conversation{convs.length > 1 ? "s" : ""}</div>
           <div className="flex-1 overflow-y-auto">
             {convs.map(({ c, last }) => {
               const o = state.users.find((u) => u.id === (me.id === c.studentId ? c.mentorId : c.studentId));
@@ -103,16 +103,16 @@ function MessagesInner() {
                 <button
                   key={c.id}
                   onClick={() => router.replace(`/portal/messages?c=${c.id}`)}
-                  className={cn("flex w-full items-start gap-3 border-b border-border px-4 py-3.5 text-left hover:bg-surface-2/70", active?.id === c.id && "bg-primary-soft/60")}
+                  className={cn("flex w-full items-start gap-3 border-b border-border px-4 py-4 text-left hover:bg-surface-2/70", active?.id === c.id && "bg-primary-soft/60")}
                 >
                   <Avatar name={o.name} size={40} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="truncate text-[14.5px] font-semibold">{o.name}</p>
-                      {last && <span className="shrink-0 text-[12px] text-muted">{timeAgo(last.at)}</span>}
+                      <p className="truncate text-body font-semibold">{o.name}</p>
+                      {last && <span className="shrink-0 text-xs text-muted">{timeAgo(last.at)}</span>}
                     </div>
-                    <p className="truncate text-[13px] font-medium text-primary">{c.topic}</p>
-                    <p className="truncate text-[13.5px] text-muted">{last?.text}</p>
+                    <p className="truncate text-label font-medium text-primary">{c.topic}</p>
+                    <p className="truncate text-sm text-muted">{last?.text}</p>
                   </div>
                 </button>
               );
@@ -129,8 +129,8 @@ function MessagesInner() {
               </button>
               <Avatar name={other.name} size={38} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-semibold">{other.name}</p>
-                <p className="truncate text-[13px] text-muted">
+                <p className="truncate text-sm font-semibold">{other.name}</p>
+                <p className="truncate text-label text-muted">
                   {other.role === "STU" ? `Student · Class ${other.className} · ${campusName(other.campusIds[0])}` : `Mentor · ${other.title}, ${other.company}`}
                 </p>
               </div>
@@ -141,33 +141,33 @@ function MessagesInner() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 bg-primary-soft/60 px-4 py-2 text-[13px] font-medium text-primary">
+            <div className="flex items-center gap-2 bg-primary-soft/60 px-4 py-2 text-label font-medium text-primary">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
               <span>Recorded and visible to the {campusName(active.campusId).split(",")[0]} alumni office and {me.role === "STU" ? "your parent" : "the student's parent"} · messages can&apos;t be deleted · contact details are hidden</span>
             </div>
 
             <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
-              <p className="text-center text-[13px] text-muted">
+              <p className="text-center text-label text-muted">
                 Conversation started {formatDateTime(active.createdAt)} · <span className="font-medium">{active.topic}</span>
               </p>
               {thread.map((m) => {
                 const mine = m.senderId === me.id;
                 const sender = state.users.find((u) => u.id === m.senderId);
                 return (
-                  <div key={m.id} className={cn("group flex gap-2.5", mine && "flex-row-reverse")}>
+                  <div key={m.id} className={cn("group flex gap-3", mine && "flex-row-reverse")}>
                     {!mine && <Avatar name={sender?.name ?? "?"} size={30} className="mt-1" />}
                     <div className={cn("max-w-[78%]", mine && "items-end text-right")}>
                       {!mine && sender?.role === "PAR" && (
-                        <p className="mb-0.5 text-[12px] font-semibold text-muted">
+                        <p className="mb-0.5 text-xs font-semibold text-muted">
                           {sender.name} · {me.role === "STU" ? "your parent" : `${student ? firstName(student.name) + "'s " : ""}parent`}
                         </p>
                       )}
-                      <div className={cn("inline-block rounded-2xl px-3.5 py-2.5 text-left text-[14px] leading-relaxed", mine ? "rounded-br-md bg-primary text-primary-fg" : "rounded-bl-md bg-surface-2")}>
+                      <div className={cn("inline-block rounded-2xl px-4 py-3 text-left text-sm leading-relaxed", mine ? "rounded-br-md bg-primary text-primary-fg" : "rounded-bl-md bg-surface-2")}>
                         <MaskedText text={m.text} />
                       </div>
-                      <div className={cn("mt-1 flex items-center gap-2 text-[12px] text-muted", mine && "justify-end")}>
+                      <div className={cn("mt-1 flex items-center gap-2 text-xs text-muted", mine && "justify-end")}>
                         <span>{formatDateTime(m.at)}</span>
-                        {m.maskedKinds.length > 0 && <Pill tone="warning" className="!py-0 !text-[11.5px]">masked · campus notified</Pill>}
+                        {m.maskedKinds.length > 0 && <Pill tone="warning" className="!py-0 !text-xs">masked · campus notified</Pill>}
                         {!mine &&
                           (reported.includes(m.id) ? (
                             <span className="font-semibold text-success">Reported</span>
@@ -193,7 +193,7 @@ function MessagesInner() {
             <div className="border-t border-border p-3 sm:p-4">
               {lock ? (
                 <Callout tone="warning" title="Read-only">
-                  <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-2">
                     <Lock className="h-3.5 w-3.5" /> {lock}
                   </span>
                 </Callout>
@@ -219,7 +219,7 @@ function MessagesInner() {
                       <SendHorizontal className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="hidden text-[12.5px] text-muted sm:block">
+                  <p className="hidden text-label text-muted sm:block">
                     Try: <button className="font-semibold text-primary" onClick={() => setDraft("Can I WhatsApp you? My number is 98200 12345 or insta @aarav.codes")}>a message with contact details</button>
                   </p>
                 </div>
@@ -257,19 +257,19 @@ function MessagesInner() {
         }
       >
         <div className="space-y-4">
-          <div className="rounded-xl bg-surface-2 p-3 text-[14.5px]">
+          <div className="rounded-xl bg-surface-2 p-3 text-body">
             <MaskedText text={reportFor?.text ?? ""} />
           </div>
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-[14px] font-semibold">What&apos;s wrong?</legend>
+            <legend className="mb-2 text-sm font-semibold">What&apos;s wrong?</legend>
             {reasons.map((r) => (
-              <label key={r} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 text-[14.5px]", reason === r ? "border-primary bg-primary-soft/50" : "border-border")}>
+              <label key={r} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-body", reason === r ? "border-primary bg-primary-soft/50" : "border-border")}>
                 <input type="radio" name="reason" checked={reason === r} onChange={() => setReason(r)} className="accent-[var(--primary)]" />
                 {r}
               </label>
             ))}
           </fieldset>
-          <p className="text-[13.5px] text-muted">Your campus alumni office will review this, usually within 24 hours. The other person won&apos;t see who reported it.</p>
+          <p className="text-sm text-muted">Your campus alumni office will review this, usually within 24 hours. The other person won&apos;t see who reported it.</p>
         </div>
       </Modal>
     </>

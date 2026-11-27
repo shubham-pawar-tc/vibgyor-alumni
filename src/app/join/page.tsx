@@ -91,38 +91,38 @@ export default function JoinPage() {
       />
       <main className="relative mx-auto -mt-20 grid max-w-6xl items-start gap-8 px-4 pb-6 sm:px-6 lg:grid-cols-[1.35fr_1fr]">
         <Reveal>
-        <Card className="relative overflow-hidden p-6 shadow-lift sm:p-8">
+        <Card className="relative overflow-hidden p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Progress step={step} />
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Req ids="A1" /> <Req ids="A2" /> <Req ids="DM-5" />
             </div>
           </div>
 
           {step === "start" && (
             <div className="animate-in">
-              <h1 className="mt-6 text-2xl font-extrabold tracking-tight sm:text-3xl">How would you like to start?</h1>
-              <p className="mt-2 text-[15px] text-muted">Were you on the previous alumni portal? Your profile, batch and history are already here.</p>
+              <h1 className="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl">How would you like to start?</h1>
+              <p className="mt-2 text-body text-muted">Were you on the previous alumni portal? Your profile, batch and history are already here.</p>
               <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                <button onClick={() => setStep("claim")} className="group relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-primary-soft/40 p-5 text-left transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-lift">
-                  <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-0.5 text-[11.5px] font-bold uppercase tracking-wide text-primary-fg">Most alumni</span>
-                  <span className="icon-bounce grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-fg">
+                <button onClick={() => setStep("claim")} className="group relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-primary-soft/40 p-5 text-left transition-colors duration-150 hover:-translate-y-0.5 hover:border-primary">
+                  <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-fg">Most alumni</span>
+                  <span className=" grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-fg">
                     <History className="h-6 w-6" />
                   </span>
-                  <p className="mt-4 font-bold">Claim my existing profile</p>
-                  <p className="mt-1 text-[14px] text-muted">Find it with the email or mobile you used before. No need to start again.</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-[14px] font-semibold text-primary">
-                    Find my profile <ArrowRight className="icon-nudge h-3.5 w-3.5" />
+                  <p className="mt-4 font-semibold">Claim my existing profile</p>
+                  <p className="mt-1 text-sm text-muted">Find it with the email or mobile you used before. No need to start again.</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    Find my profile <ArrowRight className=" h-3.5 w-3.5" />
                   </span>
                 </button>
-                <button onClick={() => setStep("details")} className="group rounded-2xl border-2 border-border p-5 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-lift">
-                  <span className="icon-bounce grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
+                <button onClick={() => setStep("details")} className="group rounded-2xl border-2 border-border p-5 text-left transition-colors duration-150 hover:-translate-y-0.5 hover:border-primary/50">
+                  <span className=" grid h-12 w-12 place-items-center rounded-lg border border-border bg-surface-2 text-muted">
                     <UserPlus className="h-6 w-6" />
                   </span>
-                  <p className="mt-4 font-bold">I&apos;m new here</p>
-                  <p className="mt-1 text-[14px] text-muted">Sign up with your campus, pass year and admission number.</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-[14px] font-semibold text-primary">
-                    Sign up <ArrowRight className="icon-nudge h-3.5 w-3.5" />
+                  <p className="mt-4 font-semibold">I&apos;m new here</p>
+                  <p className="mt-1 text-sm text-muted">Sign up with your campus, pass year and admission number.</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    Sign up <ArrowRight className=" h-3.5 w-3.5" />
                   </span>
                 </button>
               </div>
@@ -132,7 +132,7 @@ export default function JoinPage() {
           {step === "claim" && (
             <form onSubmit={doLookup} className="animate-in">
               <BackBtn onClick={() => setStep("start")} />
-              <h1 className="mt-2 text-2xl font-extrabold tracking-tight">Find your profile</h1>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight">Find your profile</h1>
               <p className="mt-1 text-sm text-muted">Enter the email or mobile number you used on the previous alumni portal.</p>
               <div className="mt-6 space-y-4">
                 <Field label="Email or mobile" htmlFor="lookup" error={whenFilled(lookup, lookupErr2)} hint={<>Demo: <button type="button" className="font-semibold text-primary" onClick={() => setLookup("karan.malhotra@example.com")}>karan.malhotra@example.com</button></>}>
@@ -149,19 +149,19 @@ export default function JoinPage() {
           {step === "found" && migrated && (
             <div className="animate-in">
               <BackBtn onClick={() => setStep("claim")} />
-              <h1 className="mt-2 text-2xl font-extrabold tracking-tight">Is this you?</h1>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight">Is this you?</h1>
               <p className="mt-1 text-sm text-muted">We found a profile migrated from the previous alumni portal.</p>
-              <div className="pop mt-6 rounded-2xl border border-primary/25 bg-primary-soft/30 p-5">
+              <div className="mt-6 rounded-2xl border border-primary/25 bg-primary-soft/30 p-5">
                 <div className="flex items-center gap-4">
                   <Avatar name={migrated.name} size={52} />
                   <div className="min-w-0">
                     <p className="text-lg font-semibold">{migrated.name}</p>
-                    <p className="text-[14px] text-muted">
+                    <p className="text-sm text-muted">
                       Batch {migrated.batch} · {campusName(migrated.campusId)}
                     </p>
                   </div>
                 </div>
-                <dl className="mt-5 grid grid-cols-2 gap-3 text-[14px]">
+                <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
                   {migrated.college && <Info label="College" value={migrated.college} />}
                   {migrated.company && <Info label="Work" value={`${migrated.title}, ${migrated.company}`} />}
                   <Info label="Status on old portal" value={migrated.verified ? "Verified" : "Not verified"} />
@@ -185,7 +185,7 @@ export default function JoinPage() {
           {step === "details" && (
             <div className="animate-in">
               <BackBtn onClick={() => setStep("start")} />
-              <h1 className="mt-2 text-2xl font-extrabold tracking-tight">Tell us about your time at VIBGYOR</h1>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight">Tell us about your time at VIBGYOR</h1>
               <p className="mt-1 text-sm text-muted">We check these against school records to verify you automatically.</p>
               <div className="mt-6 space-y-4">
                 <Field label="Full name (as in school records)" htmlFor="n" error={whenFilled(form.name, errs.name)}>
@@ -222,8 +222,8 @@ export default function JoinPage() {
                 <Field label="Admission / roll number" htmlFor="a" error={whenFilled(form.admissionNo, errs.admissionNo)} hint="Optional, but it lets us verify you instantly. It's on your school ID or leaving certificate.">
                   <Input id="a" icon={<Hash />} value={form.admissionNo} invalid={!!whenFilled(form.admissionNo, errs.admissionNo)} onChange={(e) => setForm({ ...form, admissionNo: clean.admission(e.target.value) })} placeholder="VG-MAL-2014-0187" className="font-mono" />
                 </Field>
-                <div className="rounded-xl border border-dashed border-warning/40 bg-warning-soft/50 p-3.5 text-[13.5px] text-muted">
-                  <p className="mb-2 flex items-center gap-1.5 font-semibold text-text">
+                <div className="rounded-xl border border-dashed border-warning/40 bg-warning-soft/50 p-4 text-sm text-muted">
+                  <p className="mb-2 flex items-center gap-2 font-semibold text-text">
                     <Wand2 className="h-3.5 w-3.5 text-warning" /> Demo data
                   </p>
                   <button
@@ -258,18 +258,18 @@ export default function JoinPage() {
           {step === "otp" && (
             <form onSubmit={verify} className="animate-in">
               <BackBtn onClick={() => setStep(migrated ? "found" : "details")} />
-              <h1 className="mt-2 text-2xl font-extrabold tracking-tight">Check your email</h1>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight">Check your email</h1>
               <p className="mt-1 text-sm text-muted">
                 We sent a 6-digit code to <b className="text-text">{form.email}</b>.
               </p>
               <div className="mt-6 space-y-4">
                 <Input icon={<MailCheck />} inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} className="h-14 text-center font-mono text-2xl tracking-[0.5em]" autoFocus aria-label="6-digit code" />
-                {codeErr && <p className="text-[14px] font-medium text-danger">{codeErr}</p>}
+                {codeErr && <p className="text-sm font-medium text-danger">{codeErr}</p>}
                 <Button type="submit" size="lg" className="w-full" disabled={code.length !== 6}>
                   <ShieldCheck className="h-4 w-4" /> Verify
                 </Button>
                 <DemoOtpFill otpKey={otpKey} onFill={(c) => { setCode(c); setCodeErr(""); }} />
-                <p className="text-center text-[13px] text-muted">Demo: the latest code is also at the top of the device simulator, bottom right.</p>
+                <p className="text-center text-label text-muted">Demo: the latest code is also at the top of the device simulator, bottom right.</p>
               </div>
             </form>
           )}
@@ -278,11 +278,11 @@ export default function JoinPage() {
             <div className="animate-in">
               {result.outcome === "pending" ? (
                 <>
-                  <span className="pop ring-pulse mt-6 grid h-16 w-16 place-items-center rounded-2xl bg-warning-soft text-warning">
+                  <span className="ring-pulse mt-6 grid h-16 w-16 place-items-center rounded-2xl bg-warning-soft text-warning">
                     <Clock className="h-8 w-8" />
                   </span>
-                  <h1 className="enter enter-2 mt-5 text-2xl font-extrabold tracking-tight">Almost there, {form.name.split(" ")[0]}</h1>
-                  <p className="mt-2 text-[15px] text-muted">
+                  <h1 className="enter enter-2 mt-5 text-2xl font-semibold tracking-tight">Almost there, {form.name.split(" ")[0]}</h1>
+                  <p className="mt-2 text-body text-muted">
                     We couldn&apos;t match you to school records automatically, so the <b className="text-text">{campusName(form.campusId)}</b> alumni office will check your details,
                     usually within 2 working days.
                   </p>
@@ -292,9 +292,9 @@ export default function JoinPage() {
                       <HeartHandshake className="h-5 w-5 text-primary" />
                       <p className="font-semibold">Faster: ask two batchmates to vouch</p>
                     </div>
-                    <p className="mt-1.5 text-[14px] text-muted">Verified alumni from your batch can confirm they know you. Two vouches verify you.</p>
+                    <p className="mt-2 text-sm text-muted">Verified alumni from your batch can confirm they know you. Two vouches verify you.</p>
                     <div className="mt-3 flex gap-2">
-                      <Input readOnly value={`vaa.vibgyor.in/vouch/${result.request.id}`} className="font-mono text-[14px]" />
+                      <Input readOnly value={`vaa.vibgyor.in/vouch/${result.request.id}`} className="font-mono text-sm" />
                       <Button
                         variant="secondary"
                         onClick={() => {
@@ -309,11 +309,11 @@ export default function JoinPage() {
                 </>
               ) : (
                 <>
-                  <span className="pop ring-pulse mt-6 grid h-16 w-16 place-items-center rounded-2xl bg-success-soft text-success">
+                  <span className="ring-pulse mt-6 grid h-16 w-16 place-items-center rounded-2xl bg-success-soft text-success">
                     <PartyPopper className="h-8 w-8" />
                   </span>
-                  <h1 className="enter enter-2 mt-5 text-2xl font-extrabold tracking-tight">Welcome back, {form.name.split(" ")[0]}!</h1>
-                  <p className="mt-2 text-[15px] text-muted">
+                  <h1 className="enter enter-2 mt-5 text-2xl font-semibold tracking-tight">Welcome back, {form.name.split(" ")[0]}!</h1>
+                  <p className="mt-2 text-body text-muted">
                     {result.outcome === "claimed_verified"
                       ? "Your profile is claimed and your verified status, batch and engagement history have been kept."
                       : "Your pass year, admission number and name match school records, so you're verified instantly."}
@@ -343,14 +343,14 @@ export default function JoinPage() {
         </Reveal>
 
         <Reveal delay={120} className="space-y-4">
-          <Card className="p-6 shadow-lift">
+          <Card className="p-6">
             <div className="flex items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-success-soft text-success">
                 <ShieldCheck className="h-5 w-5" />
               </span>
-              <p className="font-bold">How we verify alumni</p>
+              <p className="font-semibold">How we verify alumni</p>
             </div>
-            <p className="mt-1 text-[14px] text-muted">So that students only ever meet real VIBGYOR alumni.</p>
+            <p className="mt-1 text-sm text-muted">So that students only ever meet real VIBGYOR alumni.</p>
             <ol className="relative mt-6 space-y-6">
               <span className="absolute bottom-4 left-[18px] top-4 w-px bg-border" aria-hidden />
               {[
@@ -359,13 +359,13 @@ export default function JoinPage() {
                 { icon: HeartHandshake, color: "var(--v)", title: "Peer vouch", body: "For older batches without digital records, two verified batchmates can vouch for you." },
               ].map((s, i) => (
                 <li key={s.title} className="relative flex gap-3">
-                  <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-4 ring-surface">
+                  <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-surface-2 text-muted ring-4 ring-surface">
                     <s.icon className="h-[18px] w-[18px]" />
-                    <span className="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-surface text-[11px] font-bold text-text shadow">{i + 1}</span>
+                    <span className="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-surface text-xs font-semibold text-text shadow">{i + 1}</span>
                   </span>
                   <div>
-                    <p className="text-[14px] font-semibold">{s.title}</p>
-                    <p className="text-[14px] leading-relaxed text-muted">{s.body}</p>
+                    <p className="text-sm font-semibold">{s.title}</p>
+                    <p className="text-sm leading-relaxed text-muted">{s.body}</p>
                   </div>
                 </li>
               ))}
@@ -383,7 +383,7 @@ export default function JoinPage() {
 
 function BackBtn({ onClick }: { onClick: () => void }) {
   return (
-    <button onClick={onClick} type="button" className="mt-3 inline-flex items-center gap-1 text-[14px] font-semibold text-muted hover:text-text">
+    <button onClick={onClick} type="button" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-text">
       <ArrowLeft className="h-3.5 w-3.5" /> Back
     </button>
   );
@@ -391,8 +391,8 @@ function BackBtn({ onClick }: { onClick: () => void }) {
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-surface-2 px-3 py-2.5">
-      <dt className="text-[12px] font-semibold uppercase tracking-wider text-muted">{label}</dt>
+    <div className="rounded-xl bg-surface-2 px-3 py-3">
+      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-muted">{label}</dt>
       <dd className="mt-0.5 font-medium">{value}</dd>
     </div>
   );
@@ -409,17 +409,17 @@ const stepIndex: Record<Step, number> = { start: 0, claim: 1, found: 1, details:
 function Progress({ step }: { step: Step }) {
   const at = stepIndex[step];
   return (
-    <ol className="flex items-center gap-1.5" aria-label="Progress">
+    <ol className="flex items-center gap-2" aria-label="Progress">
       {progressSteps.map((p, i) => {
         const done = i < at;
         const current = i === at;
         return (
-          <li key={p.label} className="flex items-center gap-1.5">
+          <li key={p.label} className="flex items-center gap-2">
             <span
               className={cn(
-                "flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[13px] font-semibold transition-all duration-300",
+                "flex h-8 items-center gap-2 rounded-full px-3 text-label font-semibold transition-colors duration-200",
                 done && "bg-success-soft text-success",
-                current && "bg-primary text-primary-fg shadow-card",
+                current && "bg-primary text-primary-fg shadow-xs",
                 !done && !current && "bg-surface-2 text-muted"
               )}
               aria-current={current ? "step" : undefined}

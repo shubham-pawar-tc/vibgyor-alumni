@@ -78,7 +78,7 @@ export default function ChildChatsPage() {
     <>
       <PageHeader
         eyebrow={
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <Req ids="CS-5" /> <Req ids="CS-16" />
           </div>
         }
@@ -121,7 +121,7 @@ export default function ChildChatsPage() {
             <Card className="grid min-h-[520px] overflow-hidden lg:grid-cols-[320px_1fr]">
               {/* List */}
               <div className={cn("flex min-h-0 flex-col border-r border-border", active && "hidden lg:flex")}>
-                <div className="border-b border-border px-4 py-3 text-[13px] font-semibold uppercase tracking-wider text-muted">
+                <div className="border-b border-border px-4 py-3 text-label font-semibold uppercase tracking-[0.08em] text-muted">
                   {firstName(child.name)} · {convs.length} conversation{convs.length > 1 ? "s" : ""}
                 </div>
                 <div className="flex-1 overflow-y-auto">
@@ -133,18 +133,18 @@ export default function ChildChatsPage() {
                       <button
                         key={c.id}
                         onClick={() => setConvId(c.id)}
-                        className={cn("flex w-full items-start gap-3 border-b border-border px-4 py-3.5 text-left hover:bg-surface-2/70", active?.c.id === c.id && "bg-primary-soft/60")}
+                        className={cn("flex w-full items-start gap-3 border-b border-border px-4 py-4 text-left hover:bg-surface-2/70", active?.c.id === c.id && "bg-primary-soft/60")}
                       >
                         <Avatar name={m?.name ?? "?"} size={40} />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline justify-between gap-2">
-                            <p className="truncate text-[14.5px] font-semibold">{m?.name}</p>
-                            {last && <span className="shrink-0 text-[12px] text-muted">{timeAgo(last.at)}</span>}
+                            <p className="truncate text-body font-semibold">{m?.name}</p>
+                            {last && <span className="shrink-0 text-xs text-muted">{timeAgo(last.at)}</span>}
                           </div>
-                          <p className="truncate text-[13px] font-medium text-primary">{c.topic}</p>
-                          <p className="truncate text-[13.5px] text-muted">{last?.text}</p>
+                          <p className="truncate text-label font-medium text-primary">{c.topic}</p>
+                          <p className="truncate text-sm text-muted">{last?.text}</p>
                           {flagged && (
-                            <Pill tone="warning" className="mt-1 !py-0 !text-[11.5px]">
+                            <Pill tone="warning" className="mt-1 !py-0 !text-xs">
                               contact details hidden
                             </Pill>
                           )}
@@ -202,13 +202,13 @@ export default function ChildChatsPage() {
         }
       >
         <div className="space-y-4">
-          <div className="rounded-xl bg-surface-2 p-3 text-[14.5px]">
+          <div className="rounded-xl bg-surface-2 p-3 text-body">
             <MaskedText text={reportFor?.text ?? ""} />
           </div>
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-[14px] font-semibold">What&apos;s wrong?</legend>
+            <legend className="mb-2 text-sm font-semibold">What&apos;s wrong?</legend>
             {reasons.map((r) => (
-              <label key={r} className="flex items-center gap-2.5 text-[14px]">
+              <label key={r} className="flex items-center gap-3 text-sm">
                 <input type="radio" name="reason" checked={reason === r} onChange={() => setReason(r)} className="h-4 w-4 accent-[var(--primary)]" />
                 {r}
               </label>
@@ -267,22 +267,22 @@ function Transcript({
         </button>
         <Avatar name={mentor?.name ?? "?"} size={38} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-semibold">
-            {mentor?.name} {suspended && <Pill tone="danger" className="ml-1 !py-0 !text-[11.5px]">badge suspended</Pill>}
+          <p className="truncate text-sm font-semibold">
+            {mentor?.name} {suspended && <Pill tone="danger" className="ml-1 !py-0 !text-xs">badge suspended</Pill>}
           </p>
-          <p className="truncate text-[13px] text-muted">
+          <p className="truncate text-label text-muted">
             Mentor · {mentor?.title}, {mentor?.company} · Batch {mentor?.batch}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 bg-primary-soft/60 px-4 py-2 text-[13px] font-medium text-primary">
+      <div className="flex items-center gap-2 bg-primary-soft/60 px-4 py-2 text-label font-medium text-primary">
         <Eye className="h-3.5 w-3.5 shrink-0" />
         <span>Seen by {firstName(childName)}, the mentor and the {campusName(conv.campusId).split(",")[0]} alumni office · contact details are hidden</span>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
-        <p className="text-center text-[13px] text-muted">
+        <p className="text-center text-label text-muted">
           Conversation started {formatDateTime(conv.createdAt)} · <span className="font-medium">{conv.topic}</span>
         </p>
         {msgs.map((m) => {
@@ -291,21 +291,21 @@ function Transcript({
           const sender = state.users.find((u) => u.id === m.senderId);
           const label = fromMe ? "You" : fromChild ? firstName(childName) : sender?.role === "PAR" ? `${sender.name} · parent` : sender?.name;
           return (
-            <div key={m.id} className={cn("group flex gap-2.5", (fromChild || fromMe) && "flex-row-reverse")}>
+            <div key={m.id} className={cn("group flex gap-3", (fromChild || fromMe) && "flex-row-reverse")}>
               <Avatar name={sender?.name ?? "?"} size={30} className="mt-1" />
               <div className={cn("max-w-[78%]", (fromChild || fromMe) && "text-right")}>
-                <p className="mb-0.5 text-[12px] font-semibold text-muted">{label}</p>
+                <p className="mb-0.5 text-xs font-semibold text-muted">{label}</p>
                 <div
                   className={cn(
-                    "inline-block rounded-2xl px-3.5 py-2.5 text-left text-[14px] leading-relaxed",
+                    "inline-block rounded-2xl px-4 py-3 text-left text-sm leading-relaxed",
                     fromMe ? "rounded-br-md bg-success text-white" : fromChild ? "rounded-br-md bg-primary text-primary-fg" : "rounded-bl-md bg-surface-2"
                   )}
                 >
                   <MaskedText text={m.text} />
                 </div>
-                <div className={cn("mt-1 flex items-center gap-2 text-[12px] text-muted", (fromChild || fromMe) && "justify-end")}>
+                <div className={cn("mt-1 flex items-center gap-2 text-xs text-muted", (fromChild || fromMe) && "justify-end")}>
                   <span>{formatDateTime(m.at)}</span>
-                  {m.maskedKinds.length > 0 && <Pill tone="warning" className="!py-0 !text-[11.5px]">masked · campus notified</Pill>}
+                  {m.maskedKinds.length > 0 && <Pill tone="warning" className="!py-0 !text-xs">masked · campus notified</Pill>}
                   {fromMe ? null : reported.includes(m.id) ? (
                     <span className="font-semibold text-success">Reported</span>
                   ) : (
@@ -324,7 +324,7 @@ function Transcript({
       <div className="border-t border-border p-3 sm:p-4">
         {lock ? (
           <Callout tone="warning" title="Read-only">
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-2">
               <Lock className="h-3.5 w-3.5" /> {lock}
             </span>
           </Callout>
@@ -352,7 +352,7 @@ function Transcript({
             </div>
           </div>
         )}
-        <p className="mt-2 flex items-center gap-1.5 text-[12.5px] text-muted">
+        <p className="mt-2 flex items-center gap-2 text-label text-muted">
           <ShieldCheck className="h-3.5 w-3.5" /> Messages can&apos;t be deleted by anyone. Phone numbers, emails and links are hidden for parents too. Opening this conversation was recorded.
         </p>
       </div>

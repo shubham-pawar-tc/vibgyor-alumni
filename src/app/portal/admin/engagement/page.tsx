@@ -76,7 +76,7 @@ function Engagement() {
         </Select>
       </Card>
       <Card className="divide-y divide-border">
-        {list.length === 0 && <p className="p-5 text-[14.5px] text-muted">Nothing logged yet.</p>}
+        {list.length === 0 && <p className="p-5 text-body text-muted">Nothing logged yet.</p>}
         {list.map((e) => {
           const a = state.users.find((u) => u.id === e.alumniId);
           const s = state.users.find((u) => u.id === e.staffId);
@@ -85,23 +85,23 @@ function Engagement() {
               <div className="flex min-w-0 items-center gap-3 sm:w-56">
                 <Avatar name={a?.name ?? "?"} size={34} />
                 <div className="min-w-0">
-                  <Link href={`/portal/people/${e.alumniId}`} className="block truncate text-[14.5px] font-semibold hover:underline">
+                  <Link href={`/portal/people/${e.alumniId}`} className="block truncate text-body font-semibold hover:underline">
                     {a?.name}
                   </Link>
-                  <p className="truncate text-[13px] text-muted">
+                  <p className="truncate text-label text-muted">
                     Batch {a?.batch} · {campusName(e.campusId)}
                   </p>
                 </div>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-2">
                   <Pill tone="primary">{e.mode}</Pill>
                   <Pill>{e.category}</Pill>
                   {e.source === "bulk" && <Pill tone="info">Bulk upload</Pill>}
                 </div>
-                <p className="mt-1.5 text-[14.5px]">{e.note}</p>
+                <p className="mt-2 text-body">{e.note}</p>
               </div>
-              <p className="shrink-0 text-[13px] text-muted sm:text-right">
+              <p className="shrink-0 text-label text-muted sm:text-right">
                 {formatDate(e.at)}
                 <br />
                 by {s?.name}
@@ -236,20 +236,20 @@ function BulkUpload({ onClose }: { onClose: () => void }) {
       }
     >
       <div className="space-y-3">
-        <p className="text-[14px] text-muted">Paste rows from Excel as CSV, or choose a .csv file. Columns: email, mode, category, note, date. A sample with two mistakes is filled in.</p>
+        <p className="text-sm text-muted">Paste rows from Excel as CSV, or choose a .csv file. Columns: email, mode, category, note, date. A sample with two mistakes is filled in.</p>
         <input
           type="file"
           accept=".csv,text/csv"
-          className="text-[14px]"
+          className="text-sm"
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) f.text().then(setText);
           }}
         />
-        <Textarea rows={6} className="font-mono text-[13px]" value={text} onChange={(e) => setText(e.target.value)} />
+        <Textarea rows={6} className="font-mono text-label" value={text} onChange={(e) => setText(e.target.value)} />
         <div className="max-h-56 overflow-y-auto rounded-xl border border-border">
           {rows.map((r) => (
-            <div key={r.n} className="flex items-start gap-2 border-b border-border px-3 py-2 text-[13.5px] last:border-0">
+            <div key={r.n} className="flex items-start gap-2 border-b border-border px-3 py-2 text-sm last:border-0">
               {r.entry ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />}
               <span className="w-12 shrink-0 text-muted">Row {r.n}</span>
               <span className="min-w-0 flex-1">

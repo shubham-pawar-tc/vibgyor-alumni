@@ -33,7 +33,7 @@ function Inner() {
   return (
     <>
       <PageHeader
-        eyebrow={<div className="flex gap-1.5"><Req ids="CS-1" /> <Req ids="CS-2" /> <Req ids="A7" /></div>}
+        eyebrow={<div className="flex gap-2"><Req ids="CS-1" /> <Req ids="CS-2" /> <Req ids="A7" /></div>}
         title="Student consents"
         description="Students are created from school records and stay switched off until a parent consents."
         actions={
@@ -62,9 +62,9 @@ function Inner() {
       </Card>
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-[14px]">
+          <table className="w-full min-w-[760px] text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-[13px] text-muted">
+              <tr className="border-b border-border text-left text-label text-muted">
                 <th className="px-5 py-3 font-semibold">Student</th>
                 <th className="px-3 py-3 font-semibold">Parent</th>
                 <th className="px-3 py-3 font-semibold">Status</th>
@@ -83,11 +83,11 @@ function Inner() {
                 return (
                   <tr key={s.id} className={cn("hover:bg-surface-2/50", below && "opacity-60")}>
                     <td className="px-5 py-3">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-3">
                         <Avatar name={s.name} size={30} />
                         <div>
                           <p className="font-semibold">{s.name}</p>
-                          <p className="text-[13px] text-muted">Class {s.className}</p>
+                          <p className="text-label text-muted">Class {s.className}</p>
                         </div>
                       </div>
                     </td>
@@ -101,7 +101,7 @@ function Inner() {
                     <td className="px-5 py-3 text-right">
                       {s.studentStatus === "awaiting_consent" && !below && (
                         sent.includes(s.id) ? (
-                          <span className="text-[13px] font-semibold text-success">Sent</span>
+                          <span className="text-label font-semibold text-success">Sent</span>
                         ) : (
                           <Button size="sm" variant="secondary" onClick={() => send([s.id])}>
                             Send reminder
@@ -116,7 +116,7 @@ function Inner() {
           </table>
         </div>
       </Card>
-      <p className="mt-3 text-[13px] text-muted">Staff can see consent status but can never give consent on a parent&apos;s behalf.</p>
+      <p className="mt-3 text-label text-muted">Staff can see consent status but can never give consent on a parent&apos;s behalf.</p>
     </>
   );
 }

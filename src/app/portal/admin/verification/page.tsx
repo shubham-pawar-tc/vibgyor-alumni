@@ -47,7 +47,7 @@ function Inner() {
   return (
     <>
       <PageHeader
-        eyebrow={<div className="flex gap-1.5"><Req ids="A2" /> <Req ids="CS-9" /> <Req ids="§5.2" /></div>}
+        eyebrow={<div className="flex gap-2"><Req ids="A2" /> <Req ids="CS-9" /> <Req ids="§5.2" /></div>}
         title="Verification"
         description={`Alumni who couldn't be matched to school records automatically, and badge requests${group ? " across all campuses" : ` for ${campusName(me?.campusIds[0])}`}.`}
       />
@@ -75,11 +75,11 @@ function Inner() {
             <Card className="overflow-hidden">
               <div className="divide-y divide-border">
                 {queue.map((v) => (
-                  <button key={v.id} onClick={() => setSelId(v.id)} className={cn("flex w-full items-center gap-3 px-4 py-3.5 text-left hover:bg-surface-2/70", sel?.id === v.id && "bg-primary-soft/60")}>
+                  <button key={v.id} onClick={() => setSelId(v.id)} className={cn("flex w-full items-center gap-3 px-4 py-4 text-left hover:bg-surface-2/70", sel?.id === v.id && "bg-primary-soft/60")}>
                     <Avatar name={v.name} size={38} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14.5px] font-semibold">{v.name}</p>
-                      <p className="truncate text-[13px] text-muted">
+                      <p className="truncate text-body font-semibold">{v.name}</p>
+                      <p className="truncate text-label text-muted">
                         Batch {v.passYear} · {campusName(v.campusId).split(",")[0]} · {timeAgo(v.submittedAt)}
                       </p>
                     </div>
@@ -97,9 +97,9 @@ function Inner() {
                   action={statusPill[sel.status]}
                 />
                 <div className="p-5">
-                  <p className="mb-3 text-[14px] font-semibold">Submitted details vs school record (ERP)</p>
+                  <p className="mb-3 text-sm font-semibold">Submitted details vs school record (ERP)</p>
                   <div className="overflow-hidden rounded-xl border border-border">
-                    <div className="grid grid-cols-[1fr_1fr_1fr_36px] gap-2 bg-surface-2 px-4 py-2.5 text-[12.5px] font-semibold uppercase tracking-wider text-muted">
+                    <div className="grid grid-cols-[1fr_1fr_1fr_36px] gap-2 bg-surface-2 px-4 py-3 text-label font-semibold uppercase tracking-[0.08em] text-muted">
                       <span>Field</span>
                       <span>Submitted</span>
                       <span>School record</span>
@@ -111,7 +111,7 @@ function Inner() {
                       { f: "Pass year", a: String(sel.passYear), b: sel.closestRecord?.passYear?.toString(), m: sel.fieldChecks?.passYear },
                       { f: "Admission no.", a: sel.admissionNo, b: sel.closestRecord?.admissionNo, m: sel.fieldChecks?.admissionNo },
                     ].map((r) => (
-                      <div key={r.f} className="grid grid-cols-[1fr_1fr_1fr_36px] items-center gap-2 border-t border-border px-4 py-3 text-[14px]">
+                      <div key={r.f} className="grid grid-cols-[1fr_1fr_1fr_36px] items-center gap-2 border-t border-border px-4 py-3 text-sm">
                         <span className="text-muted">{r.f}</span>
                         <span className="break-words font-medium">{r.a}</span>
                         <span className={cn("break-words font-medium", !r.b && "text-muted")}>{r.b ?? "—"}</span>
@@ -129,14 +129,14 @@ function Inner() {
                   <div className="mt-5 rounded-xl border border-border p-4">
                     <div className="flex items-center gap-2">
                       <HeartHandshake className="h-4 w-4 text-primary" />
-                      <p className="text-[14px] font-semibold">Peer vouches · {sel.vouches.length} of 2</p>
+                      <p className="text-sm font-semibold">Peer vouches · {sel.vouches.length} of 2</p>
                     </div>
                     {sel.vouches.length === 0 ? (
-                      <p className="mt-1.5 text-[14px] text-muted">No vouches yet.</p>
+                      <p className="mt-2 text-sm text-muted">No vouches yet.</p>
                     ) : (
                       <ul className="mt-2 space-y-1">
                         {sel.vouches.map((x) => (
-                          <li key={x.by} className="text-[14px]">
+                          <li key={x.by} className="text-sm">
                             ✓ {x.byName} <span className="text-muted">· {timeAgo(x.at)}</span>
                           </li>
                         ))}
@@ -186,16 +186,16 @@ function Inner() {
                           <Pill tone="primary">{b.badge === "ServiceProvider" ? "Service provider" : b.badge}</Pill>
                           {b.status !== "pending" && <Pill tone={b.status === "approved" ? "success" : "danger"}>{b.status}</Pill>}
                         </div>
-                        <p className="text-[13.5px] text-muted">
+                        <p className="text-sm text-muted">
                           Batch {u.batch} · {u.title ? `${u.title}, ${u.company}` : campusName(u.campusIds[0])}
                         </p>
                         {b.badge === "ServiceProvider" && u.listing && (
-                          <p className="mt-1 text-[13.5px]">
+                          <p className="mt-1 text-sm">
                             <b>{u.listing.business}</b> · {u.listing.category} · {u.listing.city}: {u.listing.description}
                           </p>
                         )}
-                        {b.motivation && <p className="mt-1.5 text-[14px]">&ldquo;{b.motivation}&rdquo;</p>}
-                        <p className="mt-1.5 flex items-center gap-1 text-[13px] text-success">
+                        {b.motivation && <p className="mt-2 text-sm">&ldquo;{b.motivation}&rdquo;</p>}
+                        <p className="mt-2 flex items-center gap-1 text-label text-success">
                           <CheckCircle2 className="h-3.5 w-3.5" /> Safeguarding code accepted {formatDateTime(b.codeAcceptedAt)}
                         </p>
                       </div>
@@ -220,9 +220,9 @@ function Inner() {
       {tab === "decided" && (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-[14px]">
+            <table className="w-full min-w-[640px] text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-[13px] text-muted">
+                <tr className="border-b border-border text-left text-label text-muted">
                   <th className="px-5 py-3 font-semibold">Alumnus</th>
                   <th className="px-3 py-3 font-semibold">Campus · batch</th>
                   <th className="px-3 py-3 font-semibold">Outcome</th>

@@ -71,7 +71,7 @@ function Mcz() {
         ) : (
           <Card className="divide-y divide-border">
             {bookings.map((b) => (
-              <div key={b.id} className="flex flex-wrap items-center gap-3 px-5 py-4 text-[14px]">
+              <div key={b.id} className="flex flex-wrap items-center gap-3 px-5 py-4 text-sm">
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">
                     {name(b.studentId)} <span className="font-normal text-muted">· {b.topic}</span>
@@ -111,7 +111,7 @@ function Mcz() {
         ) : (
           <Card className="divide-y divide-border">
             {students.map((u) => (
-              <div key={u.id} className="flex items-center gap-3 px-5 py-3.5 text-[14px]">
+              <div key={u.id} className="flex items-center gap-3 px-5 py-4 text-sm">
                 <Avatar name={u.name} size={32} />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{u.name}</p>
@@ -134,7 +134,7 @@ function Mcz() {
           </Callout>
           <Card className="divide-y divide-border">
             {guides.map((u) => (
-              <div key={u.id} className="flex items-center gap-3 px-5 py-3.5 text-[14px]">
+              <div key={u.id} className="flex items-center gap-3 px-5 py-4 text-sm">
                 <Avatar name={u.name} size={32} />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{u.name}</p>
@@ -162,7 +162,7 @@ function Mcz() {
           ) : (
             <Card className="divide-y divide-border">
               {webinars.map((e) => (
-                <div key={e.id} className="flex items-center justify-between px-5 py-3.5 text-[14px]">
+                <div key={e.id} className="flex items-center justify-between px-5 py-4 text-sm">
                   <span>
                     <b>{e.title}</b> <span className="text-muted">· {formatDateTime(e.start)}</span>
                   </span>
@@ -181,13 +181,13 @@ function Mcz() {
           <Stat label="Requested" value={bookings.filter((b) => b.status !== "referred").length} tone="warning" />
           <Stat label="Confirmed or done" value={bookings.filter((b) => b.status === "confirmed" || b.status === "done").length} tone="success" />
           <Stat label="My webinars" value={webinars.length} />
-          <p className="col-span-full text-[13px] text-muted">Only your own campuses and your own activity. No alumni or other counsellors&apos; data.</p>
+          <p className="col-span-full text-label text-muted">Only your own campuses and your own activity. No alumni or other counsellors&apos; data.</p>
         </div>
       )}
 
       <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing?.name ?? ""}>
         {viewing && (
-          <div className="space-y-2 text-[14px]">
+          <div className="space-y-2 text-sm">
             <p>
               Class {viewing.className} · {campusName(viewing.campusIds[0])}
             </p>
@@ -202,7 +202,7 @@ function Mcz() {
               <p className="text-muted">Not filled in yet.</p>
             )}
             {(viewing.interests ?? []).length > 0 && <p className="text-muted">Interests: {viewing.interests!.join(", ")}</p>}
-            <p className="pt-2 text-[12.5px] text-muted">This view was written to the audit log. Contact details are not shared with MyCareerZ.</p>
+            <p className="pt-2 text-label text-muted">This view was written to the audit log. Contact details are not shared with MyCareerZ.</p>
           </div>
         )}
       </Modal>
