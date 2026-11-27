@@ -182,7 +182,7 @@ interface Ctx {
   decideVerification: (id: string, decision: "approved" | "rejected" | "info_requested", actorId: string, note?: string) => void;
   vouch: (id: string, voucherId: string) => void;
   answerInfoRequest: (id: string, userId: string, reply: string, doc?: VerificationDoc) => void;
-  viewVerificationDoc: (reqId: string, docId: string, actorId: string) => void;
+  viewVerificationDoc: (reqId: string, docId: string, actorId: string, mode?: "view" | "download") => void;
   applyBadge: (userId: string, badge: BadgeType, motivation: string, listing?: BusinessListing) => void;
   // Annex B: badges
   appointChapterLead: (userId: string, groupId: string, actorId: string) => { ok: boolean; error?: string };
@@ -846,11 +846,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (doc)
           log({ actorId: userId, action: "Verification document uploaded", target: req.name, campusId: req.campusId, category: "verification", detail: `${doc.kind} · ${doc.name}` });
       },
-      viewVerificationDoc: (reqId, docId, actorId) => {
+      viewVerificationDoc: (reqId, docId, actorId, mode = "view") => {
         const req = stateRef.current.verifications.find((v) => v.id === reqId);
         const doc = req?.attachments?.find((d) => d.id === docId);
         if (!req || !doc) return;
-        log({ actorId, action: "Viewed verification document", target: req.name, campusId: req.campusId, category: "data_access", detail: `${doc.kind} · ${doc.name}` });
+        log({ actorId, action: mode === "download" ? "Downloaded verification document" : "Viewed verification document", target: req.name, campusId: req.campusId, category: "data_access", detail: `${doc.kind} · ${doc.name}` });
       },
       vouch: (id, voucherId) => {
         const req = stateRef.current.verifications.find((v) => v.id === id);

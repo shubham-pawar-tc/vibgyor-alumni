@@ -3,7 +3,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle, BadgeCheck, Check, CheckCircle2, Eye, FileText, GraduationCap, HeartHandshake, Inbox, Minus, Paperclip, X } from "lucide-react";
+import { AlertCircle, BadgeCheck, Check, CheckCircle2, Download, Eye, FileText, GraduationCap, HeartHandshake, Inbox, Minus, Paperclip, X } from "lucide-react";
 import { Avatar, Button, Callout, Card, CardHeader, Empty, Field, Modal, PageHeader, Pill, Req, Tabs, Textarea } from "@/components/ui";
 import { AdminOnly, NoPermission, useScope } from "@/components/admin";
 import { campusName } from "@/lib/data";
@@ -33,6 +33,15 @@ function MatchIcon({ m }: { m?: MatchField }) {
 function Inner() {
   const { me, state, decideVerification, decideBadge, viewVerificationDoc } = useStore();
   const [viewing, setViewing] = useState<VerificationDoc | null>(null);
+  const downloadDoc = (reqId: string, d: VerificationDoc) => {
+    viewVerificationDoc(reqId, d.id, me!.id, "download");
+    const a = document.createElement("a");
+    a.href = d.dataUrl;
+    a.download = d.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
   const canVerify = can(state, me, "verify");
   const { inScope, group } = useScope();
   const params = useSearchParams();
@@ -161,10 +170,13 @@ function Inner() {
                             >
                               <Eye className="h-4 w-4" /> View
                             </Button>
+                            <Button size="sm" variant="secondary" onClick={() => downloadDoc(sel.id, d)} aria-label={`Download ${d.kind}`}>
+                              <Download className="h-4 w-4" /> Download
+                            </Button>
                           </li>
                         ))}
                       </ul>
-                      <p className="mt-2 text-label text-muted">Opening a document is recorded in the audit log.</p>
+                      <p className="mt-2 text-label text-muted">Viewing or downloading a document is recorded in the audit log.</p>
                     </div>
                   )}
 
@@ -318,7 +330,24 @@ function Inner() {
           <Textarea id="note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder={action === "rejected" ? "e.g. No record of this name in the 2015 batch." : "e.g. Please upload your school leaving certificate."} />
         </Field>
       </Modal>
-      <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing ? `${viewing.kind} · ${viewing.name}` : ""} wide>
+      <Modal
+        open={!!viewing}
+        onClose={() => setViewing(null)}
+        title={viewing ? `${viewing.kind} · ${viewing.name}` : ""}
+        wide
+        footer={
+          viewing && sel ? (
+            <>
+              <Button variant="ghost" onClick={() => setViewing(null)}>
+                Close
+              </Button>
+              <Button onClick={() => downloadDoc(sel.id, viewing)}>
+                <Download className="h-4 w-4" /> Download
+              </Button>
+            </>
+          ) : undefined
+        }
+      >
         {viewing &&
           (viewing.type === "image/jpeg" ? (
             <img src={viewing.dataUrl} alt={viewing.kind} className="mx-auto max-h-[70vh] w-auto rounded-lg border border-border" />
