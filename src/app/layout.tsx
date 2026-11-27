@@ -23,6 +23,11 @@ export const viewport: Viewport = {
   ],
 };
 
+/* After a redeploy, a tab that was already open may try a full reload of the next page.
+   Next.js (static export) then opens the page's data file (…/index.txt?_rsc=…) instead of the page.
+   Catch that navigation and load the real page instead. */
+const staleTabGuard = `try{if(window.navigation){navigation.addEventListener('navigate',function(e){try{var u=new URL(e.destination.url);if(u.origin===location.origin&&/\\/index\\.txt$/.test(u.pathname)&&e.cancelable){e.preventDefault();location.assign(u.pathname.replace(/index\\.txt$/,'')+u.hash)}}catch(_){}})}}catch(_){}`;
+
 const themeScript = `try{var t=localStorage.getItem('vaa-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -30,6 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: staleTabGuard }} />
       </head>
       <body className={`${inter.variable} ${manrope.variable} antialiased`}>
         <MotionProvider>
