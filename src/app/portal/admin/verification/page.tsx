@@ -1,13 +1,15 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- document previews are local data URLs */
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertCircle, BadgeCheck, Check, CheckCircle2, GraduationCap, HeartHandshake, Inbox, Minus, X } from "lucide-react";
+import { AlertCircle, BadgeCheck, Check, CheckCircle2, Eye, FileText, GraduationCap, HeartHandshake, Inbox, Minus, Paperclip, X } from "lucide-react";
 import { Avatar, Button, Callout, Card, CardHeader, Empty, Field, Modal, PageHeader, Pill, Req, Tabs, Textarea } from "@/components/ui";
 import { AdminOnly, NoPermission, useScope } from "@/components/admin";
 import { campusName } from "@/lib/data";
 import { can, useStore } from "@/lib/store";
-import type { MatchField, VerificationRequest } from "@/lib/types";
+import type { MatchField, VerificationDoc, VerificationRequest } from "@/lib/types";
+import { fileSize } from "@/lib/files";
 import { cn, formatDateTime, timeAgo } from "@/lib/utils";
 
 type Tab = "queue" | "badges" | "decided";
@@ -29,7 +31,8 @@ function MatchIcon({ m }: { m?: MatchField }) {
 }
 
 function Inner() {
-  const { me, state, decideVerification, decideBadge } = useStore();
+  const { me, state, decideVerification, decideBadge, viewVerificationDoc } = useStore();
+  const [viewing, setViewing] = useState<VerificationDoc | null>(null);
   const canVerify = can(state, me, "verify");
   const { inScope, group } = useScope();
   const params = useSearchParams();
@@ -124,6 +127,45 @@ function Inner() {
                     <Callout tone="warning" className="mt-4">
                       Admission numbers differ only by digit order, which usually means a typo. Name, campus and pass year match.
                     </Callout>
+                  )}
+
+                  {(sel.attachments?.length ?? 0) > 0 && (
+                    <div className="mt-5 rounded-xl border border-border p-4">
+                      <div className="flex items-center gap-2">
+                        <Paperclip className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold">Documents from the alumnus · {sel.attachments!.length}</p>
+                      </div>
+                      <ul className="mt-3 space-y-2">
+                        {sel.attachments!.map((d) => (
+                          <li key={d.id} className="flex items-center gap-3 rounded-lg bg-surface-2/60 p-2.5">
+                            {d.type === "image/jpeg" ? (
+                              <img src={d.dataUrl} alt="" className="h-11 w-11 shrink-0 rounded-md border border-border object-cover" />
+                            ) : (
+                              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-border bg-surface">
+                                <FileText className="h-5 w-5 text-danger" />
+                              </span>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold">{d.kind}</p>
+                              <p className="truncate text-label text-muted">
+                                {d.name} · {fileSize(d.size)} · {timeAgo(d.at)}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                viewVerificationDoc(sel.id, d.id, me!.id);
+                                setViewing(d);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" /> View
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-2 text-label text-muted">Opening a document is recorded in the audit log.</p>
+                    </div>
                   )}
 
                   <div className="mt-5 rounded-xl border border-border p-4">
@@ -275,6 +317,14 @@ function Inner() {
         <Field label={action === "rejected" ? "Reason (sent to the applicant)" : "What do you need?"} htmlFor="note">
           <Textarea id="note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder={action === "rejected" ? "e.g. No record of this name in the 2015 batch." : "e.g. Please upload your school leaving certificate."} />
         </Field>
+      </Modal>
+      <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing ? `${viewing.kind} · ${viewing.name}` : ""} wide>
+        {viewing &&
+          (viewing.type === "image/jpeg" ? (
+            <img src={viewing.dataUrl} alt={viewing.kind} className="mx-auto max-h-[70vh] w-auto rounded-lg border border-border" />
+          ) : (
+            <iframe src={viewing.dataUrl} title={viewing.kind} className="h-[70vh] w-full rounded-lg border border-border" />
+          ))}
       </Modal>
     </>
   );

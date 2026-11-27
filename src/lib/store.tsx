@@ -28,6 +28,7 @@ import type {
   State,
   User,
   VerificationRequest,
+  VerificationDoc,
 } from "./types";
 import { childTag, firstName, maskMobile, uid } from "./utils";
 import { check } from "./validate";
@@ -180,7 +181,8 @@ interface Ctx {
   submitVerification: (input: VerificationInput) => VerificationResult;
   decideVerification: (id: string, decision: "approved" | "rejected" | "info_requested", actorId: string, note?: string) => void;
   vouch: (id: string, voucherId: string) => void;
-  answerInfoRequest: (id: string, userId: string, reply: string) => void;
+  answerInfoRequest: (id: string, userId: string, reply: string, doc?: VerificationDoc) => void;
+  viewVerificationDoc: (reqId: string, docId: string, actorId: string) => void;
   applyBadge: (userId: string, badge: BadgeType, motivation: string, listing?: BusinessListing) => void;
   // Annex B: badges
   appointChapterLead: (userId: string, groupId: string, actorId: string) => { ok: boolean; error?: string };
@@ -824,19 +826,31 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               ? `Good news ${firstName(req.name)}: your VIBGYOR alumni profile is verified. Welcome back!`
               : decision === "rejected"
                 ? `Hi ${firstName(req.name)}, we couldn't verify your alumni profile. Reason: ${note || "details didn't match school records"}.`
-                : `Hi ${firstName(req.name)}, your campus alumni office needs a little more information to verify you: ${note || "please upload a school ID or leaving certificate"}.`,
+                : `Hi ${firstName(req.name)}, your campus alumni office needs a little more information to verify you: ${note || "please upload a school ID or leaving certificate"}. You can reply and attach it from your VIBGYOR alumni home page.`,
         });
       },
-      answerInfoRequest: (id, userId, reply) => {
+      answerInfoRequest: (id, userId, reply, doc) => {
         const req = stateRef.current.verifications.find((v) => v.id === id);
-        if (!req || req.userId !== userId || req.status !== "info_requested" || !reply.trim()) return;
+        const text = reply.trim();
+        if (!req || req.userId !== userId || req.status !== "info_requested" || (!text && !doc)) return;
+        const parts = [text, doc ? `📎 ${doc.kind} attached` : ""].filter(Boolean).join(" · ");
         setState((s) => ({
           ...s,
           verifications: s.verifications.map((v) =>
-            v.id === id ? { ...v, status: "pending", note: `Alumnus replied: ${reply.trim()}`, decidedBy: undefined, decidedAt: undefined } : v
+            v.id === id
+              ? { ...v, status: "pending", note: `Alumnus replied: ${parts}`, decidedBy: undefined, decidedAt: undefined, attachments: doc ? [...(v.attachments ?? []), doc] : v.attachments }
+              : v
           ),
         }));
-        log({ actorId: userId, action: "Replied to verification info request", target: req.name, campusId: req.campusId, category: "verification", detail: reply.trim().slice(0, 120) });
+        log({ actorId: userId, action: "Replied to verification info request", target: req.name, campusId: req.campusId, category: "verification", detail: parts.slice(0, 120) });
+        if (doc)
+          log({ actorId: userId, action: "Verification document uploaded", target: req.name, campusId: req.campusId, category: "verification", detail: `${doc.kind} · ${doc.name}` });
+      },
+      viewVerificationDoc: (reqId, docId, actorId) => {
+        const req = stateRef.current.verifications.find((v) => v.id === reqId);
+        const doc = req?.attachments?.find((d) => d.id === docId);
+        if (!req || !doc) return;
+        log({ actorId, action: "Viewed verification document", target: req.name, campusId: req.campusId, category: "data_access", detail: `${doc.kind} · ${doc.name}` });
       },
       vouch: (id, voucherId) => {
         const req = stateRef.current.verifications.find((v) => v.id === id);

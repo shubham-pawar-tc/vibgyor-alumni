@@ -32,6 +32,7 @@ import { activeBadge, belowAgeGate, hasConsent, latestConsent, useStore } from "
 import type { ConsentPurpose, User } from "@/lib/types";
 import { cn, firstName, fmt, formatDate, timeAgo } from "@/lib/utils";
 import { completeness, groupsFor } from "@/lib/community";
+import { DocUpload } from "./DocUpload";
 import { Avatar, Button, Callout, Card, CardHeader, PageHeader, Pill, Req, Stat } from "./ui";
 
 /* ================================ Student ================================ */
@@ -446,7 +447,6 @@ export function AlumniHome({ me }: { me: User }) {
 
 export function PendingAlumniHome({ me }: { me: User }) {
   const { state, answerInfoRequest } = useStore();
-  const [reply, setReply] = useState("");
   const req = [...state.verifications].reverse().find((v) => v.userId === me.id);
   const vouches = req?.vouches.length ?? 0;
 
@@ -473,21 +473,10 @@ export function PendingAlumniHome({ me }: { me: User }) {
         <Card className="p-6">
           <p className="font-semibold">They asked</p>
           <p className="mt-1 rounded-xl bg-surface-2 px-4 py-3 text-body">{req.note || "Please share a school ID or leaving certificate."}</p>
-          <label htmlFor="info-reply" className="mt-5 block font-semibold">
-            Your reply
-          </label>
-          <textarea
-            id="info-reply"
-            rows={3}
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            placeholder="e.g. My admission number was VG-MAL-2006-0112. I've emailed a photo of my leaving certificate."
-            className="mt-2 w-full rounded-xl border border-border bg-surface px-4 py-3 text-body outline-none focus:border-primary"
+          <DocUpload
+            onSend={(reply, doc) => answerInfoRequest(req.id, me.id, reply, doc)}
+            previous={req.attachments ?? []}
           />
-          <Button className="mt-3" disabled={!reply.trim()} onClick={() => { answerInfoRequest(req.id, me.id, reply); setReply(""); }}>
-            Send to the alumni office
-          </Button>
-          <p className="mt-2 text-label text-muted">Your request goes back into the review queue. Vouching pauses until then.</p>
         </Card>
       </div>
     );

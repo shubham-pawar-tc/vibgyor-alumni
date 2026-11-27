@@ -283,6 +283,18 @@ export interface VerificationRequest {
   decidedBy?: string;
   decidedAt?: string;
   note?: string;
+  /** Supporting documents the alumnus uploaded when the campus asked for more info. */
+  attachments?: VerificationDoc[];
+}
+
+export interface VerificationDoc {
+  id: string;
+  kind: string;
+  name: string;
+  type: "application/pdf" | "image/jpeg";
+  size: number;
+  dataUrl: string;
+  at: string;
 }
 
 export interface BadgeRequest {

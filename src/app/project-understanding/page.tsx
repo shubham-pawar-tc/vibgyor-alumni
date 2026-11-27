@@ -297,7 +297,7 @@ const ruleGroups: { title: string; emoji: EmojiName; rules: string[] }[] = [
     rules: [
       "A claimed old-portal profile that was verified stays verified.",
       "Pass year + admission number match (name not different) → verified instantly.",
-      "Partial match → Pending. Campus Admin approves, asks for info or rejects with a reason.",
+      "Partial match → Pending. Campus Admin approves, rejects with a reason, or asks for info — the alumnus replies and can attach a document (school ID, leaving certificate, mark sheet).",
       "Two verified batchmates from the same campus and batch can vouch → verified.",
     ],
   },
@@ -427,7 +427,8 @@ const flows: Flow[] = [
       "Visitor opens Join: claim an old-portal profile or sign up fresh.",
       "Email OTP confirms it's them.",
       "Pass year + admission number match school records → Verified instantly.",
-      "Partial match → Pending: Meera compares side by side and approves, asks for info or rejects.",
+      "Partial match → Pending: Meera compares side by side and approves, rejects, or asks for info.",
+      "If asked, the alumnus replies from their home page and attaches a document; Meera views it (logged) and decides.",
       "Older batches: two verified batchmates vouch (Rohan can vouch for 2006).",
     ],
   },
