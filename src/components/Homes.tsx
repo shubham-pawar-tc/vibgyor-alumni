@@ -729,7 +729,7 @@ const roleFeatures: Record<string, { summary: string; items: { label: string; hr
     summary: "Teachers and counsellors guide students and log alumni contact for their campus.",
     items: [
       { label: "Student internship interest", href: "/portal/teacher/interest" },
-      { label: "Refer students to MyCareerZ", href: "/portal/teacher/interest" },
+      { label: "Refer students to MyCareerZ", href: "/portal/teacher/refer" },
       { label: "Engagement log", href: "/portal/admin/engagement" },
       { label: "3C view and mentor match suggestions" },
     ],

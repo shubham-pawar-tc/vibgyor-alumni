@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Compass } from "lucide-react";
 import { Gate } from "@/components/Gate";
 import { Avatar, Button, Card, Empty, Modal, PageHeader, Pill, Req, Select, Tabs, Textarea } from "@/components/ui";
 import { campusName } from "@/lib/data";
@@ -21,9 +20,7 @@ export default function TeacherInterestPage() {
 }
 
 function Inbox() {
-  const { me, state, setInterestStatus, referToMcz } = useStore();
-  const [ref, setRef] = useState<{ studentId: string; topic: string; note: string } | null>(null);
-  const [refMsg, setRefMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const { me, state, setInterestStatus } = useStore();
   const [tab, setTab] = useState<"open" | "done">("open");
   const [edit, setEdit] = useState<{ jobId: string; studentId: string } | null>(null);
   const [status, setStatus] = useState<InterestStatus>("checking");
@@ -48,11 +45,6 @@ function Inbox() {
         eyebrow={<Req ids="E5 · CS-3" />}
         title="Student interest"
         description={`Students at ${campusName(me.campusIds[0])} who pressed "I'm interested" on an internship. Check with the parent before passing anything on.`}
-        actions={
-          <Button variant="secondary" onClick={() => { setRef({ studentId: "", topic: "", note: "" }); setRefMsg(null); }}>
-            <Compass className="h-4 w-4" /> Refer to MyCareerZ
-          </Button>
-        }
       />
       <div className="mb-5">
         <Tabs
@@ -109,54 +101,6 @@ function Inbox() {
           })}
         </div>
       )}
-
-      <Modal
-        open={!!ref}
-        onClose={() => setRef(null)}
-        title="Refer a student to MyCareerZ"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setRef(null)}>
-              Close
-            </Button>
-            <Button
-              disabled={!ref?.studentId}
-              onClick={() => {
-                if (!ref) return;
-                const r = referToMcz(ref.studentId, me.id, ref.topic, ref.note);
-                setRefMsg(r.ok ? { ok: true, text: "Referred. MyCareerZ will contact the parent to book." } : { ok: false, text: r.error ?? "" });
-              }}
-            >
-              Refer
-            </Button>
-          </>
-        }
-      >
-        {ref && (
-          <div className="space-y-3">
-            <Select value={ref.studentId} onChange={(e) => { setRef({ ...ref, studentId: e.target.value }); setRefMsg(null); }} aria-label="Student">
-              <option value="">Choose a student…</option>
-              {state.users
-                .filter((u) => u.role === "STU" && u.studentStatus === "active" && me.campusIds.includes(u.campusIds[0]))
-                .map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} · Class {u.className} {hasConsent(state, u.id, "mcz") ? "" : "· no MyCareerZ consent"}
-                  </option>
-                ))}
-            </Select>
-            <Select value={ref.topic} onChange={(e) => setRef({ ...ref, topic: e.target.value })} aria-label="Topic">
-              <option value="">Topic…</option>
-              <option>University shortlist (abroad)</option>
-              <option>Colleges in India</option>
-              <option>Choosing a stream</option>
-              <option>Entrance exam planning</option>
-            </Select>
-            <Textarea rows={2} value={ref.note} onChange={(e) => setRef({ ...ref, note: e.target.value })} placeholder="Note for the counsellor (optional)" aria-label="Note" />
-            <p className="text-label text-muted">Only students whose parent switched on MyCareerZ sharing can be referred.</p>
-            {refMsg && <p className={`text-sm font-semibold ${refMsg.ok ? "text-success" : "text-danger"}`}>{refMsg.text}</p>}
-          </div>
-        )}
-      </Modal>
 
       <Modal
         open={!!cur}

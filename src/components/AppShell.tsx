@@ -150,6 +150,7 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
       return [
         home,
         { href: "/portal/teacher/interest", label: "Student interest", icon: Briefcase },
+        { href: "/portal/teacher/refer", label: "Refer to MyCareerZ", icon: Compass },
         { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen },
       ];
     case "FIN":

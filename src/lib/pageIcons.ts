@@ -62,6 +62,7 @@ const map: [string, LucideIcon, string][] = [
   ["/portal/give", HandCoins, R],
   ["/portal/documents", FileText, B],
   ["/portal/teacher/interest", Briefcase, O],
+  ["/portal/teacher/refer", Compass, V],
   ["/portal/admin/permissions", KeyRound, Y],
   ["/portal/admin/settings", Settings, V],
   ["/portal/profile", UserRound, B],
