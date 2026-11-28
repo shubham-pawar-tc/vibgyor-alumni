@@ -1,6 +1,6 @@
 # VIBGYOR Alumni Platform: MyCareerZ Counsellor Flow
 
-> Role code **MCZ**. Built from the prototype source (`src/app/portal/mcz/page.tsx`, `app/portal/careers/page.tsx`, `app/portal/teacher/interest/page.tsx`, `lib/store.tsx` → `bookMcz`, `referToMcz`, `updateBooking`, `logView`). Demo persona: **Aditya Bhatt (`mcz1`)**, MyCareerZ · Malad, Goregaon West, Goregaon East. See also [PARENT-FLOW.md](PARENT-FLOW.md).
+> Role code **MCZ**. Built from the prototype source (`src/app/portal/mcz/page.tsx`, `app/portal/careers/page.tsx`, `app/portal/teacher/refer/page.tsx`, `lib/store.tsx` → `bookMcz`, `referToMcz`, `updateBooking`, `logView`). Demo persona: **Aditya Bhatt (`mcz1`)**, MyCareerZ · Malad, Goregaon West, Goregaon East. See also [PARENT-FLOW.md](PARENT-FLOW.md).
 
 ---
 
@@ -31,7 +31,7 @@ flowchart TD
     P([Parent: Consent centre → MyCareerZ ON]) --> S{Route in}
     S -->|Parent| B1[MyCareerZ → Book and pay ₹2,500]
     S -->|Student| B2[MyCareerZ → Request a session<br/>needs consent · cond. 17]
-    S -->|Teacher| B3[Student interest → Refer to MyCareerZ<br/>needs consent · cond. 18]
+    S -->|Teacher| B3[Refer to MyCareerZ page<br/>needs consent · cond. 18]
     B1 & B2 --> R[Booking: Requested<br/>MCZ emailed]
     B3 --> RF[Booking: Referred by teacher]
     R & RF --> C[MCZ: Confirm a time → parent WhatsApp]
@@ -47,9 +47,20 @@ flowchart TD
 |---|---|
 | Bookings | Referred and requested sessions, who booked or referred, paid or not, teacher's note |
 | Consented students | Name, class, campus → *Open* shows 3C choices and interests (logged). No contact details |
-| Alumni guides | Opted-in alumni with course · college · country |
+| Alumni guides | Opted-in alumni with course · college · country. Filter by country and university, search by course. **Introduce** asks the guide's campus alumni office to connect them (optionally for one consented student) |
 | Webinars | Create a webinar with a meeting link; appears in students' and parents' Events with *Join now* |
 | My funnel | Consented → referred → requested → confirmed/done, own data only |
+
+## 3a. Alumni guide introductions (F6 · MCZ-10)
+
+```mermaid
+flowchart LR
+    A[MCZ: Alumni guides → Introduce<br/>reason + optional student] --> B[Guide's Campus Admin emailed<br/>Queue: Guide introductions]
+    B -->|Introduce| C[Counsellor + alumnus emailed<br/>Engagement log entry · Mentoring]
+    B -->|Decline with reason| D[Counsellor emailed<br/>alumnus not contacted]
+```
+
+The counsellor never receives alumni contact details from the platform; the alumni office checks with the alumnus first. The guide is not told the student's name. If the alumnus switches off being a guide, *Introduce* is blocked.
 
 ## 4. Demo script
 
@@ -57,7 +68,8 @@ flowchart TD
 2. Confirm Zara's time → WhatsApp to Zara's parent (Farhan Sheikh) appears in the device simulator.
 3. Consented students → *Open* Ishita → Audit log shows the view.
 4. As **Mrs. Fernandes** (teacher): *Refer to MyCareerZ* a student without consent → refused with the reason.
-5. As **Lakshmi Iyer** (parent, `par2`): MyCareerZ → switched off → Consent centre → switch on → book.
+5. Alumni guides → filter *United Kingdom* → *Introduce* Priya Sharma for Ishita. Switch to the Malad Campus Admin → *Guide introductions* → *Introduce* → the counsellor and Priya get emails; Engagement log shows the entry.
+6. As **Lakshmi Iyer** (parent, `par2`): MyCareerZ → switched off → Consent centre → switch on → book.
 
 ## 5. Open questions
 

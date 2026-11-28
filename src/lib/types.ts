@@ -382,6 +382,8 @@ export interface State {
   payments: Payment[];
   docRequests: DocRequest[];
   bookings: Booking[];
+  /** F6 / MCZ-10: counsellor asks the guide's campus alumni office for an introduction. */
+  guideIntros: GuideIntro[];
   /** Chapter Lead announcements per group per month (set by GAO). */
   chapterMonthlyLimit: number;
   dataRequests: DataRequest[];
@@ -484,6 +486,24 @@ export interface DocRequest {
   paymentId?: string;
   handledBy?: string;
   note?: string;
+}
+
+/** F6: a MyCareerZ counsellor asks the alumni office to introduce an opted-in alumni guide. */
+export interface GuideIntro {
+  id: string;
+  guideId: string;
+  counsellorId: string;
+  /** Optional consented student the intro is for. */
+  studentId?: string;
+  /** The guide's campus: its alumni office handles the request. */
+  campusId: string;
+  reason: string;
+  status: "requested" | "introduced" | "declined";
+  at: string;
+  handledBy?: string;
+  handledAt?: string;
+  /** Office's note back to the counsellor. */
+  reply?: string;
 }
 
 export interface Booking {

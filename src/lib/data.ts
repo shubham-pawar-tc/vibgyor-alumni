@@ -545,6 +545,11 @@ seedUsers.push({
     dn.donorWall = true;
     dn.mczGuide = true;
   }
+  /* F6: opted-in MyCareerZ alumni guides across countries */
+  for (const id of ["alu2", "alu6", "alu8", "alu9", "aluX3"]) {
+    const g = seedUsers.find((u) => u.id === id);
+    if (g) g.mczGuide = true;
+  }
 }
 
 export const seedPayments: Payment[] = [
@@ -1554,7 +1559,7 @@ export const seedPermissions: Record<Capability, Role[]> = {
   "mcz.students": ["MCZ"],
 };
 
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 
 export function createSeedState(): State {
   return {
@@ -1608,6 +1613,7 @@ export function createSeedState(): State {
     payments: structuredClone(seedPayments),
     docRequests: structuredClone(seedDocRequests),
     bookings: structuredClone(seedBookings),
+    guideIntros: [],
     chapterMonthlyLimit: 4,
   };
 }

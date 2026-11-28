@@ -2,14 +2,14 @@
 
 import { check, clean, whenFilled } from "@/lib/validate";
 import { useState } from "react";
-import { Eye, Plus } from "lucide-react";
+import { Eye, Handshake, Plus, Search, X } from "lucide-react";
 import { Gate } from "@/components/Gate";
 import { NoPermission } from "@/components/admin";
-import { Avatar, Button, Callout, Card, Empty, FieldError, Input, Modal, PageHeader, Pill, Req, Stat, Tabs } from "@/components/ui";
+import { Avatar, Button, Callout, Card, Empty, Field, FieldError, Input, Modal, PageHeader, Pill, Req, Select, Stat, Tabs, Textarea } from "@/components/ui";
 import { campusName } from "@/lib/data";
 import { bookingStatus } from "@/lib/labels";
 import { can, hasConsent, useStore } from "@/lib/store";
-import type { Booking, User } from "@/lib/types";
+import type { Booking, GuideIntro, User } from "@/lib/types";
 import { formatDateTime, timeAgo } from "@/lib/utils";
 
 const future = (v: string) => (v && new Date(v).getTime() < Date.now() ? "Pick a time in the future" : "");
@@ -127,26 +127,7 @@ function Mcz() {
           </Card>
         ))}
 
-      {tab === "guides" && (
-        <>
-          <Callout tone="info" className="mb-4">
-            Only alumni who opted in as MyCareerZ guides are listed, with their study path. Contact them through the campus alumni office.
-          </Callout>
-          <Card className="divide-y divide-border">
-            {guides.map((u) => (
-              <div key={u.id} className="flex items-center gap-3 px-5 py-4 text-sm">
-                <Avatar name={u.name} size={32} />
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{u.name}</p>
-                  <p className="text-muted">
-                    {[u.course, u.college, u.country].filter(Boolean).join(" · ")} · Batch {u.batch}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </Card>
-        </>
-      )}
+      {tab === "guides" && <GuidesTab guides={guides} students={students} />}
 
       {tab === "webinars" && (
         <>
@@ -275,6 +256,171 @@ function Mcz() {
           <Input placeholder="https://meet.google.com/abc-defg-hij" value={w.url} invalid={!!whenFilled(w.url, check.url(w.url))} onChange={(e) => setW({ ...w, url: clean.url(e.target.value) })} aria-label="Meeting link" />
           <FieldError error={whenFilled(w.url, check.url(w.url))} />
         </div>
+      </Modal>
+    </>
+  );
+}
+
+const introPill: Record<GuideIntro["status"], { label: string; tone: "warning" | "success" | "neutral" }> = {
+  requested: { label: "Intro requested", tone: "warning" },
+  introduced: { label: "Introduced", tone: "success" },
+  declined: { label: "Not possible", tone: "neutral" },
+};
+
+/** F6 / cond. 4: opted-in guides, filtered by country, university and course; intros go through the guide's campus alumni office. */
+function GuidesTab({ guides, students }: { guides: User[]; students: User[] }) {
+  const { me, state, requestGuideIntro } = useStore();
+  const [country, setCountry] = useState("");
+  const [college, setCollege] = useState("");
+  const [q, setQ] = useState("");
+  const [asking, setAsking] = useState<User | null>(null);
+  const [form, setForm] = useState({ studentId: "", reason: "" });
+  const [err, setErr] = useState("");
+  const [done, setDone] = useState("");
+  if (!me) return null;
+
+  const uniq = (xs: (string | undefined)[]) => [...new Set(xs.filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b));
+  const countries = uniq(guides.map((g) => g.country));
+  const colleges = uniq(guides.filter((g) => !country || g.country === country).map((g) => g.college));
+  const term = q.trim().toLowerCase();
+  const shown = guides
+    .filter((g) => (!country || g.country === country) && (!college || g.college === college))
+    .filter((g) => !term || [g.course, g.college, g.country, g.name].some((v) => v?.toLowerCase().includes(term)))
+    .sort((a, b) => (a.country ?? "").localeCompare(b.country ?? "") || a.name.localeCompare(b.name));
+  const intros = state.guideIntros.filter((x) => x.counsellorId === me.id);
+  const latest = (gid: string) => intros.find((x) => x.guideId === gid);
+  const nameOf = (id?: string) => state.users.find((u) => u.id === id)?.name;
+  const filtered = !!(country || college || term);
+
+  return (
+    <>
+      <Callout tone="info" className="mb-4">
+        Only alumni who opted in as MyCareerZ guides are listed, with their study path. You can&apos;t contact them directly: ask for an introduction and their campus alumni office connects you.
+      </Callout>
+
+      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_1fr_1.2fr_auto]">
+        <Select aria-label="Country" value={country} onChange={(e) => { setCountry(e.target.value); setCollege(""); }}>
+          <option value="">All countries</option>
+          {countries.map((c) => (
+            <option key={c} value={c}>
+              {c} ({guides.filter((g) => g.country === c).length})
+            </option>
+          ))}
+        </Select>
+        <Select aria-label="University" value={college} onChange={(e) => setCollege(e.target.value)}>
+          <option value="">All universities</option>
+          {colleges.map((c) => (
+            <option key={c}>{c}</option>
+          ))}
+        </Select>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <Input className="pl-9" aria-label="Search course" placeholder="Course, e.g. Computer Science" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+        {filtered && (
+          <Button variant="secondary" onClick={() => { setCountry(""); setCollege(""); setQ(""); }}>
+            <X className="h-4 w-4" /> Clear
+          </Button>
+        )}
+      </div>
+      <p className="mb-2 text-label text-muted">
+        {shown.length} of {guides.length} guide{guides.length === 1 ? "" : "s"}
+      </p>
+
+      {shown.length === 0 ? (
+        <Card>
+          <Empty title={guides.length ? "No guides match" : "No alumni guides yet"}>
+            {guides.length ? "Try another country or university, or clear the filters." : "Alumni appear here when they tick “Be a MyCareerZ alumni guide”."}
+          </Empty>
+        </Card>
+      ) : (
+        <Card className="divide-y divide-border">
+          {shown.map((u) => {
+            const r = latest(u.id);
+            return (
+              <div key={u.id} className="flex flex-wrap items-center gap-3 px-5 py-4 text-sm">
+                <Avatar name={u.name} size={32} />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">{u.name}</p>
+                  <p className="text-muted">
+                    {[u.course, u.college, u.country].filter(Boolean).join(" · ")} · Batch {u.batch}
+                  </p>
+                  {r && (
+                    <p className="mt-1 text-label text-muted">
+                      {r.studentId ? `For ${nameOf(r.studentId)} · ` : ""}
+                      {r.status === "requested" ? `asked ${timeAgo(r.at)}, waiting for ${campusName(r.campusId)} alumni office` : r.reply ? `“${r.reply}”` : `handled ${timeAgo(r.handledAt ?? r.at)}`}
+                    </p>
+                  )}
+                </div>
+                {r && <Pill tone={introPill[r.status].tone}>{introPill[r.status].label}</Pill>}
+                <Button size="sm" variant={r?.status === "requested" ? "secondary" : "primary"} onClick={() => { setAsking(u); setForm({ studentId: "", reason: "" }); setErr(""); setDone(""); }}>
+                  <Handshake className="h-4 w-4" /> {r ? "Ask again" : "Introduce"}
+                </Button>
+              </div>
+            );
+          })}
+        </Card>
+      )}
+
+      <Modal
+        open={!!asking}
+        onClose={() => setAsking(null)}
+        title={asking ? `Introduction to ${asking.name}` : ""}
+        footer={
+          done ? (
+            <Button onClick={() => setAsking(null)}>Done</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setAsking(null)}>
+                Cancel
+              </Button>
+              <Button
+                disabled={form.reason.trim().length < 10}
+                onClick={() => {
+                  if (!asking) return;
+                  const r = requestGuideIntro(asking.id, me.id, form.reason, form.studentId || undefined);
+                  if (r.ok) setDone(`Sent to the ${campusName(asking.campusIds[0])} alumni office. You'll get an email when they reply.`);
+                  else setErr(r.error ?? "");
+                }}
+              >
+                Send request
+              </Button>
+            </>
+          )
+        }
+      >
+        {asking &&
+          (done ? (
+            <Callout tone="success" title="Request sent">
+              {done}
+            </Callout>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted">
+                {[asking.course, asking.college, asking.country].filter(Boolean).join(" · ")}. The request goes to the {campusName(asking.campusIds[0])} alumni office, who check with {asking.name.split(" ")[0]} and connect you.
+              </p>
+              <Field label="For a student (optional)" htmlFor="gi-student" hint="Only your consented students. The alumni office sees the name; the guide isn't told it.">
+                <Select id="gi-student" value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })}>
+                  <option value="">General, not for one student</option>
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} · Class {s.className}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Why this guide?" htmlFor="gi-reason" hint="At least 10 characters. The alumni office and the guide will read this.">
+                <Textarea
+                  id="gi-reason"
+                  rows={3}
+                  value={form.reason}
+                  onChange={(e) => { setForm({ ...form, reason: e.target.value }); setErr(""); }}
+                  placeholder="e.g. Class 11 student set on CS in the UK; a 20-minute call about Imperial's admissions and life in London would help."
+                />
+              </Field>
+              {err && <p className="text-sm font-semibold text-danger">{err}</p>}
+            </div>
+          ))}
       </Modal>
     </>
   );

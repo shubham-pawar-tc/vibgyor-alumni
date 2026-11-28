@@ -5,6 +5,7 @@ import { campusName as campusNameFor, campuses as allCampuses, consentPurposes, 
 import { maskContacts } from "./mask";
 import type {
   Capability,
+  GuideIntro,
   DataRequest,
   EngagementEntry,
   MasterKind,
@@ -204,6 +205,8 @@ interface Ctx {
   bookMcz: (b: { studentId: string; bookedBy: string; topic: string; slot: string }) => { ok: boolean; error?: string };
   referToMcz: (studentId: string, teacherId: string, topic: string, note: string) => { ok: boolean; error?: string };
   updateBooking: (id: string, status: Booking["status"], actorId: string, slot?: string) => void;
+  requestGuideIntro: (guideId: string, counsellorId: string, reason: string, studentId?: string) => { ok: boolean; error?: string };
+  handleGuideIntro: (id: string, status: "introduced" | "declined", actorId: string, reply: string) => { ok: boolean; error?: string };
   decideBadge: (id: string, approve: boolean, actorId: string) => void;
   // broadcast
   createBroadcast: (b: Omit<Broadcast, "id" | "createdAt" | "status" | "stats">) => void;
@@ -1474,6 +1477,62 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (stateRef.current.bookings.some((b) => b.studentId === studentId && ["referred", "requested", "confirmed"].includes(b.status))) return { ok: false, error: "This student already has an open MyCareerZ referral or booking." };
         setState((s) => ({ ...s, bookings: [{ id: uid("bk"), studentId, bookedBy: teacherId, campusId: stu.campusIds[0], topic: topic.trim() || "Career guidance", slot: "", status: "referred", note: note.trim() || undefined, at: now() }, ...s.bookings] }));
         log({ actorId: teacherId, action: "Referred to MyCareerZ", target: stu.name, campusId: stu.campusIds[0], category: "consent" });
+        return { ok: true };
+      },
+      requestGuideIntro: (guideId, counsellorId, reason, studentId) => {
+        const s0 = stateRef.current;
+        const c = getUser(counsellorId);
+        const g = getUser(guideId);
+        if (!c || c.role !== "MCZ") return { ok: false, error: "Only MyCareerZ counsellors can ask for an introduction." };
+        if (!g || g.role !== "ALU" || !g.mczGuide || g.deactivated) return { ok: false, error: "This alumnus is no longer a MyCareerZ guide." };
+        if (reason.trim().length < 10) return { ok: false, error: "Say in a sentence why you'd like the introduction." };
+        if (studentId) {
+          const st = getUser(studentId);
+          if (!st || !c.campusIds.includes(st.campusIds[0]) || !hasConsent(s0, studentId, "mcz")) return { ok: false, error: "That student isn't on your consented list." };
+        }
+        if (s0.guideIntros.some((x) => x.guideId === guideId && x.counsellorId === counsellorId && x.status === "requested" && (x.studentId ?? "") === (studentId ?? "")))
+          return { ok: false, error: "You already have an open request for this guide." };
+        const intro: GuideIntro = { id: uid("gi"), guideId, counsellorId, studentId: studentId || undefined, campusId: g.campusIds[0], reason: reason.trim(), status: "requested", at: now() };
+        setState((s) => ({ ...s, guideIntros: [intro, ...s.guideIntros] }));
+        s0.users
+          .filter((u) => u.role === "CAD" && u.campusIds.includes(intro.campusId) && !u.deactivated)
+          .forEach((a) =>
+            pushOutbox({ channel: "email", to: a.name, toUserId: a.id, body: `Subject: MyCareerZ asks for an introduction to ${g.name}\n\n${c.name} (MyCareerZ) would like to be introduced to ${g.name}, a MyCareerZ alumni guide. Reason: "${intro.reason}"`, link: { label: "Open guide introductions", href: "/portal/admin/intros" } })
+          );
+        log({ actorId: counsellorId, action: "Asked for alumni guide introduction", target: g.name, campusId: intro.campusId, category: "community", detail: studentId ? `for ${getUser(studentId)?.name}` : undefined });
+        return { ok: true };
+      },
+      handleGuideIntro: (id, status, actorId, reply) => {
+        const s0 = stateRef.current;
+        const r = s0.guideIntros.find((x) => x.id === id);
+        const a = getUser(actorId);
+        if (!r || r.status !== "requested") return { ok: false, error: "This request has already been handled." };
+        if (!a || !["CAD", "GAO", "SAD"].includes(a.role) || (a.role === "CAD" && !a.campusIds.includes(r.campusId))) return { ok: false, error: "Only the guide's campus alumni office can handle this." };
+        if (status === "declined" && reply.trim().length < 5) return { ok: false, error: "Give the counsellor a short reason." };
+        const g = getUser(r.guideId);
+        const c = getUser(r.counsellorId);
+        if (status === "introduced" && (!g || !g.mczGuide)) return { ok: false, error: "The alumnus has switched off being a guide." };
+        setState((s) => ({
+          ...s,
+          guideIntros: s.guideIntros.map((x) => (x.id === id ? { ...x, status, handledBy: actorId, handledAt: now(), reply: reply.trim() || undefined } : x)),
+          engagements:
+            status === "introduced" && g
+              ? [{ id: uid("en"), alumniId: g.id, staffId: actorId, campusId: r.campusId, mode: "Email", category: "Mentoring", note: `Introduced to MyCareerZ counsellor ${c?.name ?? ""} as an alumni guide`, at: now(), source: "manual" }, ...s.engagements]
+              : s.engagements,
+        }));
+        if (c)
+          pushOutbox({
+            channel: "email",
+            to: c.name,
+            toUserId: c.id,
+            body: status === "introduced"
+              ? `Subject: Introduction to ${g?.name}\n\nThe ${campusNameFor(r.campusId)} alumni office has introduced you to ${g?.name}. ${reply.trim()}`
+              : `Subject: Introduction to ${g?.name} not possible\n\n${reply.trim()}`,
+            link: { label: "Open MyCareerZ", href: "/portal/mcz" },
+          });
+        if (status === "introduced" && g && c)
+          pushOutbox({ channel: "email", to: g.name, toUserId: g.id, body: `Subject: A MyCareerZ counsellor would like your help\n\nHi ${g.name.split(" ")[0]}, as a MyCareerZ alumni guide you've been introduced to ${c.name}, who may reach out about your study path. Reason: "${r.reason}". You can stop being a guide any time in My badges.` });
+        log({ actorId, action: status === "introduced" ? "Introduced alumni guide to MyCareerZ" : "Declined guide introduction", target: g?.name ?? "", campusId: r.campusId, category: "community", detail: reply.trim() || undefined });
         return { ok: true };
       },
       updateBooking: (id, status, actorId, slot) => {

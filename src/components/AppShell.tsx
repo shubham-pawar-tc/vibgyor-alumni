@@ -7,6 +7,7 @@ import {
   Award,
   BadgeCheck,
   Compass,
+  Handshake,
   FileText,
   HandCoins,
   IndianRupee,
@@ -65,7 +66,7 @@ interface NavItem {
   section?: string;
 }
 
-function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number; jobs: number; dms: number; moderation: number; requests: number; dupes: number; unmapped: number; docs: number }): NavItem[] {
+function navFor(me: User, counts: { verif: number; reports: number; consent: number; vouch: number; jobs: number; dms: number; moderation: number; requests: number; dupes: number; unmapped: number; docs: number; intros: number }): NavItem[] {
   const home: NavItem = { href: "/portal", label: "Home", icon: Home };
   switch (me.role) {
     case "STU":
@@ -124,6 +125,7 @@ function navFor(me: User, counts: { verif: number; reports: number; consent: num
         { href: "/portal/admin/requests", label: "Data requests", icon: FileLock2, count: counts.requests },
         { href: "/portal/admin/content", label: "Jobs & events", icon: CalendarCheck, count: counts.jobs },
         { href: "/portal/admin/documents", label: "Document requests", icon: FileText, count: counts.docs },
+        { href: "/portal/admin/intros", label: "Guide introductions", icon: Handshake, count: counts.intros },
         { section: "People & data", href: "/portal/admin/records", label: "Alumni records", icon: Database },
         { href: "/portal/admin/engagement", label: "Engagement log", icon: NotebookPen },
         { href: "/portal/admin/consents", label: "Student consents", icon: ClipboardCheck, count: counts.consent },
@@ -213,6 +215,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     vouch: state.verifications.filter((v) => v.status === "pending" && v.campusId === me.campusIds[0] && v.passYear === me.batch && !v.vouches.some((x) => x.by === me.id)).length,
     jobs: state.jobs.filter((j) => j.status === "pending" && inScope(j.campusId)).length,
     docs: state.docRequests.filter((r) => r.status === "paid" && inScope(r.campusId)).length,
+    intros: state.guideIntros.filter((r) => r.status === "requested" && inScope(r.campusId)).length,
     dms: state.dmThreads.filter((t) => {
       if (!t.members.includes(me.id)) return false;
       const last = state.dms.filter((m) => m.threadId === t.id).at(-1);
