@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { CheckCircle2, FileUp, Plus, XCircle } from "lucide-react";
+import { CheckCircle2, Copy, Download, FileUp, Plus, XCircle } from "lucide-react";
 import { AdminOnly, NoPermission, useScope } from "@/components/admin";
 import { Avatar, Button, Card, Field, Input, Modal, PageHeader, Pill, Req, Select, Stat, Textarea } from "@/components/ui";
+import { download, parseCsv, toCsv } from "@/lib/admin";
 import { campusName } from "@/lib/data";
 import { can, useStore } from "@/lib/store";
 import type { EngagementCategory, EngagementEntry, EngagementMode } from "@/lib/types";
@@ -183,35 +184,95 @@ function AddOne({ onClose }: { onClose: () => void }) {
   );
 }
 
+const COLS = ["email", "mode", "category", "note", "date"] as const;
+type Col = (typeof COLS)[number];
+
+const TEMPLATE = `${COLS.join(",")}\npriya.sharma@example.com,Email,Mentoring,Invited to the UK webinar panel,2026-11-20\n`;
+
+/* Sample shows each check: a note with a comma (quoted), DD/MM/YYYY, lower-case mode, unknown email, bad mode, a repeat row. */
 const SAMPLE = `email,mode,category,note,date
-priya.sharma@example.com,Email,Mentoring,Invited to the UK webinar panel,2026-11-20
-arjun.nair@example.com,Meeting,Placement,Confirmed 8 places for May shadowing,2026-11-18
+priya.sharma@example.com,Email,Mentoring,"Invited to the UK webinar panel, said yes",2026-11-20
+arjun.nair@example.com,meeting,Placement,Confirmed 8 places for May shadowing,18/11/2026
 someone@unknown.com,Call,General,Wrong number,2026-11-17
-rohan.gupta@example.com,Phone,Event,Reunion speaker briefing,2026-11-15`;
+rohan.gupta@example.com,Phone,Event,Reunion speaker briefing,2026-11-15
+priya.sharma@example.com,Email,Mentoring,"Invited to the UK webinar panel, said yes",2026-11-20`;
+
+/** Accepts YYYY-MM-DD, DD/MM/YYYY and DD-MM-YYYY (Excel in India). Returns YYYY-MM-DD or null. */
+function parseDate(raw: string): string | null {
+  const s = raw.trim();
+  let y: number, m: number, d: number;
+  let mt = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (mt) [y, m, d] = [+mt[1], +mt[2], +mt[3]];
+  else if ((mt = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/))) [d, m, y] = [+mt[1], +mt[2], +mt[3]];
+  else return null;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
+  return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+const pick = <T extends string>(list: readonly T[], v: string) => list.find((x) => x.toLowerCase() === v.trim().toLowerCase());
+const dupKey = (alumniId: string, mode: string, category: string, day: string, note: string) =>
+  [alumniId, mode, category, day, note.trim().toLowerCase().replace(/\s+/g, " ")].join("|");
 
 function BulkUpload({ onClose }: { onClose: () => void }) {
   const { me, state, addEngagements } = useStore();
   const { inScope } = useScope();
   const [text, setText] = useState(SAMPLE);
-  const rows = useMemo(() => {
-    const lines = text.trim().split(/\r?\n/).slice(1).filter(Boolean);
-    return lines.map((line, i) => {
-      const [email, mode, category, note, date] = line.split(",").map((x) => x?.trim());
-      const u = state.users.find((x) => x.email.toLowerCase() === (email ?? "").toLowerCase());
+  const [fileName, setFileName] = useState("");
+
+  const { headerError, rows } = useMemo(() => {
+    const table = parseCsv(text);
+    if (!table.length) return { headerError: "Nothing to import yet.", rows: [] };
+    const header = table[0].map((h) => h.trim().toLowerCase());
+    const missing = COLS.filter((c) => !header.includes(c));
+    if (missing.length) return { headerError: `The first row must name the columns. Missing: ${missing.join(", ")}.`, rows: [] };
+    const idx = Object.fromEntries(COLS.map((c) => [c, header.indexOf(c)])) as Record<Col, number>;
+
+    const existing = new Set(state.engagements.map((e) => dupKey(e.alumniId, e.mode, e.category, e.at.slice(0, 10), e.note)));
+    const seen = new Map<string, number>();
+    const today = new Date().toISOString().slice(0, 10);
+
+    const rows = table.slice(1).map((cells, i) => {
+      const n = i + 2;
+      const raw = Object.fromEntries(COLS.map((c) => [c, (cells[idx[c]] ?? "").trim()])) as Record<Col, string>;
       const errors: string[] = [];
-      if (!u) errors.push("No alumnus with this email");
+      const u = state.users.find((x) => x.email.toLowerCase() === raw.email.toLowerCase() && x.role === "ALU");
+      if (!raw.email) errors.push("Email is empty");
+      else if (!u) errors.push("No alumnus with this email");
       else if (!inScope(u.campusIds[0])) errors.push("Outside your campus");
-      if (!MODES.includes(mode as EngagementMode)) errors.push(`Mode must be ${MODES.join("/")}`);
-      if (!CATS.includes(category as EngagementCategory)) errors.push("Unknown category");
-      if (!date || isNaN(Date.parse(date))) errors.push("Bad date");
+      const mode = pick(MODES, raw.mode);
+      if (!mode) errors.push(`Mode must be ${MODES.join(" / ")}`);
+      const category = pick(CATS, raw.category);
+      if (!category) errors.push(`Category must be ${CATS.join(" / ")}`);
+      const day = parseDate(raw.date);
+      if (!day) errors.push("Date must be YYYY-MM-DD or DD/MM/YYYY");
+      else if (day > today) errors.push("Date is in the future");
+      if (raw.note.length > 500) errors.push("Note is longer than 500 characters");
+
+      let dup: string | undefined;
+      if (!errors.length && u && mode && category && day) {
+        const k = dupKey(u.id, mode, category, day, raw.note);
+        if (existing.has(k)) dup = "Already in the log";
+        else if (seen.has(k)) dup = `Same as row ${seen.get(k)}`;
+        else seen.set(k, n);
+      }
       const entry: Omit<EngagementEntry, "id"> | undefined =
-        errors.length === 0 && u
-          ? { alumniId: u.id, staffId: me!.id, campusId: u.campusIds[0], mode: mode as EngagementMode, category: category as EngagementCategory, note: note ?? "", at: new Date(`${date}T12:00:00+05:30`).toISOString(), source: "bulk" }
+        !errors.length && !dup && u && mode && category && day
+          ? { alumniId: u.id, staffId: me!.id, campusId: u.campusIds[0], mode, category, note: raw.note, at: new Date(`${day}T12:00:00+05:30`).toISOString(), source: "bulk" }
           : undefined;
-      return { n: i + 2, email, name: u?.name, errors, entry };
+      return { n, raw, name: u?.name, errors, dup, entry };
     });
-  }, [text, state.users, me, inScope]);
+    return { headerError: "", rows };
+  }, [text, state.users, state.engagements, me, inScope]);
+
   const good = rows.filter((r) => r.entry);
+  const bad = rows.filter((r) => r.errors.length);
+  const dups = rows.filter((r) => r.dup);
+  const downloadErrors = () =>
+    download(
+      "engagement-upload-errors.csv",
+      toCsv([[...COLS, "row", "problem"], ...bad.map((r) => [...COLS.map((c) => r.raw[c]), r.n, r.errors.join("; ")])])
+    );
   return (
     <Modal
       open
@@ -236,29 +297,66 @@ function BulkUpload({ onClose }: { onClose: () => void }) {
       }
     >
       <div className="space-y-3">
-        <p className="text-sm text-muted">Paste rows from Excel as CSV, or choose a .csv file. Columns: email, mode, category, note, date. A sample with two mistakes is filled in.</p>
-        <input
-          type="file"
-          accept=".csv,text/csv"
-          className="text-sm"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) f.text().then(setText);
-          }}
-        />
-        <Textarea rows={6} className="font-mono text-label" value={text} onChange={(e) => setText(e.target.value)} />
-        <div className="max-h-56 overflow-y-auto rounded-xl border border-border">
-          {rows.map((r) => (
-            <div key={r.n} className="flex items-start gap-2 border-b border-border px-3 py-2 text-sm last:border-0">
-              {r.entry ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />}
-              <span className="w-12 shrink-0 text-muted">Row {r.n}</span>
-              <span className="min-w-0 flex-1">
-                <span className="font-medium">{r.name ?? r.email}</span>
-                {r.errors.length > 0 && <span className="block text-danger">{r.errors.join(" · ")}</span>}
-              </span>
-            </div>
-          ))}
+        <p className="text-sm text-muted">
+          Save your Excel sheet as CSV and choose it, or paste the rows below. Columns (any order): {COLS.join(", ")}. Notes with commas are fine when Excel quotes them. Dates can be YYYY-MM-DD or DD/MM/YYYY.
+          A sample with a few mistakes is filled in.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-surface-2">
+            <FileUp className="h-4 w-4" /> {fileName || "Choose a .csv file"}
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              className="sr-only"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) { setFileName(f.name); f.text().then(setText); }
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <Button size="sm" variant="secondary" onClick={() => download("engagement-template.csv", TEMPLATE)}>
+            <Download className="h-4 w-4" /> Template
+          </Button>
         </div>
+        <Textarea rows={6} className="font-mono text-label" value={text} onChange={(e) => { setText(e.target.value); setFileName(""); }} aria-label="CSV rows" />
+
+        {headerError ? (
+          <p className="text-sm font-semibold text-danger">{headerError}</p>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <Pill tone="success">{good.length} ready</Pill>
+              {bad.length > 0 && <Pill tone="danger">{bad.length} with errors</Pill>}
+              {dups.length > 0 && <Pill tone="warning">{dups.length} duplicate{dups.length === 1 ? "" : "s"} skipped</Pill>}
+              {bad.length > 0 && (
+                <Button size="sm" variant="secondary" onClick={downloadErrors}>
+                  <Download className="h-4 w-4" /> Download rows to fix
+                </Button>
+              )}
+            </div>
+            <div className="max-h-56 overflow-y-auto rounded-xl border border-border">
+              {rows.map((r) => (
+                <div key={r.n} className="flex items-start gap-2 border-b border-border px-3 py-2 text-sm last:border-0">
+                  {r.entry ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                  ) : r.dup ? (
+                    <Copy className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                  ) : (
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
+                  )}
+                  <span className="w-12 shrink-0 text-muted">Row {r.n}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="font-medium">{r.name ?? (r.raw.email || "—")}</span>
+                    {r.entry && <span className="text-muted"> · {r.entry.mode} · {r.entry.category} · {formatDate(r.entry.at)}</span>}
+                    {r.errors.length > 0 && <span className="block text-danger">{r.errors.join(" · ")}</span>}
+                    {r.dup && <span className="block text-warning">{r.dup}, skipped</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );
